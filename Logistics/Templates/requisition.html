@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisition Portal</title>
+    <link rel="stylesheet" href="requisition.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Requisition List</h1>
+        <table id="requisition-list">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Purpose</th>
+                    <th>Billing</th>
+                    <th>Shipping</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Example Row -->
+                <tr>
+                    <td>1001</td>
+                    <td>Order More Vaccines</td>
+                    <td>Mercury Drugs collab</td>
+                    <td>ilalim ng puno ng saging</td>
+                    <td><button onclick="viewDetails(1001)">View</button></td>
+                </tr>
+                <!-- Add more rows here -->
+            </tbody>
+        </table>
+        <button id="manage-button" onclick="openModal()">Manage Requisition</button>
+    </div>
+
+    <!-- Modal for managing requisitions -->
+    <div id="manage-requisition-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2>Manage Requisition</h2>
+            <form id="requisition-form">
+                <div class="form-group">
+                    <label for="requisition-id">Requisition ID:</label>
+                    <input type="text" id="requisition-id" name="requisition-id" placeholder="Enter ID" required>
+                </div>
+                <div class="form-group">
+                    <label for="purpose">Purpose:</label>
+                    <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
+                </div>
+                <div class="form-group">
+                    <label for="billing">Billing Information:</label>
+                    <input type="text" id="billing" name="billing" placeholder="Billing details" required>
+                </div>
+                <div class="form-group">
+                    <label for="shipping">Shipping Information:</label>
+                    <input type="text" id="shipping" name="shipping" placeholder="Shipping details" required>
+                </div>
+                <div class="form-group">
+                    <label for="attachments">Attachments:</label>
+                    <input type="file" id="attachments" name="attachments" multiple>
+                </div>
+                <div class="form-group">
+                    <label for="items">Items Requested:</label>
+                    <textarea id="items" name="items" rows="3" placeholder="List of items" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="details">Details (Description, Quantity, Price):</label>
+                    <textarea id="details" name="details" rows="5" placeholder="Provide details for each item" required></textarea>
+                </div>
+                <button type="submit">Submit Requisition</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for displaying requisition details -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeDetailsModal()">&times;</span>
+            <h2>Requisition Details</h2>
+            <div id="details-content">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="requisition.js"></script>
+</body>
+</html>
