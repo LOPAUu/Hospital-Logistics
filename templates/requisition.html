@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Requisition Portal</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition.css') }}">
-</head>
+{% extends 'base.html' %}
+
+{% block head %}{% endblock %}
+
+{% block body %}
 <body>
     <div class="dim-overlay"></div>
     <header class="header">
@@ -37,27 +34,25 @@
                     <th>Shipping</th>
                     <th>Details</th>
                     <th>Status</th>
+                    <th>Actions</th> <!-- New column for actions -->
                 </tr>
             </thead>
             <tbody>
-                <tr data-id="1001">
-                    <td>1001</td>
-                    <td>2024-09-23</td> <!-- Example Date -->
-                    <td>Order More Vaccines</td>
-                    <td>Mercury Drugs collab</td>
-                    <td>ilalim ng puno ng saging</td>
-                    <td><button onclick="viewDetails(1001)">View</button></td>
-                    <td>Pending</td>
+                {% for requisition in requisitions %}
+                <tr data-id="{{ requisition.id }}">
+                    <td>{{ requisition.id }}</td>
+                    <td>{{ requisition.date }}</td>
+                    <td>{{ requisition.purpose }}</td>
+                    <td>{{ requisition.billing }}</td>
+                    <td>{{ requisition.shipping }}</td>
+                    <td><button onclick="viewDetails('{{ requisition.id }}')">View</button></td>
+                    <td>{{ requisition.status }}</td>
+                    <td>
+                        <button onclick="openUpdateModal('{{ requisition.id }}')">Update</button>
+                        <button onclick="deleteRequisition('{{ requisition.id }}')">Delete</button>
+                    </td> <!-- New buttons for update and delete -->
                 </tr>
-                <tr data-id="1002">
-                    <td>1002</td>
-                    <td>2024-09-22</td> <!-- Example Date -->
-                    <td>Restock Masks</td>
-                    <td>ABC Pharmaceuticals</td>
-                    <td>Warehouse #3</td>
-                    <td><button onclick="viewDetails(1002)">View</button></td>
-                    <td>Rejected</td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
         <button id="manage-button" onclick="openModal()">Manage Requisition</button>
@@ -68,7 +63,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeModal()">&times;</span>
             <h2>Manage Requisition</h2>
-            <form id="requisition-form">
+            <form id="requisition-form" action="/" method="POST">
                 <div class="form-group">
                     <label for="requisition-id">Requisition ID:</label>
                     <span id="requisition-id" name="requisition-id">Auto-generated ID</span>
@@ -118,5 +113,77 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/requisition.js') }}"></script>
+    <script>
+        function viewDetails(requisitionId) {
+            fetch(`/get_requisition/${requisitionId}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json(); // Parse JSON response
+                }
+                throw new Error('Requisition not found');
+            })
+            .then(requisition => {
+                // Populate the details modal with requisition data
+                const detailsContent = `
+                    <p><strong>ID:</strong> ${requisition.id}</p>
+                    <p><strong>Date:</strong> ${requisition.date}</p>
+                    <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+                    <p><strong>Billing:</strong> ${requisition.billing}</p>
+                    <p><strong>Shipping:</strong> ${requisition.shipping}</p>
+                    <p><strong>Status:</strong> ${requisition.status}</p>
+                `;
+                document.getElementById('details-content').innerHTML = detailsContent;
+                
+                // Open the modal
+                document.getElementById('details-modal').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('details-modal').style.display = 'none'; // Close the details modal
+        }
+        
+        function deleteRequisition(requisitionId) {
+            if (confirm('Are you sure you want to delete this requisition?')) {
+                fetch(`/delete_requisition/${requisitionId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.status === 204) {
+                        // Successfully deleted
+                        alert('Requisition deleted successfully.');
+                        location.reload(); // Reload the page to see the changes
+                    } else {
+                        alert('Failed to delete the requisition.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function openUpdateModal(requisitionId) {
+            // Fetch the requisition details using the requisition ID
+            fetch(`/get_requisition/${requisitionId}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Requisition not found');
+            })
+            .then(requisition => {
+                // Populate the modal fields with the requisition data
+                document.getElementById('requisition-id').innerText = requisition.id;
+                document.getElementById('date').value = requisition.date;
+                document.getElementById('purpose').value = requisition.purpose;
+                document.getElementById('billing').value = requisition.billing;
+                document.getElementById('shipping').value = requisition.shipping;
+
+                // Open the modal
+                document.getElementById('manage-requisition-modal').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 </body>
-</html>
+{% endblock %}
