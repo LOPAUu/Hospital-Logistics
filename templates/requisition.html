@@ -7,28 +7,57 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition.css') }}">
 </head>
 <body>
+    <div class="dim-overlay"></div>
+    <header class="header">
+        <div class="menu-logo">
+            <div class="menu-icon">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <img class="syncore-logo" src="github/images/syncore-main.png" alt="Company Logo">
+        </div>
+        <div class="user-profile">
+            <div class="user-info">
+                <p>{{ username }}</p>
+                <span>{{ role }}</span>
+            </div>            
+        </div>
+    </header>
+
     <div class="container">
         <h1>Requisition List</h1>
         <table id="requisition-list">
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Date</th>
                     <th>Purpose</th>
                     <th>Billing</th>
                     <th>Shipping</th>
                     <th>Details</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Example Row -->
-                <tr>
+                <tr data-id="1001">
                     <td>1001</td>
+                    <td>2024-09-23</td> <!-- Example Date -->
                     <td>Order More Vaccines</td>
                     <td>Mercury Drugs collab</td>
                     <td>ilalim ng puno ng saging</td>
                     <td><button onclick="viewDetails(1001)">View</button></td>
+                    <td>Pending</td>
                 </tr>
-                <!-- Add more rows here -->
+                <tr data-id="1002">
+                    <td>1002</td>
+                    <td>2024-09-22</td> <!-- Example Date -->
+                    <td>Restock Masks</td>
+                    <td>ABC Pharmaceuticals</td>
+                    <td>Warehouse #3</td>
+                    <td><button onclick="viewDetails(1002)">View</button></td>
+                    <td>Rejected</td>
+                </tr>
             </tbody>
         </table>
         <button id="manage-button" onclick="openModal()">Manage Requisition</button>
@@ -42,7 +71,11 @@
             <form id="requisition-form">
                 <div class="form-group">
                     <label for="requisition-id">Requisition ID:</label>
-                    <input type="text" id="requisition-id" name="requisition-id" placeholder="Enter ID" required>
+                    <span id="requisition-id" name="requisition-id">Auto-generated ID</span>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="text" id="date" name="date" readonly> <!-- Automatically added date -->
                 </div>
                 <div class="form-group">
                     <label for="purpose">Purpose:</label>
