@@ -1,32 +1,12 @@
-function viewDetails(requisitionId) {
-    const requisitions = {
-        1001: {
-            purpose: "Order More Vaccines",
-            billing: "Mercury Drugs collab",
-            shipping: "ilalim ng puno ng saging",
-            items: "Vaccines: 50 units",
-            additionalInfo: "Description, Quantity, Price details here.",
-            signatory1: { approved: true, name: "Maverick Ko" },
-            signatory2: { approved: null, name: "Rene Letegio" },
-            signatory3: { approved: null, name: "Paulo Sangreo" }
-        },
-        1002: {
-            purpose: "Restock Masks",
-            billing: "ABC Pharmaceuticals",
-            shipping: "Warehouse #3",
-            items: "Masks: 1000 units",
-            additionalInfo: "Order of 1000 surgical masks.",
-            signatory1: { approved: true, name: "Maverick Ko" },
-            signatory2: { approved: false, name: "Rene Letegio" },
-            signatory3: { approved: null, name: "Paulo Sangreo" }
-        }
-    };
+function viewDetails(id) {
+    // Fetch and display details for the requisition with the given id
+    console.log("Viewing details for requisition ID:", id);
 
-    const requisition = requisitions[requisitionId];
+    // Assuming requisitions is an array of requisition objects accessible here
+    const requisition = requisitions.find(req => req.id === id);
 
     if (requisition) {
         const status = getStatus(requisition.signatory1, requisition.signatory2, requisition.signatory3);
-
         const statusClass = getStatusClass(status); // Get the CSS class for the status
 
         const approvalDetails = `
@@ -48,7 +28,7 @@ function viewDetails(requisitionId) {
         document.getElementById('details-content').innerHTML = content;
         openDetailsModal();
     } else {
-        console.error("Details not found for requisition ID:", requisitionId);
+        console.error("Details not found for requisition ID:", id);
     }
 }
 
@@ -61,6 +41,7 @@ function getStatusClass(status) {
     }
     return "status-pending";
 }
+
 function getApprovalStatus(approved) {
     if (approved === null) {
         return "Pending";
@@ -88,29 +69,8 @@ function openDetailsModal() {
 function closeDetailsModal() {
     document.getElementById('details-modal').style.display = 'none';
 }
-function openModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'block';
-}
-
-function closeModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'none';
-}
 
 let currentRequisitionId = 1003; // Starting ID (modify as needed)
-
-function openModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'block';
-    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
-    currentRequisitionId++; // Increment for the next requisition
-}
-// Function to get the current date in YYYY-MM-DD format
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
 
 function openModal() {
     document.getElementById('manage-requisition-modal').style.display = 'block';
@@ -121,4 +81,70 @@ function openModal() {
 
 function closeModal() {
     document.getElementById('manage-requisition-modal').style.display = 'none';
+}
+
+// Function to get the current date in YYYY-MM-DD format
+function getCurrentDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Function to delete a requisition
+function deleteRequisition(id) {
+    if (confirm('Are you sure you want to delete this requisition?')) {
+        fetch(`/delete_requisition/${id}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Requisition deleted successfully.');
+                location.reload(); // Reload the page to see changes
+            } else {
+                alert('Failed to delete requisition.');
+            }
+        })
+        .catch(error => console.error('Error deleting requisition:', error));
+}      
+
+// Function to open the update modal and populate it with existing data
+function openUpdateModal(id) {
+    fetch(`/get_requisition/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('requisition-id').innerText = data.id;
+            document.getElementById('date').value = data.date;
+            document.getElementById('purpose').value = data.purpose;
+            document.getElementById('billing').value = data.billing;
+            document.getElementById('shipping').value = data.shipping;
+            document.getElementById('items').value = data.items;
+            document.getElementById('details').value = data.details;
+            openModal(); // Open the modal for updating requisition
+        })
+        .catch(error => console.error('Error fetching requisition:', error));
+}
+
+// Function to handle the form submission for updating a requisition
+document.getElementById('requisition-form').onsubmit = function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    const requisitionId = document.getElementById('requisition-id').innerText;
+    const formData = new FormData(this); // Get form data
+
+    fetch(`/update_requisition/${requisitionId}`, {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Requisition updated successfully.');
+            location.reload(); // Reload the page to see changes
+        } else {
+            alert('Failed to update requisition.');
+        }
+    })
+    .catch(error => console.error('Error updating requisition:', error));
+}   
 }
