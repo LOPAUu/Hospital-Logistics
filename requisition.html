@@ -27,51 +27,54 @@
 
     <div class="container">
         <h1>Requisition List</h1>
-        <table id="requisition-list">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Date</th>
-                    <th>Purpose</th>
-                    <th>Billing</th>
-                    <th>Shipping</th>
-                    <th>Details</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr data-id="1001">
-                    <td>1001</td>
-                    <td>2024-09-23</td> <!-- Example Date -->
-                    <td>Order More Vaccines</td>
-                    <td>Mercury Drugs collab</td>
-                    <td>ilalim ng puno ng saging</td>
-                    <td><button onclick="viewDetails(1001)">View</button></td>
-                    <td>Pending</td>
-                </tr>
-                <tr data-id="1002">
-                    <td>1002</td>
-                    <td>2024-09-22</td> <!-- Example Date -->
-                    <td>Restock Masks</td>
-                    <td>ABC Pharmaceuticals</td>
-                    <td>Warehouse #3</td>
-                    <td><button onclick="viewDetails(1002)">View</button></td>
-                    <td>Rejected</td>
-                </tr>
-            </tbody>
-        </table>
+       <table id="requisition-list">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Purpose</th>
+            <th>Billing</th>
+            <th>Details</th>
+            <th>Total (₱)</th> <!-- Changed Total column to Peso -->
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-id="1001">
+            <td>1001</td>
+            <td>2024-09-23</td>
+            <td>Order More Vaccines</td>
+            <td>Mercury Drugs collab</td>
+            <td><button onclick="viewDetails(1001)">View</button></td>
+            <td>₱2775.00</td> <!-- Changed to Peso -->
+            <td>Pending</td>
+        </tr>
+        <tr data-id="1002">
+            <td>1002</td>
+            <td>2024-09-22</td>
+            <td>Restock Masks</td>
+            <td>ABC Pharmaceuticals</td>
+            <td><button onclick="viewDetails(1002)">View</button></td>
+            <td>₱500.00</td> <!-- Changed to Peso -->
+            <td>Rejected</td>
+        </tr>
+    </tbody>
+</table>
+
         <button id="manage-button" onclick="openModal()">Manage Requisition</button>
     </div>
 
     <!-- Modal for managing requisitions -->
-    <div id="manage-requisition-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeModal()">&times;</span>
-            <h2>Manage Requisition</h2>
-            <form id="requisition-form">
+<div id="manage-requisition-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2>Manage Requisition</h2>
+        <form id="requisition-form">
+            <fieldset>
+                <legend>Requisition Information</legend>
                 <div class="form-group">
                     <label for="requisition-id">Requisition ID:</label>
-                    <span id="requisition-id" name="requisition-id">Auto-generated ID</span>
+                    <span id="requisition-id">Auto-generated ID</span>
                 </div>
                 <div class="form-group">
                     <label for="date">Date:</label>
@@ -81,30 +84,60 @@
                     <label for="purpose">Purpose:</label>
                     <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
                 </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Billing</legend>
                 <div class="form-group">
                     <label for="billing">Billing Information:</label>
                     <input type="text" id="billing" name="billing" placeholder="Billing details" required>
                 </div>
-                <div class="form-group">
-                    <label for="shipping">Shipping Information:</label>
-                    <input type="text" id="shipping" name="shipping" placeholder="Shipping details" required>
-                </div>
-                <div class="form-group">
-                    <label for="attachments">Attachments:</label>
-                    <input type="file" id="attachments" name="attachments" multiple>
-                </div>
-                <div class="form-group">
-                    <label for="items">Items Requested:</label>
-                    <textarea id="items" name="items" rows="3" placeholder="List of items" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="details">Details (Description, Quantity, Price):</label>
-                    <textarea id="details" name="details" rows="5" placeholder="Provide details for each item" required></textarea>
-                </div>
-                <button type="submit">Submit Requisition</button>
-            </form>
-        </div>
+            </fieldset>
+
+            <fieldset>
+    <legend>Items and Details</legend>
+    <div class="form-group">
+        <label for="attachments">Attachments:</label>
+        <input type="file" id="attachments" name="attachments" multiple>
     </div>
+    <div class="form-group">
+        <label>Items Requested:</label>
+        <table id="items-table">
+            <thead>
+                <tr>
+                    <th>Name of Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
+                    <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
+                    <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
+                    <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
+                    <td><button type="button" onclick="removeItem(this)">Remove</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" onclick="addItem()">Add Item</button>
+    </div>
+    <div class="form-group">
+        <label for="total-price">Total Price:</label>
+        <input type="text" id="total-price" name="total-price" readonly>
+    </div>
+</fieldset>
+
+
+            <div class="form-action">
+                <button type="submit" class="btn-submit">Submit Requisition</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
     <!-- Modal for displaying requisition details -->
     <div id="details-modal" class="modal">

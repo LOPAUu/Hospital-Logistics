@@ -48,6 +48,16 @@ button:hover {
     background-color: #002244;
 }
 
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 13px;
+    border: 1px solid #888;
+    width: 40%; /* Adjusted width to make the modal smaller */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 0 15px rgba(0,0,0,0.3); /* Shadow for depth */
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -57,17 +67,7 @@ button:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 70%; /* Adjusted width for better appearance */
-    border-radius: 8px; /* Added rounded corners */
-    box-shadow: 0 0 15px rgba(0,0,0,0.3); /* Added shadow for depth */
+    background-color: rgba(0,0,0,0.4); /* Dark transparent background */
 }
 
 .close-button {
@@ -83,6 +83,7 @@ button:hover {
     text-decoration: none;
     cursor: pointer;
 }
+
 
 .header {
     position: fixed;
@@ -122,7 +123,7 @@ button:hover {
 }
 
 .modal-content button[type="submit"] {
-    width: 100%; /* Full-width submit button */
+    width: 17%; /* -width submit button */
     padding: 12px;
     background-color: #28a745; /* Green for submission */
 }
@@ -140,4 +141,57 @@ button:hover {
 
 .status-pending {
     color: orange;
+}
+
+.modal-content fieldset {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+.modal-content legend {
+    padding: 0 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.input-text, .modal-content textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn-submit {
+    background-color: #4CAF50; /* Green background for submission */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn-submit:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+.form-action {
+    margin-top: 20px;
+}
+#date {
+    width: 50%; /* Adjusting width to 50% of its container */
+    display: inline-block; /* Allows additional elements to line up on the same line if needed */
+}
+.item-total {
+    width:60px; /* You can adjust this value to make it smaller or larger */
+    padding: 6px;
+    text-align: right; /* Align text to the right */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
 }
