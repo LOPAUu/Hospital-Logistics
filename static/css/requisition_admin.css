@@ -1,0 +1,344 @@
+body {
+    font-family: 'Lato', Arial, sans-serif; 
+    background-color: #E5E9F0;
+    display: block;
+    margin: 0;
+    color: #003366;
+}
+
+/* Header Styling */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #003366;
+    color: #ffffff;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    height: 80px;
+    z-index: 1001; 
+}
+
+/* Menu logo and title styling */
+.header .menu-logo {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1000;
+}
+
+.header .menu-logo img {
+    max-width: 190px; 
+    height: auto; 
+    padding-left: 8px; /* sa logo */
+}
+
+/* Dashboard title styling */
+.header .menu-logo h1 {
+    font-size: 24px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* User profile styling */
+.header .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: right;
+}
+
+/* Username and Role container */
+.header .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* Username styling */
+.header .user-profile p {
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Role styling */
+.header .user-profile span {
+    font-size: 14px;
+    color: #CCCCCC;
+}
+
+/* User Icon styling */
+.header .user-dropdown img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+}
+
+/* Top Bar Styles */
+.top-bar {
+    background-color: #ffffff; 
+    color: #003366; 
+    padding: 3px 30px;
+    position: fixed;
+    top: 80px; 
+    left: 0;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1001; 
+}
+
+/* Top Navigation Styles */
+.top-nav {
+    display: flex;
+    gap: 10px;
+    z-index: 1002; 
+    align-items: center; 
+}
+
+/* Navigation Links Styling */
+.top-nav a, .dropbtn {
+    color: #003366; 
+    text-decoration: none;
+    padding: 10px;
+    font-weight: normal;
+    font-size: 0.825rem;
+    border-radius: 6px;
+    background-color: #ffffff; 
+    font-family: 'Lato', Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    border: none;
+}
+
+/* Hover effects */
+.top-nav a:hover, .dropbtn:hover {
+    background-color: #f3c300; 
+    color: #003366; 
+}
+.container {
+    max-width: 800px;
+    margin-top: 140px;
+    margin-left: 500px;
+    background: white;
+    padding: 80px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse; /* Keep this to manage horizontal borders */
+}
+
+table, th, td {
+    border: none; /* Remove all borders */
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd; /* Add bottom borders for rows */
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+#requisition-list tbody tr:hover {
+    background-color: #f0f0f0; /* Change this color to your desired darker shade */
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #002244;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 13px;
+    border: 1px solid #888;
+    width: 40%; /* Adjusted width to make the modal smaller */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 0 15px rgba(0,0,0,0.3); /* Shadow for depth */
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4); /* Dark transparent background */
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #003366;
+    color: #ffffff;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    height: 80px;
+    z-index: 1001;
+}
+
+.header .menu-logo img {
+    max-width: 190px;
+    height: auto;
+    padding-left: 25px;
+}
+
+/* Specific styles for the form within the modal */
+.modal-content .form-group {
+    margin-bottom: 15px; /* Adjusted margin */
+}
+
+.modal-content input[type="text"],
+.modal-content textarea,
+.modal-content input[type="file"] {
+    width: calc(100% - 22px); /* Ensures proper padding and width */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.modal-content button[type="submit"] {
+    width: 17%; /* -width submit button */
+    padding: 12px;
+    background-color: #28a745; /* Green for submission */
+}
+
+.modal-content button[type="submit"]:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+.status-approved {
+    color: green;
+}
+
+.status-rejected {
+    color: red;
+}
+
+.status-pending {
+    color: orange;
+}
+
+.modal-content fieldset {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+.modal-content legend {
+    padding: 0 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.input-text, .modal-content textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn-submit {
+    background-color: #4CAF50; /* Green background for submission */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn-submit:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+.form-action {
+    margin-top: 20px;
+}
+#date {
+    width: 50%; /* Adjusting width to 50% of its container */
+    display: inline-block; /* Allows additional elements to line up on the same line if needed */
+}
+.item-total {
+    width:60px; /* You can adjust this value to make it smaller or larger */
+    padding: 6px;
+    text-align: right; /* Align text to the right */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+#search-bar {
+    width: 50%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.search-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-filters input,
+.search-filters select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+}
+

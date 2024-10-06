@@ -2,9 +2,9 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-@app.route('/requisition_portal')
-def requisition():
-    return render_template('newrequisition.html')
+@app.route('/requisition_admin_portal')
+def requisition_admin():
+    return render_template('requisition_admin.html')
  
 @app.route('/base_portal')
 def base():
