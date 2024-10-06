@@ -7,13 +7,13 @@ app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
 # MySQL configurations
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'your_username'  # Change to your MySQL username
-app.config['MYSQL_PASSWORD'] = 'your_password'  # Change to your MySQL password
+app.config['MYSQL_USER'] = 'root'  # Change to your MySQL username
+app.config['MYSQL_PASSWORD'] = 'C4bb@g3$2024!'  # Change to your MySQL password
 app.config['MYSQL_DB'] = 'syncore_db'  # Database name
 
 mysql = MySQL(app)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/login_portal', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
