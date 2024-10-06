@@ -1,0 +1,245 @@
+
+.error {
+    border: 1px solid rgb(228, 39, 39);
+    background-color: #ffe6e6; 
+}
+
+body {
+    font-family: 'Lato', Arial, sans-serif; 
+    font-weight: 400; 
+    background-color: #E5E9F0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    margin: 0;
+    padding: 0;
+    color: #003366;
+    overflow-x: hidden; 
+}
+
+.header { 
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #003366;
+    color: #ffffff;
+    padding: 5px 20px;
+    padding-bottom: 0px;
+    box-sizing: border-box;
+}
+
+/* Logo image styling */
+.logo img {
+    width: 200px; /*Adjusment for the logo */
+    height: 200px;
+    margin-left: 10px;
+    margin-top: -50px;
+    margin-bottom: -50px;
+}
+
+.header .title {
+    display: flex;
+    align-items: left;
+    flex: 1;
+    justify-content: left;
+}
+
+.header .title h1 { 
+    margin: 0;
+    font-size: 35px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+}
+
+.header .title h1 span {
+    margin-top: 17px;
+    margin-left: 20px;
+    font-size: 14px;
+    font-weight: 100;
+}
+
+.header .contact-info {  
+    text-align: right;
+    padding-right: 20px;
+}
+
+.header .contact-info p {
+    margin: 0;
+    font-size: 14px;
+    margin-top: 1px;
+}
+
+.header .contact-info a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+main {
+    padding-left: 40px;
+    padding-top: 10px;
+}
+
+h2 {
+    color: #002E69;
+    font-size: 35px;
+    padding-left: 10px;
+    padding-top: 0px;
+}
+
+p.intro-text {
+    color: black;
+    padding: 10px 0; 
+    padding-left: 10px;
+    padding-top: 0px;
+}
+
+form {
+    margin-left: 10px;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    padding: 20px; 
+    border: 1px solid #ccc;
+    border-radius: 10px; 
+    background-color: #eef2f8; 
+}
+
+label {
+    margin-top: 15px; 
+    color: black; 
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+textarea {
+    width: 95%; 
+    padding: 15px; 
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="tel"]:hover,
+textarea:hover {
+    background-color: #e0f7ff; 
+    border-color: #0040A0; 
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus {
+    background-color: #d0e7ff; 
+    border-color: #003366; 
+    outline: none; 
+}
+
+input[type="file"] {
+    margin-top: 10px;
+}
+
+button {
+    background-color: #002E69;
+    color: white;
+    padding: 10px 30px; 
+    margin-top: 15px; 
+    margin-left: 73%;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0040A0;
+}
+
+nav {
+    margin-top: 20px;
+    align-self: flex-start; 
+}
+
+.nav-link {
+    color: #002E69;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 495px; 
+    padding: 35px;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(3, 3, 3, 0.39);
+    text-align: center; 
+    z-index: 1000; 
+}
+
+.popup-icon {
+    height: 50px;
+    margin-bottom: 10px; 
+}
+
+.popup-message {
+    color: #000000;
+    font-size: 18px;
+    margin-bottom: 20px; 
+}
+
+.popup-button {
+    margin-left: 0px;
+    background-color: #002E69;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 40%; 
+}
+
+.popup-button:hover {
+    background-color: #0040A0;
+}
+
+.navigation {
+    margin-left: -30px;
+    background-color: #f8f9fa; /* Light background */
+    text-align: right;        /* Align link to the right */
+}
+
+.nav-link {
+    /* Style the link */
+    color:  #012d74;           /* Blue color */
+    text-decoration: none;    /* Remove underline */
+       /* Bold text */
+}
+
+.nav-link:hover {
+    /* Style the link on hover */
+    color:  #001a44;        /* Darker blue */
+    text-decoration: underline; /* Add underline */
+}
+.arrow-back {
+    /* Style the arrow */
+    margin-right: 5px;         /* Space between arrow and text */
+    font-size: 20px;   
+    font-weight: bolder;        /* Adjust arrow size */
+}

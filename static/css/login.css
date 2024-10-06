@@ -1,0 +1,217 @@
+/* General body styling */
+body {
+    font-family: 'Lato', Arial, sans-serif; /* Change font to Lato Regular */
+    background-color: #E5E9F0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Align items to the top */
+    height: 80vh; /* Full height of the viewport */
+    margin: 0;
+    color: #003366;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+.header { 
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #003366;
+    color: #ffffff;
+    padding: 5px 20px;
+    padding-bottom: 0px;
+    box-sizing: border-box;
+}
+
+/* Logo image styling */
+.logo img {
+    width: 200px; /*Adjusment for the logo */
+    height: 200px;
+    margin-left: 10px;
+    margin-top: -50px;
+    margin-bottom: -50px;
+}
+
+.header .title {
+    display: flex;
+    align-items: left;
+    flex: 1;
+    justify-content: left;
+}
+
+.header .title h1 { 
+    margin: 0;
+    font-size: 35px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+}
+
+.header .title h1 span {
+    margin-top: 17px;
+    margin-left: 20px;
+    font-size: 14px;
+    font-weight: 100;
+}
+
+.header .contact-info {  
+    text-align: right;
+    padding-right: 20px;
+}
+
+.header .contact-info p {
+    margin: 0;
+    font-size: 14px;
+    margin-top: 1px;
+}
+
+.header .contact-info a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.login-box {  /* adjustments for log in text field */
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 45px;
+    width: 380px;
+    text-align: center;
+    margin-top: 37px;
+}
+
+.login-box h2 {
+    font-size: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    color: #000000;
+}
+
+.login-box form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-box input {   
+    margin-bottom: 10px;
+    padding: 10px;
+    padding-top: 10px;
+    margin-top: 10px;
+    font-size: 16px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.login-box input:hover {
+    background-color: #e0f7ff; 
+    border-color: #0040A0; 
+}
+
+.login-box input:focus {
+    background-color: #d0e7ff;
+    border-color: #003366;
+    outline: none; 
+}
+
+.login-box button { 
+    padding: 10px;
+    margin-top: 10px ;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #003366;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.login-box button:hover {
+    background-color: #002244;
+}
+
+.forgot-password {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.forgot-password a {
+    color: #003366;
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    color:  #001a44;
+    text-decoration: underline;
+}
+
+.links p {
+    margin: 5px 0;
+}
+
+.links a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.footer {
+    font-size: 12px;
+    color: #aaaaaa;
+    text-align: center;
+}
+
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-container input[type="password"],
+.password-container input[type="text"] {
+    width: 100%;
+    padding-right: 40px; 
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.blue-hover {
+    color: #003366;
+}
+
+.blue-hover:hover {
+    color:  #001a44;
+    text-decoration: underline;
+}
+.loading-overlay {
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.circle-loader {
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #003366; /* Blue */
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
