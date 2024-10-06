@@ -1,0 +1,247 @@
+body {
+    font-family: 'Lato', Arial, sans-serif; 
+    background-color: #E5E9F0;
+    margin: 0;
+    color: #003366;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 120px auto;
+    background: white;
+    padding: 40px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #003366;
+    color: #ffffff;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    height: 80px;
+    z-index: 1001;
+}
+
+.header .menu-logo img {
+    max-width: 190px;
+    height: auto;
+    padding-left: 25px;
+}
+
+.tabs--secondary {
+    margin-top: 20px;
+}
+
+.tab__nav ul {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border-bottom: 2px solid #ccc;
+}
+
+.tab__item {
+    margin-right: 20px;
+}
+
+.tab__item a {
+    display: inline-block;
+    padding: 10px 20px;
+    color: #0056b3;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+}
+
+.tab__item a.is-activated {
+    border-bottom-color: #0056b3;
+    font-weight: bold;
+}
+
+.tab__item a:hover {
+    border-bottom-color: #002244;
+}
+
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1002;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 11% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    color: black;
+}
+
+/* Attachment link */
+#attachment-link {
+    display: block;
+    margin-top: 10px;
+    color: #0056b3;
+    text-decoration: none;
+}
+#attachment-link:hover {
+    text-decoration: underline;
+}
+
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    width: 41%; /* 3 cards per row */
+    cursor: pointer;
+    position: relative;
+    font-size: 14px; /* Adjust font size */
+}
+
+.card-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.card-row div {
+    width: 48%; /* Distribute space evenly */
+}
+
+.role {
+    font-style: italic;
+    color: #666;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #ddd;
+    margin: 10px 0;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.approve {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.reject {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+.filter-buttons {
+    display: flex;
+    justify-content: left;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.filter-buttons button {
+    padding: 10px 20px;
+    background-color: #e7e7e7;
+    color: black;
+    border: none;
+    border-radius: 1px;
+    cursor: pointer;
+}
+
+.filter-buttons button:hover {
+    background-color: #d0d0d0;
+}
+
+/* Button styles */
+.approve {
+    background-color: green; /* Green for approve */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px; /* Space between buttons */
+}
+
+.reject {
+    background-color: red; /* Red for reject */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
