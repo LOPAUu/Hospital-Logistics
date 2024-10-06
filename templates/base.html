@@ -26,7 +26,7 @@
                         Profile
                         <img src="{{ url_for('static', filename='images/profile_icon.png') }}" alt="Profile Icon" class="dropdown-icon">
                     </a>
-                    <a href="{{ url_for('logistics') }}">
+                    <a href="{{ url_for('logout') }}">
                         Logout
                         <img src="{{ url_for('static', filename='images/logout_icon.png') }}" alt="Logout Icon" class="dropdown-icon">
                     </a>
@@ -38,7 +38,7 @@
     <!-- New Top Bar -->
     <div class="top-bar">
         <div class="top-nav">
-            <a href="{{ url_for('template', filename='dashboard.html') }}">Dashboard</a>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
             <a href="{{ url_for('supplier') }}">Supplier</a>
             <a href="{{ url_for('requisition') }}">Requisition</a>
         </div>
@@ -47,6 +47,7 @@
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="content">
+            <!-- Your dynamic content goes here -->
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>

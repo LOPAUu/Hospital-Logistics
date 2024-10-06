@@ -5,14 +5,27 @@ app = Flask(__name__)
 @app.route('/requisition_portal')
 def requisition():
     return render_template('newrequisition.html')
-
-# Route for the main page
+ 
 @app.route('/base_portal')
 def base():
-    # Pass values for username and role if needed
+    # Pass values for username and role
     username = "John Doe"
     role = "Administrator"
-    return render_template('base.html', username=username, role=role)
+    return render_template('base.html')
+
+# Routes for other pages
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/supplier')
+def supplier():
+    return render_template('supplier.html')
+
+@app.route('/logout')
+def logout():
+    # Handle the logout process
+    return "Logout successful"
 
 if __name__ == '__main__':
     app.run(debug=True)
