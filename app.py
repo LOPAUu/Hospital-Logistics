@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
@@ -16,7 +16,6 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'paulo'  # Change to your MySQL username
 app.config['MYSQL_PASSWORD'] = 'C4bb@g3$2024!'  # Change to your MySQL password
 app.config['MYSQL_DB'] = 'syncore_db'  # Database name
-
 
 mysql = MySQL(app)
 
@@ -68,9 +67,56 @@ def admin_dashboard():
     # Render the Admin dashboard HTML template
     return render_template('admin_dashboard.html')
 
+suppliers = [
+    # Example supplier data, replace with your database logic
+    {'id': 1, 'name': 'ABC Medical Supplies', 'type': 'Medical Equipment', 'contact_person': 'John Doe', 'contact_number': '+639123456789', 'email': 'john@example.com', 'address': '123 Street, Quezon City', 'products': 'Bandages, Syringes, Gloves', 'pricing': '$500 - $2000'},
+    {'id': 2, 'name': 'XYZ Pharma Co.', 'type': 'Pharmaceuticals', 'contact_person': 'Jane Smith', 'contact_number': '+639987654321', 'email': 'jane@xyzpharma.com', 'address': '456 Avenue, Makati', 'products': 'Antibiotics, Vaccines', 'pricing': '$1000 - $5000'}
+]
+
 @app.route('/admin_supplier')
 def admin_supplier():
-    return render_template('admin_supplier.html')
+    return render_template('admin_supplier.html', suppliers=suppliers)
+
+@app.route('/supplier/add', methods=['POST'])
+def add_supplier():
+    new_supplier = {
+        'id': len(suppliers) + 1,
+        'name': request.form['name'],
+        'type': request.form['type'],
+        'contact_person': request.form['contact_person'],
+        'contact_number': request.form['contact_number'],
+        'email': request.form['email'],
+        'address': request.form['address'],
+        'products': request.form['products'],
+        'pricing': request.form['pricing']
+    }
+    suppliers.append(new_supplier)
+    return redirect(url_for('admin_supplier'))
+
+@app.route('/supplier/<int:supplier_id>/update', methods=['POST'])
+def update_supplier(supplier_id):
+    supplier = next((s for s in suppliers if s['id'] == supplier_id), None)
+    if supplier:
+        supplier['name'] = request.form['name']
+        supplier['type'] = request.form['type']
+        supplier['contact_person'] = request.form['contact_person']
+        supplier['contact_number'] = request.form['contact_number']
+        supplier['email'] = request.form['email']
+        supplier['address'] = request.form['address']
+        supplier['products'] = request.form['products']
+        supplier['pricing'] = request.form['pricing']
+    return redirect(url_for('admin_supplier'))
+
+@app.route('/supplier/<int:supplier_id>/delete', methods=['POST'])
+def delete_supplier(supplier_id):
+    global suppliers
+    suppliers = [s for s in suppliers if s['id'] != supplier_id]
+    return redirect(url_for('admin_supplier'))
+
+@app.route('/supplier/<int:supplier_id>', methods=['GET'])
+def get_supplier(supplier_id):
+    supplier = next((s for s in suppliers if s['id'] == supplier_id), None)
+    return jsonify(supplier)
 
 @app.route('/admin_requisition_portal')
 def admin_requisition():
@@ -90,7 +136,7 @@ def logout():
     session.clear()
     flash('you have been logged out successfully')
     # Handle the logout process
-    return redirect(url_for('login.html'))  # Redirect to the login page
+    return redirect(url_for('login'))  # Redirect to the login page
 
 if __name__ == '__main__':
     app.run(debug=True)

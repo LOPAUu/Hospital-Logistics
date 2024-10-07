@@ -92,7 +92,7 @@ body {
 }
 
 .card p {
-    margin: 5px 0;
+    margin: 100px 0;
 }
 
 /* Modal styles */
@@ -149,13 +149,30 @@ body {
     margin-top: 20px;
 }
 
+.role {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 14px;
+    margin: 5px 0;
+    text-align: center;
+}
+
+.role-nurse {
+    background-color: #e7f3ff;
+    color: #007bff;
+    border: 2px solid #007bff;
+
+}
+
 .card {
     background-color: white;
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    padding: 20px;
-    width: 30%; /* 3 cards per row */
+    padding: 9px;
+    width: 47%; /* 3 cards per row */
     cursor: pointer; /* Change cursor to indicate clickability */
     position: relative; /* Added for positioning of buttons */
 }
