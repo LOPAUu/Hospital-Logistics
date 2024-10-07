@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics</title>
+    <title>{% block title %}Logistics{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap" rel="stylesheet">
+    
+    {% block head %}{% endblock %}
 </head>
 <body>
-    <div class="dim-overlay"></div>
     <header class="header">
         <div class="menu-logo">
             <img class="syncore-logo" src="{{ url_for('static', filename='images/syncore-main.png') }}" alt="Company Logo">
@@ -34,23 +35,13 @@
             </div>
         </div>
     </header>
+    
+    <div class="dim-overlay"></div>
+    
+    <!-- Main content block -->
+    {% block body %}
+    {% endblock %}
 
-    <!-- New Top Bar -->
-    <div class="top-bar">
-        <div class="top-nav">
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('supplier') }}">Supplier</a>
-            <a href="{{ url_for('requisition_admin') }}">Requisition</a>
-        </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <div class="content">
-            <!-- Your dynamic content goes here -->
-        </div>
-    </div>
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-
 </body>
 </html>

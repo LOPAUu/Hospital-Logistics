@@ -1,29 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Requisition List</title>
+{% extends 'base.html' %}
+
+{% block title %}Logistics Dashboard{% endblock %}
+
+{% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition_admin.css') }}">
-</head>
-<body>
-    <div class="dim-overlay"></div>
-    <header class="header">
-        <div class="menu-logo">
-            <div class="menu-icon">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <img class="syncore-logo" src="github/images/syncore-main.png" alt="Company Logo">
+{% endblock %}
+
+{% block body %}
+    <!-- New Top Bar -->
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_supplier') }}">Supplier</a>
+            <a href="{{ url_for('admin_requisition') }}">Requisition</a>
         </div>
-        <div class="user-profile">
-            <div class="user-info">
-                <p>{{ username }}</p>
-                <span>{{ role }}</span>
-            </div>            
-        </div>
-    </header>
+    </div>
 
     <div class="container">
         <h1>Requisition List</h1>
@@ -167,5 +158,11 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/requisition_admin.js') }}"></script>
-</body>
-</html>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="content">
+            <!-- Your dynamic content goes here -->
+        </div>
+    </div>
+{% endblock %}

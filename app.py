@@ -68,30 +68,29 @@ def admin_dashboard():
     # Render the Admin dashboard HTML template
     return render_template('admin_dashboard.html')
 
-@app.route('/requisition_admin_portal')
-def requisition_admin():
-    return render_template('requisition_admin.html')
- 
-@app.route('/base_portal')
-def base():
-    # Pass values for username and role
-    username = "John Doe"
-    role = "Administrator"
-    return render_template('base.html')
+@app.route('/admin_supplier')
+def admin_supplier():
+    return render_template('admin_supplier.html')
+
+@app.route('/admin_requisition_portal')
+def admin_requisition():
+    return render_template('admin_requisition.html')
 
 # Routes for other pages
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
 
-@app.route('/supplier')
-def supplier():
-    return render_template('supplier.html')
+@app.route('/signatory_view')
+def signatory_view():
+    return render_template('signatory_view.html')
 
 @app.route('/logout')
 def logout():
+    session.clear()
+    flash('you have been logged out successfully')
     # Handle the logout process
-    return "Logout successful"
+    return redirect(url_for('login.html'))  # Redirect to the login page
 
 if __name__ == '__main__':
     app.run(debug=True)

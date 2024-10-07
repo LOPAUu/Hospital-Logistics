@@ -1,23 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Signatory Requisition Portal</title>
-    <link rel="stylesheet" href="newsignatory.css">
-</head>
-<body>
-    <header class="header">
-        <div class="menu-logo">
-            <img class="company-logo" src="{{ url_for('static', filename='images/syncore') }}" alt="Company Logo">
-        </div>
-        <div class="user-profile">
-            <div class="user-info">
-                <p id="signatoryName"></p>
-                <span>Signatory</span>
-            </div>            
-        </div>
-    </header>
+{% extends 'base.html' %}
 
+{% block title %}Logistics Dashboard{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/signatory_view.css') }}"> <!-- Additional head content like extra CSS or scripts can go here -->
+{% endblock %}
+
+{% block body %}
+
+    <!-- New Top Bar -->
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('signatory_view') }}">Signatory</a>
+        </div>
+    </div>
     <div class="container">
         <h1>Requisitions Pending Approval</h1>
 
@@ -57,6 +53,14 @@
         </div>
     </div>
 
-    <script src="newsignatory.js"></script>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="content">
+            <!-- Your dynamic content goes here -->
+        </div>
+    </div>
+
+    <script src="signatory_view.js"></script>
 </body>
 </html>
+{% endblock %}

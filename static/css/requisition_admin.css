@@ -37,6 +37,27 @@ body {
     padding-left: 8px; /* sa logo */
 }
 
+
+.sidebar-menu-icon {
+    margin-bottom: 15px;
+}
+
+/* Bars inside the Hamburger Menu */
+.header .menu-icon .bar,
+.sidebar-menu-icon .bar {
+    width: 100%;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    transition: all 0.5s ease;
+}
+
+/* Optional Hover Effect for the Menu Icon */
+.header .menu-icon:hover .bar,
+.sidebar-menu-icon:hover .bar {
+    background-color: gold;
+}
+
 /* Dashboard title styling */
 .header .menu-logo h1 {
     font-size: 24px;
