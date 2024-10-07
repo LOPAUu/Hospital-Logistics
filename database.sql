@@ -10,10 +10,12 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (username, password_hash, user_type)
-VALUES ('CEO', 'CEO', '1');
+VALUES ('signatory', 'signatory', '1');
 
 INSERT INTO users (username, password_hash, user_type)
 VALUES ('pharmacy', 'pharmacy', '2');
 
 INSERT INTO users (username, password_hash, user_type)
 VALUES ('admin', 'admin', '3');
+
+DESCRIBE users;

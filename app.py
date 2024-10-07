@@ -11,10 +11,12 @@ app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
 load_dotenv()
 # MySQL configurations
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'localhost')  # Default to 'localhost' if env var not set
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'paulo')
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', 'C4bb@g3$2024!')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'syncore_db')
+# MySQL configurations
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'paulo'  # Change to your MySQL username
+app.config['MYSQL_PASSWORD'] = 'C4bb@g3$2024!'  # Change to your MySQL password
+app.config['MYSQL_DB'] = 'syncore_db'  # Database name
+
 
 mysql = MySQL(app)
 
@@ -39,7 +41,7 @@ def login():
 
             # Redirect user based on user type
             if user['user_type'] == 'CEO':
-                return redirect(url_for('ceo_dashboard'))
+                return redirect(url_for('signatory_dashboard'))
             elif user['user_type'] == 'Pharmacy':
                 return redirect(url_for('pharmacy_dashboard'))
             elif user['user_type'] == 'Admin':
@@ -51,10 +53,10 @@ def login():
     return render_template('login.html')  # Return login page for 'GET' request
 
 # Routes for each user type dashboard
-@app.route('/ceo_dashboard')
-def ceo_dashboard():
-    # Render the CEO dashboard HTML template
-    return render_template('ceo_dashboard.html')
+@app.route('/signatory_dashboard')
+def signatory_dashboard():
+    # Render the Signatory dashboard HTML template
+    return render_template('signatory_dashboard.html')
 
 @app.route('/pharmacy_dashboard')
 def pharmacy_dashboard():
