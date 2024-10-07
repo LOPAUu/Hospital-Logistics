@@ -10,11 +10,10 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (username, password_hash, user_type)
-VALUES ('CEO', '7a9fec60195477c930a09035192fb1a805a371e9', '1');
+VALUES ('CEO', 'CEO', '1');
 
 INSERT INTO users (username, password_hash, user_type)
-VALUES ('pharmacy', 'adfa59cc50d2bd2ce3af0061ed4925fdc37019ba', '2');
+VALUES ('pharmacy', 'pharmacy', '2');
 
 INSERT INTO users (username, password_hash, user_type)
-VALUES ('admin', 'd033e22ae348aeb5660fc2140aec35850c4da997', '3');
-
+VALUES ('admin', 'admin', '3');
