@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,6 +13,7 @@ app.config['MYSQL_DB'] = 'syncore_db'  # Database name
 
 mysql = MySQL(app)
 
+# Login route
 @app.route('/login_portal', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -22,7 +22,7 @@ def login():
 
         # Connect to the database and validate user
         cur = mysql.connection.cursor()
-        cur.execute("SELECT password_hash, user_type FROM users WHERE username = %s", (username,))
+        cur.execute("SELECT user_type, password_hash FROM users WHERE username = %s", (username,))
         user = cur.fetchone()
         cur.close()
 
@@ -42,19 +42,21 @@ def login():
 
     return render_template('login.html')
 
-# Routes for each user type
+# Routes for each user type dashboard
 @app.route('/ceo_dashboard')
 def ceo_dashboard():
-    return 'requisition.html'
+    # Render the CEO dashboard HTML template
+    return render_template('ceo_dashboard.html')
 
 @app.route('/pharmacy_dashboard')
 def pharmacy_dashboard():
-    return 'Pharmacy Dashboard'
+    # Render the Pharmacy dashboard HTML template
+    return render_template('pharmacy_dashboard.html')
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    return 'Admin Dashboard'
-=======
+    # Render the Admin dashboard HTML template
+    return render_template('admin_dashboard.html')
 
 @app.route('/requisition_admin_portal')
 def requisition_admin():
@@ -80,7 +82,6 @@ def supplier():
 def logout():
     # Handle the logout process
     return "Logout successful"
->>>>>>> MaverickKo-patch-3
 
 if __name__ == '__main__':
     app.run(debug=True)
