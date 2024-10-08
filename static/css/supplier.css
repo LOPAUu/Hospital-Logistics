@@ -1,189 +1,91 @@
+/* Supplier.css */
+
+/* General Styles */
 body {
-    font-family: 'Lato', Arial, sans-serif; 
-    background-color: #E5E9F0;
-    display: block;
+    font-family: Arial, sans-serif;
     margin: 0;
-    color: #003366;
+    padding: 0;
 }
 
-/* Header Styling */
 .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
+    background-color: #012d74;
+    color: white;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background-color: #003366;
-    color: #ffffff;
-    padding: 10px 20px;
-    box-sizing: border-box;
-    height: 80px;
-    z-index: 1001; 
+    padding: 1rem;
 }
 
-/* Menu logo and title styling */
-.header .menu-logo {
+.menu-logo {
     display: flex;
     align-items: center;
-    position: relative;
-    z-index: 1000;
 }
 
-.header .menu-logo img {
-    max-width: 190px; 
-    height: auto; 
-    padding-left: 8px; /* sa logo */
+.syncore-logo {
+    height: 50px;
+    margin-left: 10px;
 }
 
-/* Dashboard title styling */
-.header .menu-logo h1 {
-    font-size: 24px;
-    margin: 0;
-    line-height: 1.2;
-}
-
-/* User profile styling */
-.header .user-profile {
+.user-profile {
     display: flex;
     align-items: center;
-    gap: 10px;
-    text-align: right;
 }
 
-/* Username and Role container */
-.header .user-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+.user-info {
+    margin-right: 15px;
 }
 
-/* Username styling */
-.header .user-profile p {
-    margin: 0;
-    font-weight: 500;
-}
-
-/* Role styling */
-.header .user-profile span {
-    font-size: 14px;
-    color: #CCCCCC;
-}
-
-/* User Icon styling */
-.header .user-dropdown img {
-    height: 40px;
-    width: 40px;
-    border-radius: 50%;
-}
-
-/* Top Bar Styles */
-.top-bar {
-    background-color: #ffffff; 
-    color: #003366; 
-    padding: 3px 30px;
-    position: fixed;
-    top: 80px; 
-    left: 0;
-    width: 100%;
-    height: auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 1001; 
-}
-
-/* Top Navigation Styles */
-.top-nav {
-    display: flex;
-    gap: 10px;
-    z-index: 1002; 
-    align-items: center; 
-}
-
-/* Navigation Links Styling */
-.top-nav a, .dropbtn {
-    color: #003366; 
-    text-decoration: none;
-    padding: 10px;
-    font-weight: normal;
-    font-size: 0.825rem;
-    border-radius: 6px;
-    background-color: #ffffff; 
-    font-family: 'Lato', Arial, sans-serif;
-    transition: background-color 0.3s, color 0.3s; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    border: none;
-}
-
-/* Hover effects */
-.top-nav a:hover, .dropbtn:hover {
-    background-color: #f3c300; 
-    color: #003366; 
-}
 .container {
-    max-width: 1000px;
-    margin-top: 140px;
-    margin-left: 370px;
-    background: white;
-    padding: 80px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 400px;
+    padding-top: 10px;
 }
 
+h1 {
+    margin-bottom: 20px;
+}
+
+/* Table Styles */
 table {
     width: 100%;
-    border-collapse: collapse; /* Keep this to manage horizontal borders */
-}
-
-table, th, td {
-    border: none; /* Remove all borders */
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
 th, td {
-    padding: 8px;
+    padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #ddd; /* Add bottom borders for rows */
+    border-bottom: 1px solid #ddd;
 }
 
 th {
     background-color: #f2f2f2;
 }
 
-.form-group {
-    margin-bottom: 20px;
-}
-
-#requisition-list tbody tr:hover {
-    background-color: #f0f0f0; /* Change this color to your desired darker shade */
-}
-
+/* Button Styles */
 button {
-    padding: 10px 20px;
-    background-color: #0056b3;
+    background-color: #012d74;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 10px 15px;
     cursor: pointer;
-    margin-top: 20px;
+    border-radius: 5px;
+    margin-top: 10px;
 }
 
 button:hover {
-    background-color: #002244;
+    background-color: #0056b3;
 }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 13px;
-    border: 1px solid #888;
-    width: 40%; /* Adjusted width to make the modal smaller */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 0 15px rgba(0,0,0,0.3); /* Shadow for depth */
+/* Remove Button Styles */
+button.remove {
+    background-color: red; /* Red background for Remove button */
+    color: white; /* Text color for contrast */
 }
 
+button.remove:hover {
+    background-color: darkred; /* Darker red on hover for effect */
+}
+
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -193,7 +95,18 @@ button:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4); /* Dark transparent background */
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 450px;
+    border-radius: 5px;
 }
 
 .close-button {
@@ -205,140 +118,86 @@ button:hover {
 
 .close-button:hover,
 .close-button:focus {
-    color: black;
+    color: #012d74;
     text-decoration: none;
     cursor: pointer;
-}
-
-
-.header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #003366;
-    color: #ffffff;
-    padding: 10px 20px;
-    box-sizing: border-box;
-    height: 80px;
-    z-index: 1001;
-}
-
-.header .menu-logo img {
-    max-width: 190px;
-    height: auto;
-    padding-left: 25px;
-}
-
-/* Specific styles for the form within the modal */
-.modal-content .form-group {
-    margin-bottom: 15px; /* Adjusted margin */
-}
-
-.modal-content input[type="text"],
-.modal-content textarea,
-.modal-content input[type="file"] {
-    width: calc(100% - 22px); /* Ensures proper padding and width */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Include padding in width calculation */
-}
-
-.modal-content button[type="submit"] {
-    width: 17%; /* -width submit button */
-    padding: 12px;
-    background-color: #28a745; /* Green for submission */
-}
-
-.modal-content button[type="submit"]:hover {
-    background-color: #218838; /* Darker green on hover */
-}
-.status-approved {
-    color: green;
-}
-
-.status-rejected {
-    color: red;
-}
-
-.status-pending {
-    color: orange;
-}
-
-.modal-content fieldset {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-top: 20px;
-}
-
-.modal-content legend {
-    padding: 0 10px;
-    font-weight: bold;
-    color: #333;
 }
 
 .form-group {
     margin-bottom: 15px;
 }
 
-.input-text, .modal-content textarea {
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Set a max-width for input fields */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+select {
     width: 100%;
-    padding: 8px;
+    max-width: 400px; /* Set maximum width */
+    padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 5px;
+}
+
+textarea {
+    width: 100%;
+    max-width: 400px; /* Set maximum width */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none; /* Disable resizing */
+}
+
+/* Adjust for better appearance */
+.form-action {
+    display: flex;
+    justify-content: flex-start; /* Align to the left */
 }
 
 .btn-submit {
-    background-color: #4CAF50; /* Green background for submission */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
+    background-color: #28a745;
 }
 
 .btn-submit:hover {
-    background-color: #45a049; /* Darker green on hover */
+    background-color: #218838;
 }
 
-.form-action {
-    margin-top: 20px;
+/* Top Bar Styles */
+.top-bar {
+    background-color: #f8f9fa;
+    padding: 10px;
 }
-#date {
-    width: 50%; /* Adjusting width to 50% of its container */
-    display: inline-block; /* Allows additional elements to line up on the same line if needed */
+
+.top-nav a {
+    margin-right: 20px;
+    text-decoration: none;
+    color: #012d74;
 }
-.item-total {
-    width:60px; /* You can adjust this value to make it smaller or larger */
-    padding: 6px;
-    text-align: right; /* Align text to the right */
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #f9f9f9;
+
+.top-nav a:hover {
+    text-decoration: underline;
 }
+
+/* Search Bar Styles */
 #search-bar {
-    width: 50%;
+    width: 100%;
     padding: 10px;
     margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
+
 .search-filters {
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
     margin-bottom: 20px;
 }
 
-.search-filters input,
-.search-filters select {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 200px;
+.search-filters input {
+    width: 30%;
 }
-

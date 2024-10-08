@@ -59,61 +59,45 @@
                 </tr>
             </thead>
             <tbody>
-                <tr data-id="001">
-                    <td>ABC Pharmaceuticals</td>
-                    <td>Dora de Explorer</td>
-                    <td>doreexplorer@abcpharma.com</td>
-                    <td>(02) 1234-5678</td>
-                    <td>123 Pharma St, Quezon City</td>
-                    <td><button onclick="editSupplier('001')">Edit</button></td>
-                </tr>
-                <tr data-id="002">
-                    <td>Mercury Drugs</td>
-                    <td>Boots Smith</td>
-                    <td>bootsmith@mercurydrugs.com</td>
-                    <td>(02) 8765-4321</td>
-                    <td>456 Drug St, Quezon City</td>
-                    <td><button onclick="editSupplier('002')">Edit</button></td>
-                </tr>
+                <!-- Rows will be dynamically generated here -->
             </tbody>
         </table>
 
         <button id="add-button" onclick="openAddSupplierModal()">Add Supplier</button>
     </div>
 
- <!-- Modal for adding suppliers -->
-<div id="add-supplier-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeAddSupplierModal()">&times;</span>
-        <h2>Add Supplier</h2>
-        <form id="supplier-form">
-            <div class="form-group">
-                <label for="company-name">Company Name:</label>
-                <input type="text" id="company-name" name="company-name" required>
-            </div>
-            <div class="form-group">
-                <label for="contact-person">Contact Person:</label>
-                <input type="text" id="contact-person" name="contact-person" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="phone">Phone:</label>
-                <input type="tel" id="phone" name="phone" required>
-            </div>
-            <div class="form-group">
-                <label for="address">Address:</label>
-                <textarea id="address" name="address" required></textarea>
-            </div>
-            <div class="form-action">
-                <button type="submit" class="btn-submit">Add Supplier</button>
-            </div>
-        </form>
+    <!-- Modal for adding suppliers -->
+    <div id="add-supplier-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddSupplierModal()">&times;</span>
+            <h2>Add Supplier</h2>
+            <form id="supplier-form" onsubmit="addSupplier(event)">
+                <div class="form-group">
+                    <label for="company-name">Company Name:</label>
+                    <input type="text" id="company-name" name="company-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-person">Contact Person:</label>
+                    <input type="text" id="contact-person" name="contact-person" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address:</label>
+                    <textarea id="address" name="address" required></textarea>
+                </div>
+                <div class="form-action">
+                    <button type="submit" class="btn-submit">Add Supplier</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
 
     <!-- Modal for editing supplier details -->
     <div id="edit-supplier-modal" class="modal">
