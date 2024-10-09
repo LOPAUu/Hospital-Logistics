@@ -133,10 +133,11 @@ def signatory_view():
 
 @app.route('/logout')
 def logout():
+    # Clear the user's session (or any stored login data)
     session.clear()
-    flash('you have been logged out successfully')
-    # Handle the logout process
-    return redirect(url_for('login'))  # Redirect to the login page
+    
+    # Redirect to the login page or homepage
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

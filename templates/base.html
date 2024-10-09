@@ -18,10 +18,11 @@
             <div class="user-info">
                 <p>{{ username }}</p>
                 <span>{{ role }}</span>
-            </div>            
+            </div>
             <div class="user-dropdown">
-                <img src="{{ url_for('static', filename='images/User_icon.png') }}" alt="User Icon">
-                <div class="triangle"></div>
+                <!-- Combined the image and triangle into one action -->
+                <img src="{{ url_for('static', filename='images/User_icon.png') }}" alt="User Icon" onclick="toggleDropdown()">
+                <div class="triangle" onclick="toggleDropdown()"></div> <!-- Add action to the triangle -->
                 <div class="dropdown-content">
                     <a href="#">
                         Profile
@@ -42,6 +43,7 @@
     {% block body %}
     {% endblock %}
 
+    <!-- Ensure the base JavaScript is loaded -->
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 </body>
 </html>

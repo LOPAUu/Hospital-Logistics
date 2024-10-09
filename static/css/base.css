@@ -35,9 +35,8 @@ body {
 .header .menu-logo img {
     max-width: 190px; 
     height: auto; 
-    padding-left: 8px; /* sa logo */
+    padding-left: 8px; /* Logo spacing */
 }
-
 
 .sidebar-menu-icon {
     margin-bottom: 15px;
@@ -149,7 +148,6 @@ body {
     background-color: #E5E9F0;
 }
 
-
 /* Active dropdown (when triangle is clicked) */
 .header .user-dropdown.active .dropdown-content {
     display: block;
@@ -209,12 +207,7 @@ body {
     background-color: #f3c300; 
     color: #003366; 
 }
-/* 
-.dropbtn {
-    margin-top: 2.15px;
-} */
 
-/* Dropdown Styles */
 /* Dropdown Styles */
 .dropdown {
     position: relative;
@@ -304,7 +297,6 @@ body {
     background-color: #f3c300;
     color: #003366; 
 }
-
 
 /* Main Content Area */
 .main-content {

@@ -1,30 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supplier List</title>
-    <link rel="stylesheet" href="supplier.css">
-</head>
-<body>
-    <div class="dim-overlay"></div>
-    <header class="header">
-        <div class="menu-logo">
-            <div class="menu-icon">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <img class="syncore-logo" src="github/images/syncore-main.png" alt="Company Logo">
-        </div>
-        <div class="user-profile">
-            <div class="user-info">
-                <p>{{ username }}</p>
-                <span>{{ role }}</span>
-            </div>            
-        </div>
-    </header>
+{% extends 'base.html' %}
 
+{% block title %}Logistics Dashboard{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/supplier.css') }}"> 
+    <!-- Additional head content like extra CSS or scripts can go here -->
+{% endblock %}
+
+{% block body %}
     <!-- New Top Bar -->
     <div class="top-bar">
         <div class="top-nav">
@@ -104,7 +87,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeEditSupplierModal()">&times;</span>
             <h2>Edit Supplier</h2>
-            <form id="edit-supplier-form">
+            <form id="edit-supplier-form" onsubmit="editSupplier(event)">
                 <div class="form-group">
                     <label for="edit-company-name">Company Name:</label>
                     <input type="text" id="edit-company-name" name="edit-company-name" required>
@@ -119,7 +102,7 @@
                 </div>
                 <div class="form-group">
                     <label for="edit-phone">Phone:</label>
-                    <input type="text" id="edit-phone" name="edit-phone" required>
+                    <input type="tel" id="edit-phone" name="edit-phone" required>
                 </div>
                 <div class="form-group">
                     <label for="edit-address">Address:</label>
@@ -132,6 +115,5 @@
         </div>
     </div>
 
-    <script src="supplier.js"></script>
-</body>
-</html>
+    <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
+{% endblock %}
