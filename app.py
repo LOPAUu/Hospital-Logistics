@@ -12,6 +12,8 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
+mysql = MySQL(app)
+
 @app.route('/')
 def index():
     return redirect(url_for('login'))
