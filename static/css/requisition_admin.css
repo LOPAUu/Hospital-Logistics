@@ -91,7 +91,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 1001; 
 }
 
 /* Top Navigation Styles */
@@ -126,7 +125,7 @@ body {
 }
 .container {
     max-width: 800px;
-    margin: 160px auto;
+    margin: 200px auto;
     background: white;
     padding: 50px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);

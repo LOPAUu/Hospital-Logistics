@@ -165,22 +165,6 @@ textarea {
     background-color: #218838;
 }
 
-/* Top Bar Styles */
-.top-bar {
-    background-color: #f8f9fa;
-    padding: 10px;
-}
-
-.top-nav a {
-    margin-right: 20px;
-    text-decoration: none;
-    color: #012d74;
-}
-
-.top-nav a:hover {
-    text-decoration: underline;
-}
-
 /* Search Bar Styles */
 #search-bar {
     width: 100%;

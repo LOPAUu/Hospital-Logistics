@@ -4,8 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from MySQLdb.cursors import DictCursor
 
-import os
-
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
@@ -18,6 +16,10 @@ app.config['MYSQL_PASSWORD'] = 'C4bb@g3$2024!'  # Change to your MySQL password
 app.config['MYSQL_DB'] = 'syncore_db'  # Database name
 
 mysql = MySQL(app)
+
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
 
 # Login route
 @app.route('/login_portal', methods=['GET', 'POST'])
