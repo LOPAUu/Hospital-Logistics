@@ -1,6 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from flask_mysqldb import MySQL
-from MySQLdb.cursors import DictCursor
 import mysql.connector
 
 app = Flask(__name__)
@@ -13,8 +11,6 @@ db = mysql.connector.connect(
     database="syncore_db"
 )
 cursor = db.cursor()
-
-mysql = MySQL(app)
 
 @app.route('/')
 def index():
