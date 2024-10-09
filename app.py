@@ -3,17 +3,18 @@ from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from MySQLdb.cursors import DictCursor
+import mysql.connector
 
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
-load_dotenv()
-# MySQL configurations
-# MySQL configurations
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'paulo'  # Change to your MySQL username
-app.config['MYSQL_PASSWORD'] = 'C4bb@g3$2024!'  # Change to your MySQL password
-app.config['MYSQL_DB'] = 'syncore_db'  # Database name
+db = mysql.connector.connect(
+    host="localhost",
+    user="paulo",
+    password="C4bb@g3$2024!",
+    database="syncore_db"
+)
+cursor = db.cursor()
 
 mysql = MySQL(app)
 
