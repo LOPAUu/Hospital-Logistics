@@ -1,25 +1,38 @@
-const suppliers = [
-    {
-        id: "001",
-        companyName: "ABC Pharmaceuticals",
-        contactPerson: "Dora de Explorer",
-        email: "doreexplorer@abcpharma.com",
-        phone: "(02) 1234-5678",
-        address: "123 Pharma St, Quezon City",
-    },
-    {
-        id: "002",
-        companyName: "Mercury Drugs",
-        contactPerson: "Boots Smith",
-        email: "bootsmith@mercurydrugs.com",
-        phone: "(02) 8765-4321",
-        address: "456 Drug St, Quezon City",
-    },
-];
+const suppliers = [];
 
-let currentEditId = null; // Global variable to store the ID of the supplier being edited
+// Fetch suppliers from the backend when the page loads
+async function fetchSuppliers() {
+    const response = await fetch('/suppliers');
+    const data = await response.json();
+    console.log(data); // Log the fetched data to inspect its structure
+    suppliers.length = 0; // Clear the suppliers array
+    data.forEach(supplier => {
+        suppliers.push(supplier);
+    });
+    renderSuppliers();
+}
 
-// Function to open the modal for adding a supplier
+// Render suppliers in the table
+function renderSuppliers() {
+    const supplierList = document.querySelector('#supplier-list tbody');
+    supplierList.innerHTML = ''; // Clear existing rows
+    suppliers.forEach(supplier => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${supplier.company_name}</td>  <!-- Use correct property names -->
+            <td>${supplier.contact_person}</td>  <!-- Use correct property names -->
+            <td>${supplier.email}</td>
+            <td>${supplier.phone}</td>
+            <td>${supplier.address}</td>
+            <td>
+                <button onclick="openEditSupplierModal(${supplier.id})">Edit</button>
+                <button onclick="removeSupplier(${supplier.id})">Delete</button>
+            </td>
+        `;
+        supplierList.appendChild(row);
+    });
+}
+
 function openAddSupplierModal() {
     document.getElementById('add-supplier-modal').style.display = 'block';
 }
@@ -29,160 +42,161 @@ function closeAddSupplierModal() {
     document.getElementById('supplier-form').reset(); // Reset the form
 }
 
-function addSupplier(event) {
+async function addSupplier(event) {
     event.preventDefault(); // Prevent default form submission
 
-    // Get the input values
     const companyName = document.getElementById('company-name').value;
     const contactPerson = document.getElementById('contact-person').value;
     const email = document.getElementById('email').value;
     const phone = document.getElementById('phone').value;
     const address = document.getElementById('address').value;
 
-    // Generate a new ID for the supplier
-    const newId = Date.now().toString(); // Unique ID based on timestamp
+    const newSupplier = {
+        companyName,
+        contactPerson,
+        email,
+        phone,
+        address
+    };
 
-    // Create a new row in the supplier table
-    const tbody = document.querySelector('#supplier-list tbody');
-    const newRow = document.createElement('tr');
-    newRow.setAttribute('data-id', newId); // Set the data-id attribute
-    newRow.innerHTML = `
-    <td>${companyName}</td>
-    <td>${contactPerson}</td>
-    <td>${email}</td>
-    <td>${phone}</td>
-    <td>${address}</td>
-    <td>
-        <button onclick="editSupplier('${newId}')">Edit</button>
-        <button class="remove" onclick="removeSupplier('${newId}')">Remove</button>
-    </td>
-`;
+    const response = await fetch('/suppliers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newSupplier)
+    });
 
-    tbody.appendChild(newRow);
-
-    closeAddSupplierModal(); // Close the modal
-}
-
-function editSupplier(id) {
-    // Store the current edit ID
-    currentEditId = id;
-
-    // Fetch the row with the matching ID
-    const row = document.querySelector(`tr[data-id="${id}"]`);
-    if (row) {
-        // Extract supplier details from the table row
-        const companyName = row.cells[0].textContent;
-        const contactPerson = row.cells[1].textContent;
-        const email = row.cells[2].textContent;
-        const phone = row.cells[3].textContent;
-        const address = row.cells[4].textContent;
-
-        // Populate the edit form
-        document.getElementById('edit-company-name').value = companyName;
-        document.getElementById('edit-contact-person').value = contactPerson;
-        document.getElementById('edit-email').value = email;
-        document.getElementById('edit-phone').value = phone;
-        document.getElementById('edit-address').value = address;
-
-        // Show the edit modal
-        document.getElementById('edit-supplier-modal').style.display = 'block';
+    if (response.ok) {
+        closeAddSupplierModal(); // Close the modal
+        showSuccessMessage("Successfully added!"); // Show success message
+        fetchSuppliers(); // Re-fetch suppliers
     }
 }
 
+function showSuccessMessage(message) {
+    const successMessageElement = document.getElementById('success-message');
+    successMessageElement.textContent = message; // Set the message text
+    successMessageElement.style.display = 'block'; // Show the message
+
+    // Hide the message after 3 seconds
+    setTimeout(() => {
+        successMessageElement.style.display = 'none';
+    }, 3000);
+}
+
+// Open the edit supplier modal and populate the form with the supplier's data
+function openEditSupplierModal(id) {
+    const supplier = suppliers.find(s => s.id === id);
+    document.getElementById('edit-company-name').value = supplier.company_name;
+    document.getElementById('edit-contact-person').value = supplier.contact_person;
+    document.getElementById('edit-email').value = supplier.email;
+    document.getElementById('edit-phone').value = supplier.phone;
+    document.getElementById('edit-address').value = supplier.address;
+
+    // Store the supplier ID for updates
+    document.getElementById('edit-supplier-form').setAttribute('data-supplier-id', id);
+    document.getElementById('edit-supplier-modal').style.display = 'block';
+}
+
+// Close the edit supplier modal
 function closeEditSupplierModal() {
     document.getElementById('edit-supplier-modal').style.display = 'none';
 }
 
-// Add an event listener for the edit supplier form submission
-document.getElementById('edit-supplier-form').onsubmit = function(event) {
+// Update supplier function
+async function updateSupplier(event) {
     event.preventDefault(); // Prevent default form submission
+    const id = document.getElementById('edit-supplier-form').getAttribute('data-supplier-id');
 
-    // Get the updated values from the form
-    const updatedCompanyName = document.getElementById('edit-company-name').value;
-    const updatedContactPerson = document.getElementById('edit-contact-person').value;
-    const updatedEmail = document.getElementById('edit-email').value;
-    const updatedPhone = document.getElementById('edit-phone').value;
-    const updatedAddress = document.getElementById('edit-address').value;
+    const updatedSupplier = {
+        companyName: document.getElementById('edit-company-name').value,
+        contactPerson: document.getElementById('edit-contact-person').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        address: document.getElementById('edit-address').value
+    };
 
-    // Update the corresponding row in the supplier table
-    const row = document.querySelector(`tr[data-id="${currentEditId}"]`);
-    if (row) {
-        row.cells[0].textContent = updatedCompanyName;
-        row.cells[1].textContent = updatedContactPerson;
-        row.cells[2].textContent = updatedEmail;
-        row.cells[3].textContent = updatedPhone;
-        row.cells[4].textContent = updatedAddress;
-    }
-
-    closeEditSupplierModal(); // Close the modal
-};
-
-// Functionality for filtering suppliers
-function filterSuppliers() {
-    const filterName = document.getElementById('filter-name').value.toLowerCase();
-    const filterContact = document.getElementById('filter-contact').value.toLowerCase();
-    const filterEmail = document.getElementById('filter-email').value.toLowerCase();
-    const rows = document.querySelectorAll('#supplier-list tbody tr');
-
-    rows.forEach(row => {
-        const companyName = row.cells[0].textContent.toLowerCase();
-        const contactPerson = row.cells[1].textContent.toLowerCase();
-        const email = row.cells[2].textContent.toLowerCase();
-        row.style.display = (companyName.includes(filterName) &&
-                             contactPerson.includes(filterContact) &&
-                             email.includes(filterEmail)) ? '' : 'none';
+    const response = await fetch(`/supplier/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedSupplier)
     });
+
+    if (response.ok) {
+        closeEditSupplierModal(); // Close the modal
+        showSuccessMessage("Successfully updated!"); // Show success message
+        fetchSuppliers(); // Re-fetch suppliers to refresh the list
+    } else {
+        showError('Failed to update supplier');
+    }
 }
 
-// Functionality for searching suppliers in the search bar
+function showError(message) {
+    // Display the error message to the user
+    alert(message);
+}
+
+function showSuccessMessage(message) {
+    // Display a success message to the user
+    alert(message);
+}
+
+async function removeSupplier(id) {
+    try {
+        const response = await fetch(`/supplier/${id}`, { // Use the correct endpoint
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            showSuccessMessage("Successfully deleted!"); // Show success message
+            fetchSuppliers(); // Re-fetch suppliers after deletion
+        } else if (response.status === 404) {
+            showErrorMessage("Supplier not found!"); // Show error message for not found
+        } else {
+            showErrorMessage("Failed to delete supplier!"); // Show error message for other errors
+        }
+    } catch (error) {
+        console.error("Error deleting supplier:", error);
+        showErrorMessage("An error occurred while trying to delete the supplier.");
+    }
+}
+
+// Search suppliers based on input
 function searchSuppliers() {
     const searchInput = document.getElementById('search-bar').value.toLowerCase();
-    const rows = document.querySelectorAll('#supplier-list tbody tr');
-
-    rows.forEach(row => {
-        const cells = row.getElementsByTagName('td');
-        let rowContainsSearchTerm = false;
-        for (let cell of cells) {
-            if (cell.textContent.toLowerCase().includes(searchInput)) {
-                rowContainsSearchTerm = true;
-                break;
-            }
-        }
-        row.style.display = rowContainsSearchTerm ? '' : 'none';
+    const filteredSuppliers = suppliers.filter(supplier => {
+        return (
+            supplier.companyName.toLowerCase().includes(searchInput) ||
+            supplier.contactPerson.toLowerCase().includes(searchInput) ||
+            supplier.email.toLowerCase().includes(searchInput)
+        );
     });
+    renderFilteredSuppliers(filteredSuppliers);
 }
 
-// Initial rendering of suppliers
-function renderSuppliers() {
-    const tbody = document.querySelector('#supplier-list tbody');
-    suppliers.forEach(supplier => {
+// Render filtered suppliers in the table
+function renderFilteredSuppliers(filteredSuppliers) {
+    const supplierList = document.querySelector('#supplier-list tbody');
+    supplierList.innerHTML = ''; // Clear existing rows
+    filteredSuppliers.forEach(supplier => {
         const row = document.createElement('tr');
-        row.setAttribute('data-id', supplier.id);
         row.innerHTML = `
-        <td>${supplier.companyName}</td>
-        <td>${supplier.contactPerson}</td>
-        <td>${supplier.email}</td>
-        <td>${supplier.phone}</td>
-        <td>${supplier.address}</td>
-        <td>
-            <button onclick="editSupplier('${supplier.id}')">Edit</button>
-            <button class="remove" onclick="removeSupplier('${supplier.id}')">Remove</button>
-        </td>
-    `;
-    
-        tbody.appendChild(row);
+            <td>${supplier.company_name}</td>  <!-- Use correct property names -->
+            <td>${supplier.contact_person}</td>  <!-- Use correct property names -->
+            <td>${supplier.email}</td>
+            <td>${supplier.phone}</td>
+            <td>${supplier.address}</td>
+            <td>
+                <button onclick="openEditSupplierModal(${supplier.id})">Edit</button>
+                <button onclick="removeSupplier(${supplier.id})">Delete</button>
+            </td>
+        `;
+        supplierList.appendChild(row);
     });
 }
 
-// Remove supplier function
-function removeSupplier(id) {
-    // Find the row with the specified supplier ID
-    const row = document.querySelector(`tr[data-id="${id}"]`);
-    if (row) {
-        // Remove the row from the table
-        row.remove();
-    }
-}
-
-// Call renderSuppliers on page load
-document.addEventListener('DOMContentLoaded', renderSuppliers);
+// Call fetchSuppliers on page load
+document.addEventListener('DOMContentLoaded', fetchSuppliers);

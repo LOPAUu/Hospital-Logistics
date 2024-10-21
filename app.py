@@ -1,14 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mysqldb import MySQL
-from werkzeug.security import generate_password_hash, check_password_hash
-from dotenv import load_dotenv
 from MySQLdb.cursors import DictCursor
 
 app = Flask(__name__)
+
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
-load_dotenv()
-# MySQL configurations
+# MySQL configurationspython app.py
 # MySQL configurations
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'paulo'  # Change to your MySQL username
@@ -30,18 +28,18 @@ def login():
 
         # Connect to the database and validate user
         cur = mysql.connection.cursor(DictCursor)  # Use DictCursor for easier row access
-        cur.execute("SELECT user_type, password_hash FROM users WHERE username = %s", (username,))
+        cur.execute("SELECT user_type, password FROM users WHERE username = %s", (username,))
         user = cur.fetchone()
         cur.close()
 
         # Check if user exists and password matches
-        if user and user['password_hash'] == password:  # Compare stored password with entered password
+        if user and user['password'] == password:  # Compare stored password with entered password
             session['username'] = username
             session['user_type'] = user['user_type']  # Save user type in session
             flash(f"Welcome, {username} ({user['user_type']})")
 
             # Redirect user based on user type
-            if user['user_type'] == 'CEO':
+            if user['user_type'] == 'Signatory':
                 return redirect(url_for('signatory_dashboard'))
             elif user['user_type'] == 'Pharmacy':
                 return redirect(url_for('pharmacy_dashboard'))
@@ -77,47 +75,75 @@ suppliers = [
 
 @app.route('/admin_supplier')
 def admin_supplier():
+    cur = mysql.connection.cursor(DictCursor)
+    cur.execute("SELECT * FROM supplier")
+    suppliers = cur.fetchall()
+    cur.close()
     return render_template('admin_supplier.html', suppliers=suppliers)
 
-@app.route('/supplier/add', methods=['POST'])
-def add_supplier():
-    new_supplier = {
-        'id': len(suppliers) + 1,
-        'name': request.form['name'],
-        'type': request.form['type'],
-        'contact_person': request.form['contact_person'],
-        'contact_number': request.form['contact_number'],
-        'email': request.form['email'],
-        'address': request.form['address'],
-        'products': request.form['products'],
-        'pricing': request.form['pricing']
-    }
-    suppliers.append(new_supplier)
-    return redirect(url_for('admin_supplier'))
+@app.route('/suppliers', methods=['GET', 'POST'])
+def suppliers():
+    if request.method == 'POST':
+        # Get supplier data from the request
+        data = request.get_json()
+        company_name = data.get('companyName')
+        contact_person = data.get('contactPerson')
+        email = data.get('email')
+        phone = data.get('phone')
+        address = data.get('address')
 
-@app.route('/supplier/<int:supplier_id>/update', methods=['POST'])
-def update_supplier(supplier_id):
-    supplier = next((s for s in suppliers if s['id'] == supplier_id), None)
-    if supplier:
-        supplier['name'] = request.form['name']
-        supplier['type'] = request.form['type']
-        supplier['contact_person'] = request.form['contact_person']
-        supplier['contact_number'] = request.form['contact_number']
-        supplier['email'] = request.form['email']
-        supplier['address'] = request.form['address']
-        supplier['products'] = request.form['products']
-        supplier['pricing'] = request.form['pricing']
-    return redirect(url_for('admin_supplier'))
+        # Insert supplier into the database
+        cur = mysql.connection.cursor()
+        cur.execute(
+            "INSERT INTO supplier (company_name, contact_person, email, phone, address) VALUES (%s, %s, %s, %s, %s)",
+            (company_name, contact_person, email, phone, address)
+        )
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({'status': 'Supplier added'}), 201
 
-@app.route('/supplier/<int:supplier_id>/delete', methods=['POST'])
-def delete_supplier(supplier_id):
-    global suppliers
-    suppliers = [s for s in suppliers if s['id'] != supplier_id]
-    return redirect(url_for('admin_supplier'))
+    else:
+        # Fetch all suppliers from the database
+        cur = mysql.connection.cursor(DictCursor)
+        cur.execute("SELECT * FROM supplier")
+        results = cur.fetchall()
+        cur.close()
+        return jsonify(results)
+
+@app.route('/supplier/<int:supplier_id>', methods=['PUT', 'DELETE'])
+def supplier(supplier_id):
+    if request.method == 'PUT':
+        data = request.get_json()
+        company_name = data.get('companyName')
+        contact_person = data.get('contactPerson')
+        email = data.get('email')
+        phone = data.get('phone')
+        address = data.get('address')
+
+        # Update the supplier data in the database
+        cur = mysql.connection.cursor()
+        cur.execute(
+            "UPDATE supplier SET company_name=%s, contact_person=%s, email=%s, phone=%s, address=%s WHERE id=%s",
+            (company_name, contact_person, email, phone, address, supplier_id)
+        )
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({'status': 'Supplier updated'})
+
+    elif request.method == 'DELETE':
+        # Delete the supplier from the database
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM supplier WHERE id=%s", (supplier_id,))
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({'status': 'Supplier deleted'})
 
 @app.route('/supplier/<int:supplier_id>', methods=['GET'])
 def get_supplier(supplier_id):
-    supplier = next((s for s in suppliers if s['id'] == supplier_id), None)
+    cur = mysql.connection.cursor(DictCursor)
+    cur.execute("SELECT * FROM supplier WHERE id=%s", (supplier_id,))
+    supplier = cur.fetchone()
+    cur.close()
     return jsonify(supplier)
 
 @app.route('/admin_requisition_portal')

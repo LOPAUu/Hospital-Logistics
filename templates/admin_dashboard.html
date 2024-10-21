@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Logistics Dashboard{% endblock %}
+{% block title %}Admin Dashboard{% endblock %}
 
 {% block head %}
 <!-- Additional head content like extra CSS or scripts can go here -->
@@ -13,12 +13,6 @@
             <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
             <a href="{{ url_for('admin_supplier') }}">Supplier</a>
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
-        </div>
-    </div>
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <div class="content">
-            <!-- Your dynamic content goes here -->
         </div>
     </div>
 {% endblock %}
