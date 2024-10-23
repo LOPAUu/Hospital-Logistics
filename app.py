@@ -67,12 +67,6 @@ def admin_dashboard():
     # Render the Admin dashboard HTML template
     return render_template('admin_dashboard.html')
 
-suppliers = [
-    # Example supplier data, replace with your database logic
-    {'id': 1, 'name': 'ABC Medical Supplies', 'type': 'Medical Equipment', 'contact_person': 'John Doe', 'contact_number': '+639123456789', 'email': 'john@example.com', 'address': '123 Street, Quezon City', 'products': 'Bandages, Syringes, Gloves', 'pricing': '$500 - $2000'},
-    {'id': 2, 'name': 'XYZ Pharma Co.', 'type': 'Pharmaceuticals', 'contact_person': 'Jane Smith', 'contact_number': '+639987654321', 'email': 'jane@xyzpharma.com', 'address': '456 Avenue, Makati', 'products': 'Antibiotics, Vaccines', 'pricing': '$1000 - $5000'}
-]
-
 @app.route('/admin_supplier')
 def admin_supplier():
     cur = mysql.connection.cursor(DictCursor)
@@ -146,10 +140,76 @@ def get_supplier(supplier_id):
     cur.close()
     return jsonify(supplier)
 
-@app.route('/admin_requisition_portal')
+@app.route('/admin_requisition')
 def admin_requisition():
-    return render_template('admin_requisition.html')
+    cur = mysql.connection.cursor()  # Use the MySQL connection
+    cur.execute("SELECT * FROM requisitions;")  # Removed the database name from the query
+    requisitions = cur.fetchall()
+    cur.close()
+    return render_template('admin_requisition.html', requisitions=requisitions)
 
+@app.route('/save_requisition', methods=['POST'])
+def save_requisition():
+    data = request.get_json()
+    print(data)  # For debugging
+
+    try:
+        cur = mysql.connection.cursor()
+
+        # Insert requisition data
+        insert_requisition_query = "INSERT INTO requisitions (date, purpose, billing) VALUES (%s, %s, %s)"
+        cur.execute(insert_requisition_query, (data['date'], data['purpose'], data['billing']))
+        requisition_id = cur.lastrowid  # Get the last inserted ID
+
+        # Insert requisition items
+        for item in data['items']:
+            insert_item_query = "INSERT INTO requisition_items (requisition_id, item_name, quantity, price, total) VALUES (%s, %s, %s, %s, %s)"
+            cur.execute(insert_item_query, (requisition_id, item['name'], item['quantity'], item['price'], item['total']))
+
+        mysql.connection.commit()
+    except Error as e:
+        print("Error saving requisition:", e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cur.close()
+
+    return jsonify({'success': True})
+
+@app.route('/requisition_details/<int:requisition_id>', methods=['GET'])
+def requisition_details(requisition_id):
+    cur = mysql.connection.cursor()
+
+    try:
+        # Fetch the requisition details
+        cur.execute("SELECT * FROM requisitions WHERE id = %s", (requisition_id,))
+        requisition = cur.fetchone()
+
+        if requisition is None:
+            return jsonify({'error': 'Requisition not found'}), 404
+
+        # Fetch the items associated with the requisition
+        cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (requisition_id,))
+        items = cur.fetchall()
+
+        # Prepare the response object
+        response = {
+            'purpose': requisition['purpose'],
+            'billing': requisition['billing'],
+            'items': [{'name': item[1], 'quantity': item[2], 'price': item[3], 'total': item[4]} for item in items],  # Assuming index based on the fetchall order
+            'signatory1': {'approved': requisition.get('signatory1_approved'), 'name': 'Maverick Ko'},
+            'signatory2': {'approved': requisition.get('signatory2_approved'), 'name': 'Rene Letegio'},
+            'signatory3': {'approved': requisition.get('signatory3_approved'), 'name': 'Paulo Sangreo'}
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        print("Error fetching requisition details:", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cur.close()
+        
 # Routes for other pages
 @app.route('/dashboard')
 def dashboard():
