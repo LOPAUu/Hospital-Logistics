@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <link rel="stylesheet" href="inventory.css">
+</head>
+<body>
+    <div class="inventory-container">
+        <h2>Inventory Management</h2>
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Unit Cost</th>
+                    <th>Unit Price</th>
+                    <th>Category</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-table-body">
+                <!-- Rows will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal for View Item Details -->
+    <div id="view-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeViewModal()">&times;</span>
+            <h3>Item Details</h3>
+            <table class="details-table">
+                <thead>
+                    <tr>
+                        <th>Evaluated On</th>
+                        <th>Entry Type</th>
+                        <th>PO Number</th>
+                        <th>Item No.</th>
+                        <th>Description</th>
+                        <th>Expiration Date</th>
+                        <th>Lot Position</th>
+                    </tr>
+                </thead>
+                <tbody id="view-details-table-body">
+                    <!-- Details will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for Edit Item Details -->
+    <div id="edit-modal" class="modal">
+        <div class="update-modal">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h3>Edit Item Details</h3>
+
+            <!-- Editable Inventory Fields -->
+            <div class="inventory-fields-grid">
+                <label for="edit-description">Description:</label>
+                <input type="text" id="edit-description">
+                
+                <label for="edit-quantity">Quantity:</label>
+                <input type="number" id="edit-quantity">
+
+                <label for="edit-status">Status:</label>
+                <input type="text" id="edit-status">
+
+                <label for="edit-unitCost">Unit Cost:</label>
+                <input type="number" step="0.01" id="edit-unitCost">
+
+                <label for="edit-unitPrice">Unit Price:</label>
+                <input type="number" step="0.01" id="edit-unitPrice">
+
+                <label for="edit-category">Category:</label>
+                <input type="text" id="edit-category">
+            </div>
+
+            <!-- Editable Item Details Table -->
+            <h4>Additional Details</h4>
+            <table class="details-table">
+                <thead>
+                    <tr>
+                        <th>Evaluated On</th>
+                        <th>Entry Type</th>
+                        <th>PO Number</th>
+                        <th>Item No.</th>
+                        <th>Description</th>
+                        <th>Expiration Date</th>
+                        <th>Lot Position</th>
+                    </tr>
+                </thead>
+                <tbody id="edit-details-table-body">
+                    <!-- Editable details will be dynamically added here -->
+                </tbody>
+            </table>
+
+            <button class="save-btn" onclick="saveChanges()">Save Changes</button>
+        </div>
+    </div>
+
+    <script src="inventory.js"></script>
+</body>
+</html>
