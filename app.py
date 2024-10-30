@@ -3,7 +3,6 @@ from flask_mysqldb import MySQL
 from MySQLdb.cursors import DictCursor
 
 app = Flask(__name__)
-
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
 # MySQL configurationspython app.py
@@ -67,6 +66,72 @@ def admin_dashboard():
     # Render the Admin dashboard HTML template
     return render_template('admin_dashboard.html')
 
+@app.route('/admin_requisition')
+def admin_requisition():
+    """Fetch requisitions from the database and render them on the admin requisition page."""
+    cur = mysql.connection.cursor(DictCursor)
+    cur.execute("SELECT * FROM requisitions")
+    requisitions = cur.fetchall()
+    cur.close()
+    return render_template('admin_requisition.html', requisitions=requisitions)
+
+@app.route('/requisition', methods=['GET', 'POST'])
+def user_requisition():
+    if request.method == 'POST':
+        # Handle the form data
+        date = request.form['date']
+        purpose = request.form['purpose']
+        billing = request.form['billing']
+        attachments = request.files.getlist('attachments')  # Handle file uploads
+        item_names = request.form.getlist('item-name[]')
+        item_quantities = request.form.getlist('item-quantity[]')
+        item_prices = request.form.getlist('item-price[]')
+        total_price = request.form['total-price']
+
+        cur = mysql.connection.cursor()
+
+        # Insert the requisition details
+        cur.execute(
+            "INSERT INTO requisitions (date, purpose, billing, total) VALUES (%s, %s, %s, %s)",
+            (date, purpose, billing, total_price)
+        )
+        requisition_id = cur.lastrowid  # Get the last inserted ID
+
+        # Insert the items associated with the requisition
+        for i in range(len(item_names)):
+            cur.execute(
+                "INSERT INTO requisition_items (requisition_id, item_name, quantity, price) VALUES (%s, %s, %s, %s)",
+                (requisition_id, item_names[i], item_quantities[i], item_prices[i])
+            )
+
+        mysql.connection.commit()  # Commit changes to the database
+        cur.close()
+        return jsonify({"message": "Requisition saved successfully!"}), 201
+
+    # Handle the GET request for fetching all requisitions
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM requisitions")
+    requisitions = cur.fetchall()
+    cur.close()
+    return render_template('admin_requisition.html', requisitions=requisitions)
+
+
+@app.route('/requisitions/<int:id>', methods=['GET'])
+def get_requisition(id):
+    cur = mysql.connection.cursor(DictCursor)
+    cur.execute("SELECT * FROM requisitions WHERE id = %s", (id,))
+    requisition = cur.fetchone()
+
+    if requisition:
+        cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (id,))
+        items = cur.fetchall()
+        cur.close()
+        return jsonify({"requisition": requisition, "items": items}), 200
+    else:
+        cur.close()
+        return jsonify({"message": "Requisition not found"}), 404
+
+    
 @app.route('/admin_supplier')
 def admin_supplier():
     cur = mysql.connection.cursor(DictCursor)
@@ -89,7 +154,7 @@ def suppliers():
         # Insert supplier into the database
         cur = mysql.connection.cursor()
         cur.execute(
-            "INSERT INTO supplier (company_name, contact_person, email, phone, address) VALUES (%s, %s, %s, %s, %s)",
+            "INSERT INTO supplier (company_name, contact_person, email, phone, address) VALUES (%s, %s, %s, %i, %s)",
             (company_name, contact_person, email, phone, address)
         )
         mysql.connection.commit()
@@ -139,76 +204,6 @@ def get_supplier(supplier_id):
     supplier = cur.fetchone()
     cur.close()
     return jsonify(supplier)
-
-@app.route('/admin_requisition')
-def admin_requisition():
-    cur = mysql.connection.cursor()  # Use the MySQL connection
-    cur.execute("SELECT * FROM requisitions;")  # Removed the database name from the query
-    requisitions = cur.fetchall()
-    cur.close()
-    return render_template('admin_requisition.html', requisitions=requisitions)
-
-@app.route('/save_requisition', methods=['POST'])
-def save_requisition():
-    data = request.get_json()
-    print(data)  # For debugging
-
-    try:
-        cur = mysql.connection.cursor()
-
-        # Insert requisition data
-        insert_requisition_query = "INSERT INTO requisitions (date, purpose, billing) VALUES (%s, %s, %s)"
-        cur.execute(insert_requisition_query, (data['date'], data['purpose'], data['billing']))
-        requisition_id = cur.lastrowid  # Get the last inserted ID
-
-        # Insert requisition items
-        for item in data['items']:
-            insert_item_query = "INSERT INTO requisition_items (requisition_id, item_name, quantity, price, total) VALUES (%s, %s, %s, %s, %s)"
-            cur.execute(insert_item_query, (requisition_id, item['name'], item['quantity'], item['price'], item['total']))
-
-        mysql.connection.commit()
-    except Error as e:
-        print("Error saving requisition:", e)
-        return jsonify({'error': str(e)}), 500
-    finally:
-        cur.close()
-
-    return jsonify({'success': True})
-
-@app.route('/requisition_details/<int:requisition_id>', methods=['GET'])
-def requisition_details(requisition_id):
-    cur = mysql.connection.cursor()
-
-    try:
-        # Fetch the requisition details
-        cur.execute("SELECT * FROM requisitions WHERE id = %s", (requisition_id,))
-        requisition = cur.fetchone()
-
-        if requisition is None:
-            return jsonify({'error': 'Requisition not found'}), 404
-
-        # Fetch the items associated with the requisition
-        cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (requisition_id,))
-        items = cur.fetchall()
-
-        # Prepare the response object
-        response = {
-            'purpose': requisition['purpose'],
-            'billing': requisition['billing'],
-            'items': [{'name': item[1], 'quantity': item[2], 'price': item[3], 'total': item[4]} for item in items],  # Assuming index based on the fetchall order
-            'signatory1': {'approved': requisition.get('signatory1_approved'), 'name': 'Maverick Ko'},
-            'signatory2': {'approved': requisition.get('signatory2_approved'), 'name': 'Rene Letegio'},
-            'signatory3': {'approved': requisition.get('signatory3_approved'), 'name': 'Paulo Sangreo'}
-        }
-
-        return jsonify(response)
-
-    except Exception as e:
-        print("Error fetching requisition details:", e)
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        cur.close()
         
 # Routes for other pages
 @app.route('/dashboard')

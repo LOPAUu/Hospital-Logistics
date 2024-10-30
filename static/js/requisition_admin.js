@@ -3,131 +3,125 @@ let currentRequisitionId = 1001; // Starting ID (modify as needed)
 // Fetch Requisition Data from the server
 async function fetchRequisition() {
     try {
-        const response = await fetch('/api/requisitions'); // Adjust the endpoint as needed
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const requisitions = await response.json();
-        renderRequisition(requisitions);
+        const response = await fetch('/requisitions');
+        if (!response.ok) throw new Error('Failed to fetch requisitions');
+        const data = await response.json();
+        renderRequisition(data.requisitions);
     } catch (error) {
-        showError('Failed to fetch requisitions: ' + error.message);
+        showError('Error: ' + error.message);
     }
 }
 
-// Render Requisition List in the Table
 function renderRequisition(requisitions) {
-    const tbody = document.querySelector('#requisition-list tbody');
-    tbody.innerHTML = ''; // Clear existing entries
+    const requisitionList = document.getElementById('requisition-list');
+    requisitionList.innerHTML = '';
 
     requisitions.forEach(requisition => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${requisition.id}</td>
-            <td>${requisition.date}</td>
             <td>${requisition.purpose}</td>
             <td>${requisition.billing}</td>
-            <td><button onclick="viewDetails(${requisition.id})">View</button></td>
             <td>${requisition.total}</td>
-            <td>${requisition.status}</td>
+            <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
         `;
-        tbody.appendChild(row);
+        requisitionList.appendChild(row);
     });
 }
 
 // Save a New Requisition
 async function saveRequisition(event) {
-    event.preventDefault(); // Prevent default form submission
-
+    event.preventDefault();
+    
     const form = document.getElementById('requisition-form');
-    const formData = new FormData(form);
+    const items = Array.from(form.querySelectorAll('tbody tr')).map(row => ({
+        name: row.querySelector('input[name="item-name[]"]').value,
+        quantity: parseFloat(row.querySelector('input[name="item-quantity[]"]').value) || 0,
+        price: parseFloat(row.querySelector('input[name="item-price[]"]').value) || 0
+    })).filter(item => item.name); // Filter out items with empty names
+
+    const requisitionData = {
+        date: form.date.value, // Make sure to include the date
+        purpose: form.purpose.value,
+        billing: form.billing.value,
+        total: parseFloat(form['total-price'].value) || 0,
+        items: items
+    };
 
     try {
-        const response = await fetch('/api/requisitions', { // Adjust the endpoint as needed
+        const response = await fetch('/requisition', { // Ensure this matches your Flask route
             method: 'POST',
-            body: formData,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requisitionData)
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to save requisition');
-        }
-        
+        if (!response.ok) throw new Error('Failed to save requisition');
         showSuccessMessage('Requisition saved successfully!');
-        fetchRequisition(); // Refresh the requisition list
-        closeModal(); // Close the modal after saving
+        fetchRequisition(); // Refresh the list
+        closeModal(); // Close modal after saving
     } catch (error) {
         showError('Error: ' + error.message);
     }
 }
 
 // View Details of a Specific Requisition
-async function viewDetails(requisitionId) {
-    try {
-        const response = await fetch(`/api/requisitions/${requisitionId}`); // Adjust the endpoint as needed
-        if (!response.ok) {
-            throw new Error('Failed to fetch requisition details');
-        }
-
-        const requisition = await response.json();
-        const detailsContent = document.getElementById('details-content');
-        detailsContent.innerHTML = `
-            <p><strong>ID:</strong> ${requisition.id}</p>
-            <p><strong>Date:</strong> ${requisition.date}</p>
-            <p><strong>Purpose:</strong> ${requisition.purpose}</p>
-            <p><strong>Billing:</strong> ${requisition.billing}</p>
-            <p><strong>Total:</strong> ₱${requisition.total}</p>
-            <p><strong>Status:</strong> ${requisition.status}</p>
-            <p><strong>Items:</strong></p>
-            <ul>
-                ${requisition.items.map(item => `<li>${item.name} - ${item.quantity} @ ₱${item.price} each</li>`).join('')}
-            </ul>
-        `;
-        document.getElementById('details-modal').style.display = 'block'; // Show the details modal
-    } catch (error) {
-        showError('Error: ' + error.message);
-    }
-}
-
-function getStatusClass(status) {
-    return status === "Rejected" ? "status-rejected" : status === "Approved" ? "status-approved" : "status-pending";
-}
-
-function getApprovalStatus(approved) {
-    return approved === null ? "Pending" : approved ? "Approved" : "Rejected";
-}
-
-function getStatus(signatory1, signatory2, signatory3) {
-    if ([signatory1.approved, signatory2.approved, signatory3.approved].includes(false)) {
-        return "Rejected";
-    }
-    return [signatory1.approved, signatory2.approved, signatory3.approved].every(Boolean) ? "Approved" : "Pending";
-}
-
-function toggleModal(modalId, display) {
-    document.getElementById(modalId).style.display = display ? 'block' : 'none';
+function viewDetails(requisitionId) {
+    // Fetch requisition details from the Flask route
+    fetch(`/requisitions/${requisitionId}`)
+        .then(response => response.json())  // Ensure this matches the Flask route and returns JSON
+        .then(data => {
+            
+            // Populate modal content
+            document.getElementById('details-content').innerHTML = `
+                <p><strong>ID:</strong> ${data.requisition.id}</p>
+                <p><strong>Date:</strong> ${data.requisition.date}</p>
+                <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
+                <p><strong>Billing:</strong> ${data.requisition.billing}</p>
+                <p><strong>Total:</strong> ₱${data.requisition.total}</p>
+                <p><strong>Status:</strong> ${data.requisition.status}</p>
+                <!-- Add more details as needed -->
+                <h3>Items Requested:</h3>
+            `;
+            // Open the modal
+            openDetailsModal();
+        })
+        .catch(error => {
+            console.error('Error fetching requisition details:', error);
+        });
 }
 
 function openDetailsModal() {
-    toggleModal('details-modal', true);
+    document.getElementById('details-modal').style.display = 'block';
 }
 
 function closeDetailsModal() {
-    toggleModal('details-modal', false);
+    document.getElementById('details-modal').style.display = 'none';
 }
 
+// Toggle modal visibility
+function toggleModal(modalId, display) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = display ? 'block' : 'none';
+}
+
+// Open modal for managing requisition
 function openModal() {
     toggleModal('manage-requisition-modal', true);
     document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
     document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
 }
 
+// Close modal
 function closeModal() {
     toggleModal('manage-requisition-modal', false);
 }
 
+// Get current date in YYYY-MM-DD format
 function getCurrentDate() {
     return new Date().toISOString().split('T')[0]; // Returns YYYY-MM-DD
 }
 
+// Add new item row in the table
 function addItem() {
     const table = document.getElementById('items-table').querySelector('tbody');
     const newRow = table.insertRow();
@@ -140,65 +134,35 @@ function addItem() {
     `;
 }
 
+// Remove an item row from the table
 function removeItem(button) {
     const row = button.closest('tr');
     row.parentNode.removeChild(row);
     updateTotalPrice(); // Update the overall total after removing the item
 }
 
+// Calculate total for a specific item row
 function calculateTotal(input) {
     const row = input.closest('tr');
-    const quantity = row.querySelector('.item-quantity').value;
-    const price = row.querySelector('.item-price').value;
+    const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+    const price = parseFloat(row.querySelector('.item-price').value) || 0;
     const total = row.querySelector('.item-total');
-    
+
     total.value = (quantity * price).toFixed(2); // Calculates total and fixes to 2 decimal places
     updateTotalPrice(); // Update the overall total
 }
 
+// Update the overall total price
 function updateTotalPrice() {
-    let totalPrice = Array.from(document.querySelectorAll('.item-total'))
+    const totalPrice = Array.from(document.querySelectorAll('.item-total'))
         .reduce((sum, total) => sum + (parseFloat(total.value) || 0), 0);
 
     document.getElementById('total-price').value = totalPrice.toFixed(2);
 }
 
+// Event listeners and search/filter functions
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
         input.oninput = () => calculateTotal(input);
     });
 });
-
-function searchRequisitions() {
-    const searchInput = document.getElementById('search-bar').value.toLowerCase();
-    const rows = document.querySelectorAll('#requisition-list tbody tr');
-
-    rows.forEach((row, i) => {
-        if (i === 0) return; // Skip header row
-        row.style.display = row.textContent.toLowerCase().includes(searchInput) ? '' : 'none';
-    });
-}
-
-function filterRequisitions() {
-    const filterId = document.getElementById('filter-id').value.toLowerCase();
-    const filterStartDate = new Date(document.getElementById('filter-start-date').value);
-    const filterEndDate = new Date(document.getElementById('filter-end-date').value);
-    const filterStatus = document.getElementById('filter-status').value.toLowerCase();
-    const filterDetails = document.getElementById('filter-details').value.toLowerCase();
-    
-    const rows = document.querySelectorAll('#requisition-list tbody tr');
-
-    rows.forEach(row => {
-        const requisitionId = row.cells[0].textContent; // Assuming ID is in the first cell
-        const dateCell = new Date(row.cells[1].textContent); // Assuming date is in the second cell
-        const statusCell = row.cells[6].textContent.toLowerCase(); // Assuming status is in the seventh cell
-        const detailsCell = row.cells[4].textContent.toLowerCase(); // Assuming details are in the fifth cell
-        
-        const matchesId = requisitionId.includes(filterId);
-        const matchesStatus = filterStatus ? statusCell.includes(filterStatus) : true;
-        const matchesDetails = detailsCell.includes(filterDetails);
-        const matchesDate = (filterStartDate && dateCell < filterStartDate) || (filterEndDate && dateCell > filterEndDate) ? false : true;
-
-        row.style.display = matchesId && matchesStatus && matchesDetails && matchesDate ? '' : 'none';
-    });
-}

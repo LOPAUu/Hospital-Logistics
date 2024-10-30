@@ -58,7 +58,7 @@
                     <td>{{ requisition.date }}</td>
                     <td>{{ requisition.purpose }}</td>
                     <td>{{ requisition.billing }}</td>
-                    <td><button onclick="viewDetails({{ requisition.id }})">View</button></td>
+                    <td><button onclick="viewDetails({{ requisition.id }})">View Details</button></td>
                     <td>{{ requisition.total }}</td>
                     <td>{{ requisition.status }}</td>
                 </tr>
@@ -74,7 +74,8 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeModal()">&times;</span>
             <h2>Manage Requisition</h2>
-            <form id="requisition-form">
+            <form id="requisition-form" method="POST" action="/requisition">
+                <!-- Other input fields -->
                 <fieldset>
                     <legend>Requisition Information</legend>
                     <div class="form-group">
@@ -154,11 +155,4 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/requisition_admin.js') }}"></script>
-
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <div class="content">
-            <!-- Your dynamic content goes here -->
-        </div>
-    </div>
 {% endblock %}
