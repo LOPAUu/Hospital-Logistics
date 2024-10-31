@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>
                     <button class="action-btn view" onclick="viewItem(${item.id})">View</button>
                     <button class="action-btn edit" onclick="editItem(${item.id})">Edit</button>
-                    <button class="action-btn delete">Delete</button>
+                    <button class="action-btn delete" onclick="deleteItem(${item.id})">Delete</button>
                 </td>
             `;
             tableBody.appendChild(row);
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.viewItem = function(id) {
         const itemDetails = detailsData[id] || [];
         viewDetailsTableBody.innerHTML = '';
-        
+    
         itemDetails.forEach(detail => {
             const detailRow = document.createElement('tr');
             detailRow.innerHTML = `
@@ -61,9 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             viewDetailsTableBody.appendChild(detailRow);
         });
-
+    
         viewModal.style.display = 'block';
     };
+    
 
     window.editItem = function(id) {
         currentItemId = id;
@@ -78,16 +79,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit-category').value = item.category;
 
         editDetailsTableBody.innerHTML = '';
-        itemDetails.forEach((detail) => {
+        itemDetails.forEach(detail => {
             const detailRow = document.createElement('tr');
             detailRow.innerHTML = `
-                <td><input type="text" value="${detail.evaluatedOn}"></td>
-                <td><input type="text" value="${detail.entryType}"></td>
-                <td><input type="text" value="${detail.poNumber}"></td>
-                <td><input type="text" value="${detail.itemNo}"></td>
-                <td><input type="text" value="${detail.description}"></td>
-                <td><input type="text" value="${detail.expirationDate}"></td>
-                <td><input type="text" value="${detail.lotPosition}"></td>
+                <td><span>${detail.evaluatedOn}<span></td> <!-- Evaluated On field is now read-only -->
+                <td>
+                    <select>
+                        <option value="Purchase Order" ${detail.entryType === 'Purchase Order' ? 'selected' : ''}>Purchase Order</option>
+                        <option value="Return" ${detail.entryType === 'Return' ? 'selected' : ''}>Return</option>
+                    </select>
+                </td>
+                <td><span>${detail.poNumber}<span></td> <!-- PO Number field is now read-only -->
+                <td><input type="text" value="${detail.itemNo}" /></td>
+                <td><input type="text" value="${detail.description}" /></td>
+                <td><input type="date" value="${detail.expirationDate}" /></td>
+                <td><input type="text" value="${detail.lotPosition}" /></td>
             `;
             editDetailsTableBody.appendChild(detailRow);
         });
@@ -95,34 +101,57 @@ document.addEventListener('DOMContentLoaded', () => {
         editModal.style.display = 'block';
     };
 
-    window.saveChanges = function() {
-        const item = inventoryData.find(i => i.id === currentItemId);
-        item.description = document.getElementById('edit-description').value;
-        item.quantity = parseInt(document.getElementById('edit-quantity').value, 10);
-        item.status = document.getElementById('edit-status').value;
-        item.unitCost = parseFloat(document.getElementById('unitCost').value);
-        item.unitPrice = parseFloat(document.getElementById('unitPrice').value);
-        item.category = document.getElementById('category').value;
+    window.closeViewModal = function() {
+        viewModal.style.display = 'none';
+    };
 
-        const updatedDetails = Array.from(detailsTableBody.querySelectorAll('tr')).map((row, index) => ({
+    window.closeEditModal = function() {
+        editModal.style.display = 'none';
+    };
+
+    window.saveViewChanges = function() {
+        const updatedDetails = Array.from(viewDetailsTableBody.querySelectorAll('tr')).map(row => ({
             evaluatedOn: row.cells[0].querySelector('input').value,
-            entryType: row.cells[1].querySelector('input').value,
+            entryType: row.cells[1].querySelector('select').value,
             poNumber: row.cells[2].querySelector('input').value,
             itemNo: row.cells[3].querySelector('input').value,
             description: row.cells[4].querySelector('input').value,
             expirationDate: row.cells[5].querySelector('input').value,
-            lotPosition: row.cells[6].querySelector('input').value,
+            lotPosition: row.cells[6].querySelector('input').value
         }));
-        
+
         detailsData[currentItemId] = updatedDetails;
-
+        closeViewModal();
         renderTable(inventoryData);
-        closeModal();
     };
 
-    window.closeModal = function() {
-        modal.style.display = 'none';
+    window.saveChanges = function() {
+        const item = inventoryData.find(i => i.id === currentItemId);
+        if (item) {
+            // Update main item details
+            item.description = document.getElementById('edit-description').value;
+            item.quantity = parseInt(document.getElementById('edit-quantity').value);
+            item.status = document.getElementById('edit-status').value;
+            item.unitCost = parseFloat(document.getElementById('edit-unitCost').value);
+            item.unitPrice = parseFloat(document.getElementById('edit-unitPrice').value);
+            item.category = document.getElementById('edit-category').value;
+        }
+
+        // Update entry details
+        const updatedDetails = Array.from(editDetailsTableBody.querySelectorAll('tr')).map(row => ({
+            evaluatedOn: row.cells[0].querySelector('span').textContent, // Read-only field
+            entryType: row.cells[1].querySelector('select').value,
+            poNumber: row.cells[2].querySelector('span').textContent, // Read-only field
+            itemNo: row.cells[3].querySelector('input').value,
+            description: row.cells[4].querySelector('input').value,
+            expirationDate: row.cells[5].querySelector('input').value,
+            lotPosition: row.cells[6].querySelector('input').value
+        }));
+
+        detailsData[currentItemId] = updatedDetails;
+        closeEditModal();
+        renderTable(inventoryData);
     };
 
-    renderTable(inventoryData); // Initial render
+    renderTable(inventoryData);
 });

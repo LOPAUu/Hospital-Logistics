@@ -57,29 +57,35 @@
         <div class="update-modal">
             <span class="close" onclick="closeEditModal()">&times;</span>
             <h3>Edit Item Details</h3>
-
-            <!-- Editable Inventory Fields -->
-            <div class="inventory-fields-grid">
-                <label for="edit-description">Description:</label>
-                <input type="text" id="edit-description">
-                
-                <label for="edit-quantity">Quantity:</label>
-                <input type="number" id="edit-quantity">
-
-                <label for="edit-status">Status:</label>
-                <input type="text" id="edit-status">
-
-                <label for="edit-unitCost">Unit Cost:</label>
-                <input type="number" step="0.01" id="edit-unitCost">
-
-                <label for="edit-unitPrice">Unit Price:</label>
-                <input type="number" step="0.01" id="edit-unitPrice">
-
-                <label for="edit-category">Category:</label>
-                <input type="text" id="edit-category">
+            <div class="inventory-fields-table">
+                <div class="row">
+                    <div class="cell">
+                        <label for="edit-description">Description:</label>
+                        <input type="text" id="edit-description">
+                    </div>
+                    <div class="cell">
+                        <label for="edit-quantity">Quantity:</label>
+                        <input type="number" id="edit-quantity">
+                    </div>
+                    <div class="cell">
+                        <label for="edit-status">Status:</label>
+                        <input type="text" id="edit-status">
+                    </div>
+                    <div class="cell">
+                        <label for="edit-unitCost">Unit Cost:</label>
+                        <input type="number" step="0.01" id="edit-unitCost">
+                    </div>
+                    <div class="cell">
+                        <label for="edit-unitPrice">Unit Price:</label>
+                        <input type="number" step="0.01" id="edit-unitPrice">
+                    </div>
+                    <div class="cell">
+                        <label for="edit-category">Category:</label>
+                        <input type="text" id="edit-category">
+                    </div>
+                </div>
             </div>
 
-            <!-- Editable Item Details Table -->
             <h4>Additional Details</h4>
             <table class="details-table">
                 <thead>

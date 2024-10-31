@@ -119,28 +119,55 @@
     font-weight: bold;
 }
 
-/* Inventory Fields Grid */
-.inventory-fields-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+/* Editable Inventory Fields Table Styles */
+.inventory-fields-table {
+    display: table;
+    width: 100%;
     margin-top: 15px;
 }
 
-/* Labels and Inputs */
-.inventory-fields-grid label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #333;
+.row {
+    display: table-row;
 }
 
-.inventory-fields-grid input {
-    width: 100%;
+.cell {
+    display: table-cell;
+    padding: 10px; /* Space between cells */
+    vertical-align: top; /* Aligns content to the top */
+}
+
+/* Label and Input Adjustments */
+.cell label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+    display: block; /* Block display for proper label spacing */
+}
+
+.cell input {
+    width: 100%; /* Input fields take full width of the cell */
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-sizing: border-box;
 }
+
+/* Save Button */
+.save-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.save-btn:hover {
+    background-color: #218838;
+}
+
 
 /* Save Button */
 .save-btn {
