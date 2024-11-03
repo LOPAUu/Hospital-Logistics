@@ -9,6 +9,19 @@
 <body>
     <div class="inventory-container">
         <h2>Inventory Management</h2>
+
+        <div class="search-container">
+            <input type="text" id="search-id" placeholder="Search by ID">
+            <input type="text" id="search-description" placeholder="Search by Description">
+            <select id="search-status">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <input type="text" id="search-category" placeholder="Search by Category">
+        </div>
+        
+        
         <table class="inventory-table">
             <thead>
                 <tr>
@@ -19,6 +32,7 @@
                     <th>Unit Cost</th>
                     <th>Unit Price</th>
                     <th>Category</th>
+                    <th>Base Unit of Measure</th>          
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -69,7 +83,10 @@
                     </div>
                     <div class="cell">
                         <label for="edit-status">Status:</label>
-                        <input type="text" id="edit-status">
+                        <select id="edit-status">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
                     </div>
                     <div class="cell">
                         <label for="edit-unitCost">Unit Cost:</label>
@@ -83,6 +100,10 @@
                         <label for="edit-category">Category:</label>
                         <input type="text" id="edit-category">
                     </div>
+                    <div class="cell">
+                        <label for="edit-baseUnit">Base Unit of Measure:</label>
+                        <input type="text" id="edit-baseUnit">
+                    </div>                    
                 </div>
             </div>
 

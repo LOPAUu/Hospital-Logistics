@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const inventoryData = [
-        { id: 1, description: 'Biogesic', quantity: 100, status: 'Active', unitCost: 10.00, unitPrice: 15.00, category: 'Category A' },
-        { id: 2, description: 'BioFlu', quantity: 50, status: 'Inactive', unitCost: 8.00, unitPrice: 12.00, category: 'Category B' }
-    ];
+        { id: 1, description: 'Biogesic', quantity: 100, status: 'Active', unitCost: 10.00, unitPrice: 15.00, category: 'Category A', baseUnit: 'PCS' },
+        { id: 2, description: 'BioFlu', quantity: 50, status: 'Inactive', unitCost: 8.00, unitPrice: 12.00, category: 'Category B', baseUnit: 'PCS' }
+    ];    
 
     const detailsData = {
         1: [
@@ -16,12 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentItemId = null;
 
+    // DOM elements
     const tableBody = document.getElementById('inventory-table-body');
     const viewDetailsTableBody = document.getElementById('view-details-table-body');
     const editDetailsTableBody = document.getElementById('edit-details-table-body');
     const viewModal = document.getElementById('view-modal');
     const editModal = document.getElementById('edit-modal');
 
+    // Function to render inventory table
     function renderTable(data) {
         tableBody.innerHTML = '';
         data.forEach(item => {
@@ -34,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.unitCost.toFixed(2)}</td>
                 <td>${item.unitPrice.toFixed(2)}</td>
                 <td>${item.category}</td>
+                <td>${item.baseUnit}</td>
                 <td>
                     <button class="action-btn view" onclick="viewItem(${item.id})">View</button>
                     <button class="action-btn edit" onclick="editItem(${item.id})">Edit</button>
@@ -44,10 +47,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Function to filter inventory data based on search criteria
+    function filterInventory() {
+        const searchId = document.getElementById('search-id').value.toLowerCase();
+        const searchDescription = document.getElementById('search-description').value.toLowerCase();
+        const searchStatus = document.getElementById('search-status').value;
+        const searchCategory = document.getElementById('search-category').value.toLowerCase();
+
+        const filteredData = inventoryData.filter(item => {
+            return (
+                (searchId === '' || item.id.toString().includes(searchId)) &&
+                (searchDescription === '' || item.description.toLowerCase().includes(searchDescription)) &&
+                (searchStatus === '' || item.status === searchStatus) &&
+                (searchCategory === '' || item.category.toLowerCase().includes(searchCategory))
+            );
+        });
+
+        renderTable(filteredData);
+    }
+
+    // Add event listeners to the search inputs
+    document.getElementById('search-id').addEventListener('input', filterInventory);
+    document.getElementById('search-description').addEventListener('input', filterInventory);
+    document.getElementById('search-status').addEventListener('change', filterInventory);
+    document.getElementById('search-category').addEventListener('input', filterInventory);
+
+    // Function to view item details
     window.viewItem = function(id) {
         const itemDetails = detailsData[id] || [];
         viewDetailsTableBody.innerHTML = '';
-    
+
         itemDetails.forEach(detail => {
             const detailRow = document.createElement('tr');
             detailRow.innerHTML = `
@@ -61,35 +90,39 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             viewDetailsTableBody.appendChild(detailRow);
         });
-    
+
         viewModal.style.display = 'block';
     };
-    
 
+    // Function to edit item details
     window.editItem = function(id) {
         currentItemId = id;
         const item = inventoryData.find(i => i.id === id);
         const itemDetails = detailsData[id] || [];
 
+        // Populate main item fields
         document.getElementById('edit-description').value = item.description;
         document.getElementById('edit-quantity').value = item.quantity;
         document.getElementById('edit-status').value = item.status;
         document.getElementById('edit-unitCost').value = item.unitCost;
         document.getElementById('edit-unitPrice').value = item.unitPrice;
         document.getElementById('edit-category').value = item.category;
+        document.getElementById('edit-baseUnit').value = item.baseUnit;
 
+
+        // Populate item entry details
         editDetailsTableBody.innerHTML = '';
         itemDetails.forEach(detail => {
             const detailRow = document.createElement('tr');
             detailRow.innerHTML = `
-                <td><span>${detail.evaluatedOn}<span></td> <!-- Evaluated On field is now read-only -->
+                <td><span>${detail.evaluatedOn}</span></td> <!-- Read-only -->
                 <td>
                     <select>
                         <option value="Purchase Order" ${detail.entryType === 'Purchase Order' ? 'selected' : ''}>Purchase Order</option>
                         <option value="Return" ${detail.entryType === 'Return' ? 'selected' : ''}>Return</option>
                     </select>
                 </td>
-                <td><span>${detail.poNumber}<span></td> <!-- PO Number field is now read-only -->
+                <td><span>${detail.poNumber}</span></td> <!-- Read-only -->
                 <td><input type="text" value="${detail.itemNo}" /></td>
                 <td><input type="text" value="${detail.description}" /></td>
                 <td><input type="date" value="${detail.expirationDate}" /></td>
@@ -101,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editModal.style.display = 'block';
     };
 
+    // Function to close modals
     window.closeViewModal = function() {
         viewModal.style.display = 'none';
     };
@@ -109,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editModal.style.display = 'none';
     };
 
+    // Function to save view modal changes (if any)
     window.saveViewChanges = function() {
         const updatedDetails = Array.from(viewDetailsTableBody.querySelectorAll('tr')).map(row => ({
             evaluatedOn: row.cells[0].querySelector('input').value,
@@ -125,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTable(inventoryData);
     };
 
+    // Function to save edit modal changes
     window.saveChanges = function() {
         const item = inventoryData.find(i => i.id === currentItemId);
         if (item) {
@@ -135,13 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
             item.unitCost = parseFloat(document.getElementById('edit-unitCost').value);
             item.unitPrice = parseFloat(document.getElementById('edit-unitPrice').value);
             item.category = document.getElementById('edit-category').value;
+            item.baseUnit = document.getElementById('edit-baseUnit').value;
         }
 
         // Update entry details
         const updatedDetails = Array.from(editDetailsTableBody.querySelectorAll('tr')).map(row => ({
-            evaluatedOn: row.cells[0].querySelector('span').textContent, // Read-only field
+            evaluatedOn: row.cells[0].querySelector('span').textContent, // Read lang
             entryType: row.cells[1].querySelector('select').value,
-            poNumber: row.cells[2].querySelector('span').textContent, // Read-only field
+            poNumber: row.cells[2].querySelector('span').textContent, // Read lang
             itemNo: row.cells[3].querySelector('input').value,
             description: row.cells[4].querySelector('input').value,
             expirationDate: row.cells[5].querySelector('input').value,
@@ -153,5 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTable(inventoryData);
     };
 
+    // Initial render
     renderTable(inventoryData);
 });

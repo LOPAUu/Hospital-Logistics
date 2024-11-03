@@ -144,14 +144,23 @@
     display: block; /* Block display for proper label spacing */
 }
 
-.cell input {
-    width: 100%; /* Input fields take full width of the cell */
+.cell input, .cell select {
+    width: 100%; /* Input fields and select take full width of the cell */
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
 }
 
+/* Styles specifically for editable details fields */
+.details-table input, .details-table select {
+    width: 100%; /* Ensure full width for these inputs */
+    padding: 8px; /* Consistent padding */
+    border: 1px solid #ccc; /* Consistent border style */
+    border-radius: 4px; /* Consistent border radius */
+    box-sizing: border-box; /* Include padding and border in the element's total width */
+}
+
 /* Save Button */
 .save-btn {
     background-color: #28a745;
@@ -168,19 +177,17 @@
     background-color: #218838;
 }
 
+.search-container {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 
-/* Save Button */
-.save-btn {
-    background-color: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
+.search-container input, .search-container select, .search-container button {
+    padding: 8px;
     font-size: 14px;
-    cursor: pointer;
-    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-.save-btn:hover {
-    background-color: #218838;
-}
