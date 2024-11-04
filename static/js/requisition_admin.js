@@ -14,19 +14,15 @@ async function fetchRequisition() {
 
 function renderRequisition(requisitions) {
     const requisitionList = document.getElementById('requisition-list');
-    requisitionList.innerHTML = '';
-
-    requisitions.forEach(requisition => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${requisition.id}</td>
+    requisitionList.innerHTML = requisitions.map(requisition => `
+        <tr>
+            <td>${requisition.id}</td> 
             <td>${requisition.purpose}</td>
             <td>${requisition.billing}</td>
             <td>${requisition.total}</td>
             <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
-        `;
-        requisitionList.appendChild(row);
-    });
+        </tr>
+    `).join('');
 }
 
 // Save a New Requisition
@@ -34,22 +30,18 @@ async function saveRequisition(event) {
     event.preventDefault();
     
     const form = document.getElementById('requisition-form');
-    const items = Array.from(form.querySelectorAll('tbody tr')).map(row => ({
-        name: row.querySelector('input[name="item-name[]"]').value,
-        quantity: parseFloat(row.querySelector('input[name="item-quantity[]"]').value) || 0,
-        price: parseFloat(row.querySelector('input[name="item-price[]"]').value) || 0
-    })).filter(item => item.name); // Filter out items with empty names
+    const items = getItemsFromForm(form);
 
     const requisitionData = {
-        date: form.date.value, // Make sure to include the date
+        date: form.date.value,
         purpose: form.purpose.value,
         billing: form.billing.value,
-        total: parseFloat(form['total-price'].value) || 0,
+        total: parseFloat(document.getElementById('total-price').value) || 0,
         items: items
     };
 
     try {
-        const response = await fetch('/requisition', { // Ensure this matches your Flask route
+        const response = await fetch('/requisition', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requisitionData)
@@ -64,30 +56,83 @@ async function saveRequisition(event) {
     }
 }
 
-// View Details of a Specific Requisition
+// Helper function to get items from the form
+function getItemsFromForm(form) {
+    return Array.from(form.querySelectorAll('tbody tr')).map(row => ({
+        name: row.querySelector('input[name="item-name[]"]').value,
+        quantity: parseFloat(row.querySelector('input[name="item-quantity[]"]').value) || 0,
+        price: parseFloat(row.querySelector('input[name="item-price[]"]').value) || 0
+    })).filter(item => item.name); // Filter out items with empty names
+}
+
 function viewDetails(requisitionId) {
     // Fetch requisition details from the Flask route
     fetch(`/requisitions/${requisitionId}`)
-        .then(response => response.json())  // Ensure this matches the Flask route and returns JSON
+        .then(response => response.json())
         .then(data => {
-            
             // Populate modal content
             document.getElementById('details-content').innerHTML = `
                 <p><strong>ID:</strong> ${data.requisition.id}</p>
-                <p><strong>Date:</strong> ${data.requisition.date}</p>
+                <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
                 <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
                 <p><strong>Billing:</strong> ${data.requisition.billing}</p>
-                <p><strong>Total:</strong> ₱${data.requisition.total}</p>
+                <p><strong>Total:</strong> ₱<span id="total-price">${data.total}</span></p>
                 <p><strong>Status:</strong> ${data.requisition.status}</p>
                 <!-- Add more details as needed -->
                 <h3>Items Requested:</h3>
+                <ul>
+                    ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
+                </ul>
             `;
             // Open the modal
             openDetailsModal();
         })
         .catch(error => {
             console.error('Error fetching requisition details:', error);
+            // Show a simple error message to the user
+            showError('Failed to fetch requisition details. Please try again later.');
         });
+}
+
+
+
+// Populate the details modal with fetched requisition details
+function populateDetailsModal(requisition) {
+    document.getElementById('details-content').innerHTML = `
+        <p><strong>ID:</strong> ${requisition.id}</p>
+        <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
+        <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+        <p><strong>Billing:</strong> ${requisition.billing}</p>
+        <p><strong>Total:</strong> ₱${requisition.total.toFixed(2)}</p>
+        <p><strong>Status:</strong> ${requisition.status || 'Not specified'}</p>
+        <h3>Items Requested:</h3>
+        <ul id="items-requested-list"></ul>
+    `;
+
+    const itemsList = document.getElementById('items-requested-list');
+    requisition.items.forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${item.name} - Qty: ${item.quantity}, Price: ₱${item.price.toFixed(2)}`;
+        itemsList.appendChild(listItem);
+    });
+
+    openDetailsModal();
+}
+
+// Open/close modal functions
+function toggleModal(modalId, display) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = display ? 'block' : 'none';
+}
+
+function openModal() {
+    toggleModal('manage-requisition-modal', true);
+    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
+    document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
+}
+
+function closeModal() {
+    toggleModal('manage-requisition-modal', false);
 }
 
 function openDetailsModal() {
@@ -98,22 +143,9 @@ function closeDetailsModal() {
     document.getElementById('details-modal').style.display = 'none';
 }
 
-// Toggle modal visibility
-function toggleModal(modalId, display) {
-    const modal = document.getElementById(modalId);
-    modal.style.display = display ? 'block' : 'none';
-}
-
-// Open modal for managing requisition
-function openModal() {
-    toggleModal('manage-requisition-modal', true);
-    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
-    document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
-}
-
-// Close modal
-function closeModal() {
-    toggleModal('manage-requisition-modal', false);
+// Error handling function
+function showError(message) {
+    alert(message); // Placeholder for better error handling
 }
 
 // Get current date in YYYY-MM-DD format

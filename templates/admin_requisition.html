@@ -38,7 +38,6 @@
             </select>
             <input type="text" id="filter-details" placeholder="Search by Item Details..." onkeyup="filterRequisitions()">
         </div>
-    
         <table id="requisition-list">
             <thead>
                 <tr>
@@ -65,6 +64,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        <!-- Modal structure (should be in your HTML) -->
     
         <button id="manage-button" onclick="openModal()">Manage Requisition</button>
     </div>
