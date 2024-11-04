@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Orders</title>
+    <link rel="stylesheet" href="purchase_order.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>Purchase Orders</h1> 
+        </div>
+        <button id="createOrderBtn">Create Purchase Order</button>
+    </div>
+
+    <div class="tabs--secondary">
+        <nav class="tab__nav">
+            <ul>
+                <li class="tab__item"><a href="#" class="is-activated" data-filter="all">All</a></li>
+                <li class="tab__item"><a href="#" data-filter="ordered">Ordered</a></li>
+                <li class="tab__item"><a href="#" data-filter="partial">Partial</a></li>
+                <li class="tab__item"><a href="#" data-filter="received">Received</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Purchase Order</th>
+                <th>Supplier</th>
+                <th>Destination</th>
+                <th>Status</th>
+                <th>Received</th>
+                <th>Total</th>
+                <th>Issue Date</th>
+            </tr>
+        </thead>
+        <tbody id="purchaseOrdersTable">
+            <tr data-status="received" class="clickable-row" data-po="#PO1">
+                <td>#PO1</td>
+                <td>Supplier1</td>
+                <td>Warehouse1</td>
+                <td><span class="status-received">Received</span></td>
+                <td>3 of 3</td>
+                <td>₱2550.00</td>
+                <td>2024-9-10</td>
+            </tr>
+            <tr data-status="ordered" class="clickable-row" data-po="#PO2">
+                <td>#PO2</td>
+                <td>Supplier2</td>
+                <td>Warehouse2</td>
+                <td><span class="status-ordered">Ordered</span></td>
+                <td>3 of 3</td>
+                <td>₱3000.00</td>
+                <td>2024-9-10</td>
+            </tr>
+            <tr data-status="partial" class="clickable-row" data-po="#PO3">
+                <td>#PO3</td>
+                <td>Supplier3</td>
+                <td>Warehouse3</td>
+                <td><span class="status-partial">Partial</span></td>
+                <td>2 of 3</td>
+                <td>₱2500.00</td>
+                <td>2024-9-10</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Create Purchase Order Modal -->
+    <div id="purchaseOrderModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Purchase Order</h2>
+
+            <div class="modal-body">
+                <div class="left-section">
+                    <div class="form-section">
+                        <label>From</label>
+                        <input type="text" id="fromDetails" readonly>
+                    </div>
+
+                    <div class="form-section">
+                        <label>Bill To</label>
+                        <input type="text" id="billToDetails" readonly>
+                    </div>
+                </div>
+
+                <div class="right-section">
+                    <div class="form-section form-row">
+                        <label>Order Number</label>
+                        <select id="orderNumberDropdown" class="small-select">
+                            <option value="" disabled selected>Select an Order</option>
+                            <option value="#PO4">#PO4</option>
+                            <option value="#PO5">#PO5</option>
+                            <option value="#PO6">#PO6</option>
+                            <option value="#PO7">#PO7</option>
+                            <option value="#PO8">#PO8</option>
+                            <option value="#PO9">#PO9</option>
+                        </select>
+                    </div>
+                    <div class="form-section form-row">
+                        <label>Order Status</label>
+                        <select id="orderStatus" class="small-select">
+                            <option value="Ordered">Ordered</option>
+                            <option value="Received">Received</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section form-row">
+                        <label>Issue Date</label>
+                        <input type="date" id="issueDate" value="" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemList">
+                        <!-- Items will be populated automatically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-section">
+                <label>Total</label>
+                <input type="text" id="total" disabled>
+            </div>
+            <button id="confirmOrderBtn">Confirm</button>
+        </div>
+    </div>
+
+    <!-- New Modal for Table Row Click -->
+<div id="orderDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="modal-body"></div>
+    </div>
+</div>
+
+
+<script src="purchase_order.js"></script>
+
+</body>
+</html>

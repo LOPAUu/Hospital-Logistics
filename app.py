@@ -24,7 +24,7 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('admin_dashboard'))
 
 # Login route
 @app.route('/login_portal', methods=['GET', 'POST'])
