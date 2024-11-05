@@ -1,9 +1,9 @@
-/* Global Styles */
 body {
-    font-family: 'Lato', sans-serif;
+    font-family: 'Lato', Arial, sans-serif; 
+    background-color: #E5E9F0;
+    display: block;
     margin: 0;
-    padding: 0;
-    background-color: #f8f9fa;
+    color: #003366;
 }
 
 .container {

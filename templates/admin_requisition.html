@@ -24,22 +24,6 @@
         <!-- Success Message Display -->
         <div id="message" style="display: none; color: green; font-weight: bold;"></div>
     
-        <!-- Search Bar -->
-        <input type="text" id="search-bar" placeholder="Search requisitions..." onkeyup="searchRequisitions()">
-    
-        <!-- Search Filter Section -->
-        <div class="search-filters">
-            <input type="text" id="filter-id" placeholder="Search by Requisition ID..." onkeyup="filterRequisitions()">
-            <input type="date" id="filter-start-date" onchange="filterRequisitions()">
-            <input type="date" id="filter-end-date" onchange="filterRequisitions()">
-            <select id="filter-status" onchange="filterRequisitions()">
-                <option value="">Filter by Status</option>
-                <option value="approved">Approved</option>
-                <option value="pending">Pending</option>
-                <option value="rejected">Rejected</option>
-            </select>
-            <input type="text" id="filter-details" placeholder="Search by Item Details..." onkeyup="filterRequisitions()">
-        </div>
         <table id="requisition-list">
             <thead>
                 <tr>
