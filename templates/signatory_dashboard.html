@@ -1,22 +1,25 @@
 {% extends 'base.html' %} 
 
-{% block head %} Signatory {% endblock %}
+{% block title %}Signatory{% endblock %}
+
+{% block head %}
+{% endblock %}
 
 {% block body %}
-
-<!-- New Top Bar -->
-<div class="top-bar">
-    <div class="top-nav">
-        <a href="{{ url_for('signatory_view') }}">Requisition</a>
+    <!-- New Top Bar -->
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('signatory_dashboard') }}">Requisition</a>
+            <a href="{{ url_for('signatory_view') }}">Requisition</a>
+        </div>
     </div>
-</div>
 
-<!-- Main Content Area -->
-<div class="main-content">
-    <div class="content">
-        <!-- Your dynamic content goes here -->
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="content">
+            <!-- Your dynamic content goes here -->
+        </div>
     </div>
-</div>
-<script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/signatory_view.js') }}"></script>
 
 {% endblock %}

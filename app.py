@@ -166,6 +166,10 @@ def get_requisition(id):
         # Ensure the connection is closed properly
         cur.close()
         conn.close()
+        
+@app.route('/signatory_view')
+def signatory_view():
+    return render_template('signatory_view.html')
 
 @app.route('/purchase_order')
 def purchase_order():
