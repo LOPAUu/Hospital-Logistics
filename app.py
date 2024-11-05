@@ -24,7 +24,7 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('login'))
 
 # Login route
 @app.route('/login_portal', methods=['GET', 'POST'])
@@ -155,7 +155,7 @@ def get_requisition(id):
             response = {
                 "requisition": requisition,
                 "items": items,
-                "total": total
+                "total": total  
             }
             return jsonify(response), 200
         else:
@@ -167,6 +167,9 @@ def get_requisition(id):
         cur.close()
         conn.close()
 
+@app.route('/purchase_order')
+def purchase_order():
+    return render_template('purchase_order.html')
     
 if __name__ == "__main__":
     app.run(debug=True)  # Set debug=True for detailed error output

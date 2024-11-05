@@ -3,7 +3,7 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block head %}
-<!-- Additional head content like extra CSS or scripts can go here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition_admin.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -13,6 +13,7 @@
             <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
             <a href="{{ url_for('admin_supplier') }}">Supplier</a>
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Requisition</a>
         </div>
     </div>
 {% endblock %}
