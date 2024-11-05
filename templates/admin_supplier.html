@@ -13,23 +13,14 @@
             <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
             <a href="{{ url_for('admin_supplier') }}">Supplier</a>
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
-            <a href="{{ url_for('purchase_order') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
+            <a href="{{ url_for('inventory') }}">Inventory</a>
         </div>
     </div>
 
     <div class="container">
         <h1>Supplier List</h1>
-
-        <!-- Search Bar -->
-        <input type="text" id="search-bar" placeholder="Search suppliers..." onkeyup="searchSuppliers()">
-
-        <!-- Search Filter Section -->
-        <div class="search-filters">
-            <input type="text" id="filter-name" placeholder="Search by Company Name..." onkeyup="filterSuppliers()">
-            <input type="text" id="filter-contact" placeholder="Search by Contact Person..." onkeyup="filterSuppliers()">
-            <input type="text" id="filter-email" placeholder="Search by Email..." onkeyup="filterSuppliers()">
-        </div>
-
+        
         <table id="supplier-list">
             <thead>
                 <tr>
@@ -57,9 +48,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        <button id="add-button" onclick="openAddSupplierModal()">Add Supplier</button>
     </div>
-
-    <button id="add-button" onclick="openAddSupplierModal()">Add Supplier</button>
     
     <!-- Modal for adding suppliers -->
     <div id="add-supplier-modal" class="modal">
