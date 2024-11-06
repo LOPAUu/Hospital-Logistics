@@ -111,43 +111,40 @@ function closeEditSupplierModal() {
 
 
 // Function to update the supplier details
-async function updateSupplier(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
+function updateSupplier(event) {
+    event.preventDefault();
 
-    const supplierId = window.supplierId; // Get the supplier ID from the global variable
+    const supplierId = supplierId/* Obtain supplier ID (e.g., from a hidden field or state) */;
+    const companyName = document.getElementById("edit-company-name").value;
+    const contactPerson = document.getElementById("edit-contact-person").value;
+    const email = document.getElementById("edit-email").value;
+    const phone = document.getElementById("edit-phone").value;
+    const address = document.getElementById("edit-address").value;
 
-    // Check if supplierId is available
-    if (!supplierId) {
-        alert('No supplier selected for update.');
-        return;
-    }
-
-    const updatedData = {
-        company_name: document.getElementById('edit-company-name').value,
-        contact_person: document.getElementById('edit-contact-person').value,
-        email: document.getElementById('edit-email').value,
-        phone: document.getElementById('edit-phone').value,
-        address: document.getElementById('edit-address').value,
-    };
-
-    try {
-        const response = await fetch(`/suppliers/${supplierId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedData),
-        });
-
-        if (response.ok) {
-            alert('Supplier updated successfully');
+    fetch('/update_supplier', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            supplier_id: supplierId,
+            company_name: companyName,
+            contact_person: contactPerson,
+            email: email,
+            phone: phone,
+            address: address
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message); // Success message
             closeEditSupplierModal();
-            fetchSuppliers(); // Refresh the supplier list to reflect the changes
         } else {
-            throw new Error(`Failed to update supplier: ${response.statusText}`);
+            alert(data.error || 'An error occurred.');
         }
-    } catch (error) {
-        console.error("Error updating supplier:", error);
-        alert('Error updating supplier');
-    }
+    })
+    .catch(error => console.error('Error:', error));
 }
 
 // Load suppliers when the page is ready

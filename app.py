@@ -117,44 +117,36 @@ def add_supplier():
         cursor.close()
         conn.close()
 
-@app.route('/update_supplier/<int:supplier_id>', methods=['POST'])
-def update_supplier(supplier_id):
+@app.route('/suppliers/<int:id>', methods=['PUT'])
+def update_supplier(id):
     data = request.get_json()
-
-    if not data:
-        return jsonify({"success": False, "message": "No data received"}), 400
-
     company_name = data.get('company_name')
     contact_person = data.get('contact_person')
     email = data.get('email')
     phone = data.get('phone')
     address = data.get('address')
 
-    if not all([company_name, contact_person, email, phone, address]):
-        return jsonify({"success": False, "message": "Missing fields"}), 400
+    conn = psycopg2.connect(...)  # Fill in your connection details
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        UPDATE suppliers
+        SET company_name = %s,
+            contact_person = %s,
+            email = %s,
+            phone = %s,
+            address = %s
+        WHERE id = %s
+        RETURNING id;
+    """, (company_name, contact_person, email, phone, address, id))
+    
+    conn.commit()
+    updated_id = cursor.fetchone()
+    cursor.close()
+    conn.close()
 
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            UPDATE suppliers
-            SET company_name = %s, contact_person = %s, email = %s, phone = %s, address = %s
-            WHERE id = %s
-        """, (company_name, contact_person, email, phone, address, supplier_id))
-
-        if cursor.rowcount == 0:
-            return jsonify({"success": False, "message": "No rows updated, check if the supplier ID exists"}), 404
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return jsonify({"success": True})
-
-    except Exception as e:
-        print(f"Error updating supplier: {e}")
-        return jsonify({"success": False, "message": str(e)}), 500
+    if updated_id:
+        return jsonify({'message': 'Supplier updated successfully'}), 200
 
 
 @app.route('/admin_requisition')
