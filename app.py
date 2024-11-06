@@ -73,7 +73,7 @@ def pharmacy_dashboard():
 def admin_dashboard():
     return render_template('admin_dashboard.html')
 
-@app.route('/admin_supplier')
+@app.route('/suppliers')
 def admin_supplier():
     # Logic to retrieve suppliers or any other data needed
     return render_template('admin_supplier.html')  # Make sure you have this template
