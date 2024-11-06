@@ -1,3 +1,12 @@
+body {
+    font-family: 'Lato', Arial, sans-serif; 
+    background-color: #E5E9F0;
+    display: block;
+    margin-top: 145px;
+    margin-left: 30px;
+    color: #003366;
+}
+
 /* Table Styles */
 .inventory-table {
     width: 100%;
@@ -74,6 +83,7 @@
 .modal-content, .update-modal {
     background-color: #fff;
     margin: 5% auto;
+    margin-top: 155px;
     padding: 20px;
     border-radius: 8px;
     width: 90%;
@@ -191,3 +201,10 @@
     border-radius: 4px;
 }
 
+.inventory-container {
+    max-width: 100%;
+    margin: 150px auto;
+    background: white;
+    padding: 50px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
