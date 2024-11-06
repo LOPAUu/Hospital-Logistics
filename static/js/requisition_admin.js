@@ -103,7 +103,7 @@ function populateDetailsModal(requisition) {
         <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
         <p><strong>Purpose:</strong> ${requisition.purpose}</p>
         <p><strong>Billing:</strong> ${requisition.billing}</p>
-        <p><strong>Total:</strong> ₱${requisition.total.toFixed(2)}</p>
+        <p><strong>Total:</strong> ₱${parseFloat(requisition.total).toFixed(2)}</p>
         <p><strong>Status:</strong> ${requisition.status || 'Not specified'}</p>
         <h3>Items Requested:</h3>
         <ul id="items-requested-list"></ul>
