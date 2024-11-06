@@ -143,20 +143,43 @@ function closeDetailsModal() {
     document.getElementById('details-modal').style.display = 'none';
 }
 
-// Error handling function
-function showError(message) {
-    alert(message); // Placeholder for better error handling
+function openModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'block';
 }
 
-// Get current date in YYYY-MM-DD format
+function closeModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'none';
+}
+
+let currentRequisitionId = 1003; // Starting ID (modify as needed)
+
+function openModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'block';
+    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
+    currentRequisitionId++; // Increment for the next requisition
+}
+
+// Function to get the current date in YYYY-MM-DD format
 function getCurrentDate() {
-    return new Date().toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Returns YYYY-MM-DD
 }
 
-// Add new item row in the table
+
+function openModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'block';
+    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
+    document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
+    currentRequisitionId++; // Increment for the next requisition
+}
+
+function closeModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'none';
+}
+
 function addItem() {
-    const table = document.getElementById('items-table').querySelector('tbody');
-    const newRow = table.insertRow();
+    const table = document.getElementById('items-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow(table.rows.length);
     newRow.innerHTML = `
         <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
         <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
@@ -166,35 +189,115 @@ function addItem() {
     `;
 }
 
-// Remove an item row from the table
 function removeItem(button) {
-    const row = button.closest('tr');
+    let row = button.parentNode.parentNode;
     row.parentNode.removeChild(row);
-    updateTotalPrice(); // Update the overall total after removing the item
 }
 
-// Calculate total for a specific item row
 function calculateTotal(input) {
-    const row = input.closest('tr');
-    const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-    const price = parseFloat(row.querySelector('.item-price').value) || 0;
-    const total = row.querySelector('.item-total');
-
+    let row = input.parentNode.parentNode;
+    let quantity = row.getElementsByClassName('item-quantity')[0].value;
+    let price = row.getElementsByClassName('item-price')[0].value;
+    let total = row.getElementsByClassName('item-total')[0];
     total.value = (quantity * price).toFixed(2); // Calculates total and fixes to 2 decimal places
-    updateTotalPrice(); // Update the overall total
 }
 
-// Update the overall total price
-function updateTotalPrice() {
-    const totalPrice = Array.from(document.querySelectorAll('.item-total'))
-        .reduce((sum, total) => sum + (parseFloat(total.value) || 0), 0);
-
-    document.getElementById('total-price').value = totalPrice.toFixed(2);
-}
-
-// Event listeners and search/filter functions
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
+document.addEventListener('DOMContentLoaded', function() {
+    const initialInputs = document.querySelectorAll('.item-quantity, .item-price');
+    initialInputs.forEach(input => {
         input.oninput = () => calculateTotal(input);
     });
 });
+
+function calculateTotal(input) {
+    let row = input.parentNode.parentNode;
+    let quantity = row.getElementsByClassName('item-quantity')[0].value;
+    let price = row.getElementsByClassName('item-price')[0].value;
+    let total = row.getElementsByClassName('item-total')[0];
+    
+    // Calculate the total for this row
+    total.value = (quantity * price).toFixed(2);
+    
+    // Update the overall total
+    updateTotalPrice();
+}
+
+function updateTotalPrice() {
+    let totalPrice = 0;
+    
+    // Get all the item total fields
+    const totals = document.querySelectorAll('.item-total');
+    
+    // Sum the values of all item totals
+    totals.forEach(total => {
+        let value = parseFloat(total.value) || 0;  // Convert to number, default to 0 if empty
+        totalPrice += value;
+    });
+    
+    // Set the overall total price
+    document.getElementById('total-price').value = totalPrice.toFixed(2);
+}
+
+function addItem() {
+    const table = document.getElementById('items-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow(table.rows.length);
+    newRow.innerHTML = `
+        <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
+        <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
+        <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
+        <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
+        <td><button type="button" onclick="removeItem(this)">Remove</button></td>
+    `;
+}
+
+
+function searchRequisitions() {
+    // Get the search input and table elements
+    const searchInput = document.getElementById('search-bar').value.toLowerCase();
+    const table = document.getElementById('requisition-list');
+    const rows = table.getElementsByTagName('tr');
+
+    // Loop through all table rows, excluding the first (header)
+    for (let i = 1; i < rows.length; i++) {
+        let row = rows[i];
+        let rowText = row.textContent.toLowerCase();
+
+        // If row text includes the search input, show the row; otherwise, hide it
+        if (rowText.includes(searchInput)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+}
+
+function filterRequisitions() {
+    const filterId = document.getElementById('filter-id').value.toLowerCase();
+    const filterStartDate = new Date(document.getElementById('filter-start-date').value);
+    const filterEndDate = new Date(document.getElementById('filter-end-date').value);
+    const filterStatus = document.getElementById('filter-status').value.toLowerCase();
+    const filterDetails = document.getElementById('filter-details').value.toLowerCase();
+
+    const rows = document.querySelectorAll('#requisition-list tbody tr');
+
+    rows.forEach(row => {
+        const requisitionId = row.getAttribute('data-id');
+        const dateCell = row.cells[1].textContent; // Assuming date is in the second cell
+        const statusCell = row.cells[6].textContent.toLowerCase(); // Assuming status is in the seventh cell
+        const detailsCell = row.cells[4].textContent.toLowerCase(); // Assuming details are in the fifth cell
+        
+        const rowDate = new Date(dateCell);
+
+        const matchesId = requisitionId.includes(filterId);
+        const matchesStatus = filterStatus ? statusCell.includes(filterStatus) : true;
+        const matchesDetails = detailsCell.includes(filterDetails);
+        const matchesDate = (!filterStartDate || rowDate >= filterStartDate) && (!filterEndDate || rowDate <= filterEndDate);
+
+        // Show or hide the row based on all filters
+        if (matchesId && matchesStatus && matchesDetails && matchesDate) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}

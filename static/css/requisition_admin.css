@@ -6,7 +6,6 @@ body {
     color: #003366;
 }
 
-
 /* Header Styling */
 .header {
     position: fixed;
@@ -92,6 +91,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    z-index: 1001; 
 }
 
 /* Top Navigation Styles */
@@ -125,10 +125,11 @@ body {
     color: #003366; 
 }
 .container {
-    max-width: 100%;
-    margin: 150px auto;
+    max-width: 800px;
+    margin-top: 140px;
+    margin-left: 500px;
     background: white;
-    padding: 50px;
+    padding: 80px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
