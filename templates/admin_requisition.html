@@ -19,7 +19,7 @@
     </div>
 
     <div class="container">
-        <h1>Requisition List</h1>
+        <h1>Requisition List <button id="manage-button" onclick="openModal()">Manage Requisition</manage-button></h1>
     
         <!-- Success Message Display -->
         <div id="message" style="display: none; color: green; font-weight: bold;"></div>
@@ -30,7 +30,7 @@
                     <th>ID</th>
                     <th>Date</th>
                     <th>Purpose</th>
-                    <th>Billing</th>
+                    <th>Supplier</th>
                     <th>Details</th>
                     <th>Total (₱)</th>
                     <th>Status</th>
@@ -42,7 +42,7 @@
                     <td>{{ requisition.id }}</td>
                     <td>{{ requisition.date }}</td>
                     <td>{{ requisition.purpose }}</td>
-                    <td>{{ requisition.billing }}</td>
+                    <td>{{ requisition.supplier }}</td>
                     <td><button onclick="viewDetails({{ requisition.id }})">View Details</button></td>
                     <td>{{ requisition.total }}</td>
                     <td>{{ requisition.status }}</td>
@@ -52,7 +52,6 @@
         </table>
         <!-- Modal structure (should be in your HTML) -->
     
-        <button id="manage-button" onclick="openModal()">Manage Requisition</button>
     </div>
     
     <!-- Modal for managing requisitions -->
@@ -79,10 +78,10 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Billing</legend>
+                    <legend>Supplier</legend>
                     <div class="form-group">
-                        <label for="billing">Billing Information:</label>
-                        <input type="text" id="billing" name="billing" placeholder="Billing details" required>
+                        <label for="supplier">Supplier Information:</label>
+                        <input type="text" id="supplier" name="supplier" placeholder="Supplier details" required>
                     </div>
                 </fieldset>
 
