@@ -75,8 +75,87 @@ def admin_dashboard():
 
 @app.route('/suppliers')
 def admin_supplier():
-    # Logic to retrieve suppliers or any other data needed
-    return render_template('admin_supplier.html')  # Make sure you have this template
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM suppliers")
+    suppliers = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('admin_supplier.html', suppliers=suppliers)
+
+# Route to fetch a single supplier by ID
+@app.route('/suppliers/<int:supplier_id>', methods=['GET'])
+def get_supplier(supplier_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT company_name, contact_person, email, phone, address FROM suppliers WHERE id = %s", (supplier_id,))
+        supplier = cursor.fetchone()
+        if supplier is None:
+            return jsonify({'message': 'Supplier not found'}), 404
+        return jsonify(supplier)
+    finally:
+        cursor.close()
+        conn.close()
+
+# Route to add a new supplier
+@app.route('/suppliers', methods=['POST'])
+def add_supplier():
+    new_supplier = request.json
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(""" 
+            INSERT INTO suppliers (company_name, contact_person, email, phone, address)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (new_supplier['companyName'], new_supplier['contactPerson'], new_supplier['email'], new_supplier['phone'], new_supplier['address']))
+        supplier_id = cursor.fetchone()[0]
+        conn.commit()
+        return jsonify({"id": supplier_id}), 201
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/update_supplier/<int:supplier_id>', methods=['POST'])
+def update_supplier(supplier_id):
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"success": False, "message": "No data received"}), 400
+
+    company_name = data.get('company_name')
+    contact_person = data.get('contact_person')
+    email = data.get('email')
+    phone = data.get('phone')
+    address = data.get('address')
+
+    if not all([company_name, contact_person, email, phone, address]):
+        return jsonify({"success": False, "message": "Missing fields"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE suppliers
+            SET company_name = %s, contact_person = %s, email = %s, phone = %s, address = %s
+            WHERE id = %s
+        """, (company_name, contact_person, email, phone, address, supplier_id))
+
+        if cursor.rowcount == 0:
+            return jsonify({"success": False, "message": "No rows updated, check if the supplier ID exists"}), 404
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        print(f"Error updating supplier: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 @app.route('/admin_requisition')
 def admin_requisition():
