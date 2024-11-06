@@ -1,138 +1,109 @@
-let currentRequisitionId = 1001; // Starting ID (modify as needed)
-
-// Fetch Requisition Data from the server
-async function fetchRequisition() {
-    try {
-        const response = await fetch('/requisitions');
-        if (!response.ok) throw new Error('Failed to fetch requisitions');
-        const data = await response.json();
-        renderRequisition(data.requisitions);
-    } catch (error) {
-        showError('Error: ' + error.message);
-    }
-}
-
-function renderRequisition(requisitions) {
-    const requisitionList = document.getElementById('requisition-list');
-    requisitionList.innerHTML = requisitions.map(requisition => `
-        <tr>
-            <td>${requisition.id}</td> 
-            <td>${requisition.purpose}</td>
-            <td>${requisition.billing}</td>
-            <td>${requisition.total}</td>
-            <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
-        </tr>
-    `).join('');
-}
-
-// Save a New Requisition
-async function saveRequisition(event) {
-    event.preventDefault();
-    
-    const form = document.getElementById('requisition-form');
-    const items = getItemsFromForm(form);
-
-    const requisitionData = {
-        date: form.date.value,
-        purpose: form.purpose.value,
-        billing: form.billing.value,
-        total: parseFloat(document.getElementById('total-price').value) || 0,
-        items: items
+function viewDetails(requisitionId) {
+    const requisitions = {
+        1001: {
+            purpose: "Order More Vaccines",
+            billing: "Mercury Drugs collab",
+            items: [
+                { name: "Vaccine A", quantity: 50, price: 25.50, total: 1275.00 },
+                { name: "Vaccine B", quantity: 100, price: 15.00, total: 1500.00 }
+            ],
+            signatory1: { approved: true, name: "Maverick Ko" },
+            signatory2: { approved: null, name: "Rene Letegio" },
+            signatory3: { approved: null, name: "Paulo Sangreo" }
+        },
+        1002: {
+            purpose: "Restock Masks",
+            billing: "ABC Pharmaceuticals",
+            items: [
+                { name: "Surgical Mask", quantity: 1000, price: 0.50, total: 500.00 }
+            ],
+            signatory1: { approved: true, name: "Maverick Ko" },
+            signatory2: { approved: false, name: "Rene Letegio" },
+            signatory3: { approved: null, name: "Paulo Sangreo" }
+        }
     };
 
-    try {
-        const response = await fetch('/requisition', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requisitionData)
-        });
+    const requisition = requisitions[requisitionId];
 
-        if (!response.ok) throw new Error('Failed to save requisition');
-        showSuccessMessage('Requisition saved successfully!');
-        fetchRequisition(); // Refresh the list
-        closeModal(); // Close modal after saving
-    } catch (error) {
-        showError('Error: ' + error.message);
+    if (requisition) {
+        // Calculate total of all items
+        const total = requisition.items.reduce((sum, item) => sum + item.total, 0).toFixed(2);
+
+        const status = getStatus(requisition.signatory1, requisition.signatory2, requisition.signatory3);
+        const statusClass = getStatusClass(status);
+
+        let itemsRequested = requisition.items.map(item => 
+            `<tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>₱${item.price.toFixed(2)}</td> <!-- Changed to Peso -->
+                <td>₱${item.total.toFixed(2)}</td> <!-- Changed to Peso -->
+            </tr>`).join('');
+
+        const approvalDetails = `
+            <p><strong>Signatory 1 (${requisition.signatory1.name}):</strong> ${getApprovalStatus(requisition.signatory1.approved)}</p>
+            <p><strong>Signatory 2 (${requisition.signatory2.name}):</strong> ${getApprovalStatus(requisition.signatory2.approved)}</p>
+            <p><strong>Signatory 3 (${requisition.signatory3.name}):</strong> ${getApprovalStatus(requisition.signatory3.approved)}</p>
+        `;
+
+        const content = `
+            <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+            <p><strong>Billing:</strong> ${requisition.billing}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name of Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsRequested}
+                </tbody>
+            </table>
+            <p><strong>Total:</strong> ₱${total}</p>
+            <p><strong>Status:</strong> <span class="${statusClass}">${status}</span></p>
+            ${approvalDetails}
+        `;
+
+        document.getElementById('details-content').innerHTML = content;
+        openDetailsModal();
+    } else {
+        console.error("Details not found for requisition ID:", requisitionId);
     }
 }
 
-// Helper function to get items from the form
-function getItemsFromForm(form) {
-    return Array.from(form.querySelectorAll('tbody tr')).map(row => ({
-        name: row.querySelector('input[name="item-name[]"]').value,
-        quantity: parseFloat(row.querySelector('input[name="item-quantity[]"]').value) || 0,
-        price: parseFloat(row.querySelector('input[name="item-price[]"]').value) || 0
-    })).filter(item => item.name); // Filter out items with empty names
+
+
+function getStatusClass(status) {
+    if (status === "Rejected") {
+        return "status-rejected";
+    }
+    if (status === "Approved") {
+        return "status-approved";
+    }
+    return "status-pending";
 }
 
-function viewDetails(requisitionId) {
-    // Fetch requisition details from the Flask route
-    fetch(`/requisitions/${requisitionId}`)
-        .then(response => response.json())
-        .then(data => {
-            // Populate modal content
-            document.getElementById('details-content').innerHTML = `
-                <p><strong>ID:</strong> ${data.requisition.id}</p>
-                <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
-                <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                <p><strong>Billing:</strong> ${data.requisition.billing}</p>
-                <p><strong>Total:</strong> ₱<span id="total-price">${data.total}</span></p>
-                <p><strong>Status:</strong> ${data.requisition.status}</p>
-                <!-- Add more details as needed -->
-                <h3>Items Requested:</h3>
-                <ul>
-                    ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
-                </ul>
-            `;
-            // Open the modal
-            openDetailsModal();
-        })
-        .catch(error => {
-            console.error('Error fetching requisition details:', error);
-            // Show a simple error message to the user
-            showError('Failed to fetch requisition details. Please try again later.');
-        });
+function getApprovalStatus(approved) {
+    if (approved === null) {
+        return "Pending";
+    } else if (approved) {
+        return "Approved";
+    } else {
+        return "Rejected";
+    }
 }
 
-
-
-// Populate the details modal with fetched requisition details
-function populateDetailsModal(requisition) {
-    document.getElementById('details-content').innerHTML = `
-        <p><strong>ID:</strong> ${requisition.id}</p>
-        <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
-        <p><strong>Purpose:</strong> ${requisition.purpose}</p>
-        <p><strong>Billing:</strong> ${requisition.billing}</p>
-        <p><strong>Total:</strong> ₱${requisition.total.toFixed(2)}</p>
-        <p><strong>Status:</strong> ${requisition.status || 'Not specified'}</p>
-        <h3>Items Requested:</h3>
-        <ul id="items-requested-list"></ul>
-    `;
-
-    const itemsList = document.getElementById('items-requested-list');
-    requisition.items.forEach(item => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${item.name} - Qty: ${item.quantity}, Price: ₱${item.price.toFixed(2)}`;
-        itemsList.appendChild(listItem);
-    });
-
-    openDetailsModal();
-}
-
-// Open/close modal functions
-function toggleModal(modalId, display) {
-    const modal = document.getElementById(modalId);
-    modal.style.display = display ? 'block' : 'none';
-}
-
-function openModal() {
-    toggleModal('manage-requisition-modal', true);
-    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
-    document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
-}
-
-function closeModal() {
-    toggleModal('manage-requisition-modal', false);
+function getStatus(signatory1, signatory2, signatory3) {
+    if (signatory1.approved === false || signatory2.approved === false || signatory3.approved === false) {
+        return "Rejected";
+    }
+    if (signatory1.approved === true && signatory2.approved === true && signatory3.approved === true) {
+        return "Approved";
+    }
+    return "Pending";
 }
 
 function openDetailsModal() {
@@ -143,20 +114,43 @@ function closeDetailsModal() {
     document.getElementById('details-modal').style.display = 'none';
 }
 
-// Error handling function
-function showError(message) {
-    alert(message); // Placeholder for better error handling
+function openModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'block';
 }
 
-// Get current date in YYYY-MM-DD format
+function closeModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'none';
+}
+
+let currentRequisitionId = 1003; // Starting ID (modify as needed)
+
+function openModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'block';
+    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
+    currentRequisitionId++; // Increment for the next requisition
+}
+
+// Function to get the current date in YYYY-MM-DD format
 function getCurrentDate() {
-    return new Date().toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Returns YYYY-MM-DD
 }
 
-// Add new item row in the table
+
+function openModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'block';
+    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
+    document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
+    currentRequisitionId++; // Increment for the next requisition
+}
+
+function closeModal() {
+    document.getElementById('manage-requisition-modal').style.display = 'none';
+}
+
 function addItem() {
-    const table = document.getElementById('items-table').querySelector('tbody');
-    const newRow = table.insertRow();
+    const table = document.getElementById('items-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow(table.rows.length);
     newRow.innerHTML = `
         <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
         <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
@@ -166,35 +160,115 @@ function addItem() {
     `;
 }
 
-// Remove an item row from the table
 function removeItem(button) {
-    const row = button.closest('tr');
+    let row = button.parentNode.parentNode;
     row.parentNode.removeChild(row);
-    updateTotalPrice(); // Update the overall total after removing the item
 }
 
-// Calculate total for a specific item row
 function calculateTotal(input) {
-    const row = input.closest('tr');
-    const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-    const price = parseFloat(row.querySelector('.item-price').value) || 0;
-    const total = row.querySelector('.item-total');
-
+    let row = input.parentNode.parentNode;
+    let quantity = row.getElementsByClassName('item-quantity')[0].value;
+    let price = row.getElementsByClassName('item-price')[0].value;
+    let total = row.getElementsByClassName('item-total')[0];
     total.value = (quantity * price).toFixed(2); // Calculates total and fixes to 2 decimal places
-    updateTotalPrice(); // Update the overall total
 }
 
-// Update the overall total price
-function updateTotalPrice() {
-    const totalPrice = Array.from(document.querySelectorAll('.item-total'))
-        .reduce((sum, total) => sum + (parseFloat(total.value) || 0), 0);
-
-    document.getElementById('total-price').value = totalPrice.toFixed(2);
-}
-
-// Event listeners and search/filter functions
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
+document.addEventListener('DOMContentLoaded', function() {
+    const initialInputs = document.querySelectorAll('.item-quantity, .item-price');
+    initialInputs.forEach(input => {
         input.oninput = () => calculateTotal(input);
     });
 });
+
+function calculateTotal(input) {
+    let row = input.parentNode.parentNode;
+    let quantity = row.getElementsByClassName('item-quantity')[0].value;
+    let price = row.getElementsByClassName('item-price')[0].value;
+    let total = row.getElementsByClassName('item-total')[0];
+    
+    // Calculate the total for this row
+    total.value = (quantity * price).toFixed(2);
+    
+    // Update the overall total
+    updateTotalPrice();
+}
+
+function updateTotalPrice() {
+    let totalPrice = 0;
+    
+    // Get all the item total fields
+    const totals = document.querySelectorAll('.item-total');
+    
+    // Sum the values of all item totals
+    totals.forEach(total => {
+        let value = parseFloat(total.value) || 0;  // Convert to number, default to 0 if empty
+        totalPrice += value;
+    });
+    
+    // Set the overall total price
+    document.getElementById('total-price').value = totalPrice.toFixed(2);
+}
+
+function addItem() {
+    const table = document.getElementById('items-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow(table.rows.length);
+    newRow.innerHTML = `
+        <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
+        <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
+        <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
+        <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
+        <td><button type="button" onclick="removeItem(this)">Remove</button></td>
+    `;
+}
+
+
+function searchRequisitions() {
+    // Get the search input and table elements
+    const searchInput = document.getElementById('search-bar').value.toLowerCase();
+    const table = document.getElementById('requisition-list');
+    const rows = table.getElementsByTagName('tr');
+
+    // Loop through all table rows, excluding the first (header)
+    for (let i = 1; i < rows.length; i++) {
+        let row = rows[i];
+        let rowText = row.textContent.toLowerCase();
+
+        // If row text includes the search input, show the row; otherwise, hide it
+        if (rowText.includes(searchInput)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+}
+
+function filterRequisitions() {
+    const filterId = document.getElementById('filter-id').value.toLowerCase();
+    const filterStartDate = new Date(document.getElementById('filter-start-date').value);
+    const filterEndDate = new Date(document.getElementById('filter-end-date').value);
+    const filterStatus = document.getElementById('filter-status').value.toLowerCase();
+    const filterDetails = document.getElementById('filter-details').value.toLowerCase();
+
+    const rows = document.querySelectorAll('#requisition-list tbody tr');
+
+    rows.forEach(row => {
+        const requisitionId = row.getAttribute('data-id');
+        const dateCell = row.cells[1].textContent; // Assuming date is in the second cell
+        const statusCell = row.cells[6].textContent.toLowerCase(); // Assuming status is in the seventh cell
+        const detailsCell = row.cells[4].textContent.toLowerCase(); // Assuming details are in the fifth cell
+        
+        const rowDate = new Date(dateCell);
+
+        const matchesId = requisitionId.includes(filterId);
+        const matchesStatus = filterStatus ? statusCell.includes(filterStatus) : true;
+        const matchesDetails = detailsCell.includes(filterDetails);
+        const matchesDate = (!filterStartDate || rowDate >= filterStartDate) && (!filterEndDate || rowDate <= filterEndDate);
+
+        // Show or hide the row based on all filters
+        if (matchesId && matchesStatus && matchesDetails && matchesDate) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
