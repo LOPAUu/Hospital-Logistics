@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Supplier{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/supplier.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_supplier') }}">Supplier</a>
+            <a href="{{ url_for('admin_requisition') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
+            <a href="{{ url_for('inventory') }}">Inventory</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Supplier List</h1>
+        
+        <table id="supplier-list">
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Contact Person</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr>
+                    <td>{{ supplier.company_name }}</td>
+                    <td>{{ supplier.contact_person }}</td>
+                    <td>{{ supplier.email }}</td>
+                    <td>{{ supplier.phone }}</td>
+                    <td>{{ supplier.address }}</td>
+                    <td>
+                        <button onclick="openEditSupplierModal({{ supplier.id }})">Edit</button>
+                        <button onclick="removeSupplier({{ supplier.id }})">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button id="add-button" onclick="openAddSupplierModal()">Add Supplier</button>
+    </div>
+
+    <!-- Modal for adding suppliers -->
+    <div id="add-supplier-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddSupplierModal()">&times;</span>
+            <h2>Add Supplier</h2>
+            <form id="supplier-form" onsubmit="addSupplier(event)">
+                <div class="form-group">
+                    <label for="company-name">Company Name:</label>
+                    <input type="text" id="company-name" name="company-name" placeholder="Enter company name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-person">Contact Person:</label>
+                    <input type="text" id="contact-person" name="contact-person" placeholder="Enter contact person's name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address:</label>
+                    <textarea id="address" name="address" placeholder="Enter address" required></textarea>
+                </div>
+                <div class="form-action">
+                    <button type="submit" class="btn-submit">Add Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for editing supplier details -->
+    <div id="edit-supplier-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeEditSupplierModal()">&times;</span>
+            <h2>Edit Supplier</h2>
+            <form id="edit-supplier-form" onsubmit="updateSupplier(event)">
+                <div class="form-group">
+                    <label for="edit-company-name">Company Name:</label>
+                    <input type="text" id="edit-company-name" name="edit-company-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-contact-person">Contact Person:</label>
+                    <input type="text" id="edit-contact-person" name="edit-contact-person" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email:</label>
+                    <input type="email" id="edit-email" name="edit-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-phone">Phone:</label>
+                    <input type="tel" id="edit-phone" name="edit-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-address">Address:</label>
+                    <textarea id="edit-address" name="edit-address" required></textarea>
+                </div>
+                <div class="form-action">
+                    <button type="submit" class="btn-submit">Update Supplier</button>
+                </div>          
+            </form>
+        </div>
+    </div>    
+
+    <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
+{% endblock %}

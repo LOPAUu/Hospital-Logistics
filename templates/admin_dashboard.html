@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition_admin.css') }}">
+{% endblock %}
+
+{% block body %}
+    <!-- New Top Bar -->
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_supplier') }}">Supplier</a>
+            <a href="{{ url_for('admin_requisition') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
+            <a href="{{ url_for('inventory') }}">Inventory</a>
+        </div>
+    </div>
+{% endblock %}

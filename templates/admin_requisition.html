@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Requisition{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition_admin.css') }}">
+{% endblock %}
+
+{% block body %}
+    <!-- New Top Bar -->
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_supplier') }}">Supplier</a>
+            <a href="{{ url_for('admin_requisition') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
+            <a href="{{ url_for('inventory') }}">Inventory</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Requisition List <button id="manage-button" onclick="openModal()">Manage Requisition</manage-button></h1>
+    
+        <!-- Success Message Display -->
+        <div id="message" style="display: none; color: green; font-weight: bold;"></div>
+    
+        <table id="requisition-list">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Purpose</th>
+                    <th>Supplier</th>
+                    <th>Details</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for requisition in requisitions %}
+                <tr>
+                    <td>{{ requisition.id }}</td>
+                    <td>{{ requisition.date }}</td>
+                    <td>{{ requisition.purpose }}</td>
+                    <td>{{ requisition.supplierId }}</td>
+                    <td><button onclick="viewDetails({{ requisition.id }})">View Details</button></td>
+                    <td>{{ requisition.total }}</td>
+                    <td>{{ requisition.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <!-- Modal structure (should be in your HTML) -->
+    
+    </div>
+    
+    <!-- Modal for managing requisitions -->
+    <div id="manage-requisition-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2>Manage Requisition</h2>
+            <form id="requisition-form" method="POST" action="/requisition">
+                <!-- Other input fields -->
+                <fieldset>
+                    <legend>Requisition Information</legend>
+                    <div class="form-group">
+                        <label for="requisition-id">Requisition ID:</label>
+                        <span id="requisition-id">Auto-generated ID</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="text" id="date" name="date" readonly> <!-- Automatically added date -->
+                    </div>
+                    <div class="form-group">
+                        <label for="purpose">Purpose:</label>
+                        <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Supplier</legend>
+                    <div class="form-group">
+                        <label for="supplier">Supplier Information:</label>
+                        <input type="text" id="supplier" name="supplier" placeholder="Supplier details" required>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Items and Details</legend>
+                    <div class="form-group">
+                        <label for="attachments">Attachments:</label>
+                        <input type="file" id="attachments" name="attachments" multiple>
+                    </div>
+                    <div class="form-group">
+                        <label>Items Requested:</label>
+                        <table id="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Name of Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
+                                    <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
+                                    <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
+                                    <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
+                                    <td><button type="button" onclick="removeItem(this)">Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button type="button" onclick="addItem()">Add Item</button>
+                    </div>
+                </fieldset>
+
+                <div class="form-action">
+                    <button type="submit" class="btn-submit">Submit Requisition</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for displaying requisition details -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeDetailsModal()">&times;</span>
+            <h2>Requisition Details</h2>
+            <div id="details-content">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/requisition_admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
+{% endblock %}

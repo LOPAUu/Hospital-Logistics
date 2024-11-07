@@ -1,0 +1,283 @@
+/* General Body Styling */
+body {
+    font-family: 'Lato', Arial, sans-serif;
+    background-color: #E5E9F0;
+    display: block;
+    margin: 0;
+    color: #003366;
+}
+
+/* Header Styling */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #003366;
+    color: #ffffff;
+    box-sizing: border-box;
+    z-index: 1001;
+}
+
+/* Menu Logo and Title Styling */
+.header .menu-logo {
+    display: fixed;
+    align-items: center;
+    position: relative;
+}
+
+.header .menu-logo img {
+    max-width: 180px;
+    height: 70px;
+    padding-left: 8px;
+}
+
+.header .menu-logo h1 {
+    font-size: 24px;
+    margin: 0;
+    line-height: 50;
+}
+
+/* Hamburger Menu Bars Styling */
+.header .menu-icon .bar,
+.sidebar-menu-icon .bar {
+    width: 100%;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    transition: all 0.5s ease;
+}
+
+/* Hover Effect for Menu Icon Bars */
+.header .menu-icon:hover .bar,
+.sidebar-menu-icon:hover .bar {
+    background-color: gold;
+}
+
+/* Sidebar Menu Icon Styling */
+.sidebar-menu-icon {
+    margin-bottom: 15px;
+}
+
+/* User Profile Styling */
+.header .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: right;
+}
+
+/* User Info Container */
+.header .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* Username and Role Styling */
+.header .user-profile p,
+.header .user-profile span {
+    margin: 0;
+    font-weight: 500;
+}
+
+.header .user-profile span {
+    font-size: 14px;
+    color: #CCCCCC;
+}
+
+/* User Dropdown Styling */
+.header .user-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.header .user-dropdown img {
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+}
+
+/* Dropdown Content */
+.header .dropdown-content,
+.user-dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 50px; /* Adjusts the dropdown position vertically */
+    right: -10px; /* Shift dropdown 20px to the left */
+    background-color: #ffffff;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    z-index: 1002;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 100;
+}
+
+
+.header .user-dropdown.active .dropdown-content,
+.user-dropdown .dropdown-content.show {
+    display: block;
+}
+
+.header .dropdown-content a,
+.user-dropdown .dropdown-content a {
+    color: #003366;
+    padding: 10px 30px;
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #E5E9F0;
+    transition: background-color 0.3s;
+}
+
+.header .dropdown-content a:hover,
+.user-dropdown .dropdown-content a:hover {
+    background-color: #E5E9F0;
+}
+
+/* Triangle Icon for User Dropdown */
+.header .triangle {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #ffffff;
+    margin: 0 20px 0 15px;
+    cursor: pointer;
+}
+
+/* Top Bar Styling */
+.top-bar {
+    background-color: #ffffff;
+    color: #003366;
+    padding: 3px 30px;
+    position: fixed;
+    top: 80px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+}
+
+/* Top Navigation */
+.top-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 0;
+}
+
+.top-nav a,
+.dropbtn {
+    color: #003366;
+    text-decoration: none;
+    padding: 10px;
+    font-weight: normal;
+    font-size: 0.825rem;
+    border-radius: 6px;
+    background-color: #ffffff;
+    font-family: 'Lato', Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.top-nav a:hover,
+.dropbtn:hover {
+    background-color: #f3c300;
+    color: #003366;
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    font-size: 0.825rem;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1003;
+    top: 100%;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: #003366;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f3c300;
+    color: #003366;
+}
+
+/* Submenu Styling */
+.submenu {
+    position: relative;
+}
+
+.submenu-title {
+    color: #003366;
+    padding: 10px;
+    background-color: #ffffff;
+    cursor: default;
+}
+
+.submenu-title:hover {
+    background-color: #f3c300;
+}
+
+.submenu-content {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background-color: #ffffff;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1004;
+}
+
+.submenu:hover .submenu-content {
+    display: block;
+}
+
+.submenu-content a {
+    color: #003366;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s;
+}
+
+.submenu-content a:hover {
+    background-color: #f3c300;
+}
+
+/* Main Content Area */
+.main-content {
+    margin: 140px 20px 0;
+    box-sizing: border-box;
+}

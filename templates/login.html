@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNCORE Login</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/login.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/Company_Logo.png') }}" alt="Syncore Logo">
+        </div>
+    </div>
+    <div class="login-box">
+        <h2>Login to your SYNCORE account</h2>
+        <form id="loginForm" method="POST" action="{{ url_for('login') }}">
+            <input type="text" placeholder="Username" required id="username" name="username">
+            <div class="password-container">
+                <input type="password" placeholder="Password" required id="password" name="password">
+                <span id="togglePassword" class="toggle-password">👁️</span>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p class="forgot-password"><a href="{{ url_for('login') }}">Forgot Password</a></p> 
+        <div class="links">
+            <p style="color: black;">Need help?</p>
+            <p><a href="{{ url_for('admin_dashboard') }}">Contact tech support <span class="blue-hover">here</span>.</a></p>
+        </div>
+    </div>
+    <div class="footer">
+        <p>SYNCORE v1<br>Copyright &copy; 2024</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+</html>
