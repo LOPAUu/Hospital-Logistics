@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
