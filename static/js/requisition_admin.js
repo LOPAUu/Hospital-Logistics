@@ -70,20 +70,42 @@ function viewDetails(requisitionId) {
     fetch(`/requisitions/${requisitionId}`)
         .then(response => response.json())
         .then(data => {
-            // Populate modal content
-            document.getElementById('details-content').innerHTML = `
-                <p><strong>ID:</strong> ${data.requisition.id}</p>
-                <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
-                <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                <p><strong>Billing:</strong> ${data.requisition.billing}</p>
-                <p><strong>Total:</strong> ₱<span id="total-price">${data.total}</span></p>
-                <p><strong>Status:</strong> ${data.requisition.status}</p>
-                <!-- Add more details as needed -->
-                <h3>Items Requested:</h3>
-                <ul>
-                    ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
-                </ul>
-            `;
+            if (data.requisition) {
+                // Populate modal content
+                document.getElementById('details-content').innerHTML = `
+                    <p><strong>ID:</strong> ${data.requisition.id}</p>
+                    <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
+                    <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
+                    <p><strong>Billing:</strong> ${data.requisition.billing}</p>
+                    <p><strong>Total:</strong> ₱<span id="total-price">${data.requisition.total.toFixed(2)}</span></p>
+                    <p><strong>Status:</strong> ${data.requisition.status}</p>
+                    <h3>Items Requested:</h3>
+                    <table id="items-requested-table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Price per Unit</th>
+                                <th>Total Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Item rows will be populated here -->
+                            ${data.items.map(item => `
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>₱${item.price.toFixed(2)}</td>
+                                    <td>₱${(item.quantity * item.price).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                showError('Requisition not found');
+            }
+
             // Open the modal
             openDetailsModal();
         })
@@ -93,8 +115,6 @@ function viewDetails(requisitionId) {
             showError('Failed to fetch requisition details. Please try again later.');
         });
 }
-
-
 
 // Populate the details modal with fetched requisition details
 function populateDetailsModal(requisition) {
@@ -118,6 +138,7 @@ function populateDetailsModal(requisition) {
 
     openDetailsModal();
 }
+
 
 // Open/close modal functions
 function toggleModal(modalId, display) {
