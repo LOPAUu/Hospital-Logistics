@@ -281,15 +281,3 @@ body {
     margin: 140px 20px 0;
     box-sizing: border-box;
 }
-
-/* Dim Overlay */
-.dim-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 0;
-}
