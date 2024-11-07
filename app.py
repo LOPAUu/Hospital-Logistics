@@ -4,7 +4,6 @@ from psycopg2.extras import RealDictCursor
 
 
 app = Flask(__name__)
-app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
 # PostgreSQL configurations
 app.config['POSTGRES_HOST'] = 'localhost'
@@ -24,7 +23,7 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('admin_dashboard'))
 
 # Login route
 @app.route('/login_portal', methods=['GET', 'POST'])
