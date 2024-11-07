@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syncore Tech Support</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tech_support.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/Company_Logo.png') }}" alt="Syncore Logo">
+        </div>
+        <div class="contact-info">
+            <p>(123) 456-7890</p>
+            <p><a href="mailto:info@maclanghospital.com">info@maclanghospital.com</a></p>
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <main>
+        <h2>Tech Support</h2>
+        <p class="intro-text">Please fill out the form below to contact our support team. We are here to help!</p>
+        <form id="support-form" action="#" method="post">
+            <!-- Full Name Field -->
+            <label for="full-name">Full Name</label>
+            <input type="text" id="full-name" name="full-name" required>
+
+            <!-- Email Address Field -->
+            <label for="email-address">Email Address</label>
+            <input type="email" id="email-address" name="email-address" required>
+
+            <!-- Phone Number Field (Optional) -->
+            <label for="phone-number">Phone Number (optional)</label>
+            <input type="tel" id="phone-number" name="phone-number">
+
+            <!-- Issue Description Field -->
+            <label for="issue-description">Please describe your issue in detail.</label>
+            <textarea id="issue-description" name="issue-description" rows="4" required></textarea>
+
+            <!-- File Upload Field -->
+            <label for="file-upload">Attach screenshots or documents to help us understand your issue better.</label>
+            <input type="file" id="file-upload" name="file-upload" required>
+
+            <!-- Submit Button -->
+            <button type="button" id="submit-request-button">Submit Request</button>
+
+            <!-- Navigation Link -->
+            <main>
+                <nav class="navigation">
+                    <a class="nav-link" href="{{ url_for('login') }}">
+                        <span class="arrow-back">&#8592;</span> Back to Login
+                    </a>
+                </nav>
+            </main>
+            
+
+
+    <!-- Popup Message -->
+    <div id="popup" class="popup" style="display: none;">
+        <img src="{{ url_for('static', filename='images/checked.png') }}" alt="Checkmark" class="popup-icon">
+        <p class="popup-message">Thank you for contacting support. Your<br>request has been submitted. Our team will<br>get back to you shortly.</p>
+        <button class="popup-button" onclick="closePopup()">Back to Login</button>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/tech_support.js') }}"></script>
+</body>
+</html>
