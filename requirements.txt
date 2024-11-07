@@ -8,5 +8,5 @@ MarkupSafe==2.1.5
 werkzeug==3.0.2
 zipp==3.18.1
 yarn==1.22.22
-psycopg2==2.9.6
+psycopg2
 gunicorn
