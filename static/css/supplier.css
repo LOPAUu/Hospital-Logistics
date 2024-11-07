@@ -1,4 +1,5 @@
 /* Supplier.css */
+
 /* General Styles */
 body {
     font-family: Arial, sans-serif;
@@ -79,12 +80,12 @@ button:hover {
 
 /* Remove Button Styles */
 button.remove {
-    background-color: red;
-    color: white;
+    background-color: red; /* Red background for Remove button */
+    color: white; /* Text color for contrast */
 }
 
 button.remove:hover {
-    background-color: darkred;
+    background-color: darkred; /* Darker red on hover for effect */
 }
 
 /* Modal Styles */
@@ -97,7 +98,8 @@ button.remove:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
 }
 
 .modal-content {
@@ -133,13 +135,13 @@ label {
     margin-bottom: 5px;
 }
 
-/* Input Styles */
+/* Set a max-width for input fields */
 input[type="text"],
 input[type="email"],
 input[type="tel"],
 select {
     width: 100%;
-    max-width: 400px;
+    max-width: 400px; /* Set maximum width */
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -147,17 +149,17 @@ select {
 
 textarea {
     width: 100%;
-    max-width: 400px;
+    max-width: 400px; /* Set maximum width */
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    resize: none;
+    resize: none; /* Disable resizing */
 }
 
-/* Form Action Button */
+/* Adjust for better appearance */
 .form-action {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-start; /* Align to the left */
 }
 
 .btn-submit {
@@ -177,7 +179,6 @@ textarea {
     border-radius: 5px;
 }
 
-/* Search Filters */
 .search-filters {
     display: flex;
     justify-content: space-between;
