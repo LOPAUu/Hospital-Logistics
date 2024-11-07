@@ -21,7 +21,7 @@ body {
     background-color: #003366;
     color: #ffffff;
     box-sizing: border-box;
-    z-index: 1001;
+    z-index: 2001;
 }
 
 /* Menu Logo and Title Styling */
