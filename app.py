@@ -291,3 +291,6 @@ def purchase_order():
 if __name__ == "__main__":
     app.run(debug=True)  # Set debug=True for detailed error output
 # Update the supplier endpoints similarly to use PostgreSQL
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5432))
+    app.run(host="localhost", port=port)
