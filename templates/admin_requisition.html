@@ -42,7 +42,7 @@
                     <td>{{ requisition.id }}</td>
                     <td>{{ requisition.date }}</td>
                     <td>{{ requisition.purpose }}</td>
-                    <td>{{ requisition.supplier }}</td>
+                    <td>{{ requisition.supplierId }}</td>
                     <td><button onclick="viewDetails({{ requisition.id }})">View Details</button></td>
                     <td>{{ requisition.total }}</td>
                     <td>{{ requisition.status }}</td>
@@ -136,4 +136,5 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/requisition_admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
 {% endblock %}
