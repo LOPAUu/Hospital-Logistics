@@ -3,16 +3,15 @@ let currentRequisitionId = 1001; // Starting ID (modify as needed)
 // Format number as currency
 const formatCurrency = amount => '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// Fetch Requisition Data from the server, already sorted in ascending order by ID
+// Fetch Requisition Data - No database fetch now
 async function fetchRequisition() {
-    try {
-        const response = await fetch('/requisitions');
-        if (!response.ok) throw new Error('Failed to fetch requisitions');
-        const { requisitions } = await response.json();
-        renderRequisition(requisitions); // Assume data is already sorted
-    } catch (error) {
-        showError('Error: ' + error.message);
-    }
+    // Replace the server call with mock data
+    const requisitions = [
+        { id: 1, purpose: 'Office Supplies', billing: '12345', total: 100.00 },
+        { id: 2, purpose: 'Medical Supplies', billing: '67890', total: 150.00 },
+        { id: 3, purpose: 'Furniture', billing: '11223', total: 300.00 }
+    ];
+    renderRequisition(requisitions); // Use mock data directly
 }
 
 // Render requisition list with formatted currency in ascending order
@@ -32,7 +31,7 @@ function renderRequisition(requisitions) {
     `).join('');
 }
 
-// Save a New Requisition
+// Save a New Requisition - No server POST now
 async function saveRequisition(event) {
     event.preventDefault();
     
@@ -48,21 +47,12 @@ async function saveRequisition(event) {
         items
     };
 
-    try {
-        const response = await fetch('/requisition', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requisitionData)
-        });
-
-        if (!response.ok) throw new Error('Failed to save requisition');
-        showSuccessMessage('Requisition saved successfully!');
-        fetchRequisition(); // Refresh the list
-        closeModal(); // Close modal after saving
-        location.reload(); // Automatically refresh the page
-    } catch (error) {
-        showError('Error: ' + error.message);
-    }
+    // Log mock data instead of saving to the database
+    console.log('Saving Requisition:', requisitionData);
+    showSuccessMessage('Requisition saved successfully!');
+    fetchRequisition(); // Refresh the list with mock data
+    closeModal(); // Close modal after saving
+    location.reload(); // Automatically refresh the page
 }
 
 
@@ -76,28 +66,28 @@ function getItemsFromForm(form) {
 }
 
 // View requisition details with formatted item prices and total
-async function viewDetails(requisitionId) {
-    try {
-        const response = await fetch(`/requisitions/${requisitionId}`);
-        const { requisition, items } = await response.json();
-        document.getElementById('details-content').innerHTML = `
-            <p><strong>ID:</strong> ${requisition.id}</p>
-            <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
-            <p><strong>Purpose:</strong> ${requisition.purpose}</p>
-            <p><strong>Billing:</strong> ${requisition.billing}</p>
-            <p><strong>Status:</strong> ${requisition.status}</p>
-            <h3>Items Requested:</h3>
-            <ul>
-                ${items.map(item => `
-                    <li>${item.name} - Qty: ${item.quantity}, Price: ${formatCurrency(item.price)}, Total: ${formatCurrency(item.quantity * item.price)}</li>
-                `).join('')}
-            </ul>
-        `;
-        openDetailsModal();
-    } catch (error) {
-        console.error('Error fetching requisition details:', error);
-        showError('Failed to fetch requisition details. Please try again later.');
-    }
+function viewDetails(requisitionId) {
+    // Replace database fetch with mock data
+    const requisition = { id: requisitionId, date: '2024-11-06', purpose: 'Office Supplies', billing: '12345', status: 'Approved' };
+    const items = [
+        { name: 'Item 1', quantity: 2, price: 50.00 },
+        { name: 'Item 2', quantity: 1, price: 100.00 }
+    ];
+
+    document.getElementById('details-content').innerHTML = `
+        <p><strong>ID:</strong> ${requisition.id}</p>
+        <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
+        <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+        <p><strong>Billing:</strong> ${requisition.billing}</p>
+        <p><strong>Status:</strong> ${requisition.status}</p>
+        <h3>Items Requested:</h3>
+        <ul>
+            ${items.map(item => `
+                <li>${item.name} - Qty: ${item.quantity}, Price: ${formatCurrency(item.price)}, Total: ${formatCurrency(item.quantity * item.price)}</li>
+            `).join('')}
+        </ul>
+    `;
+    openDetailsModal();
 }
 
 // Modal handling functions
@@ -175,6 +165,7 @@ function updateTotalPrice() {
 
 // Event listeners and search/filter functions
 document.addEventListener('DOMContentLoaded', () => {
+    fetchRequisition(); // Initialize with mock data
     document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
         input.oninput = () => calculateTotal(input);
     });

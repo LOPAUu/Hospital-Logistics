@@ -1,25 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-import psycopg2
-from psycopg2.extras import RealDictCursor
-
 
 app = Flask(__name__)
 
-# PostgreSQL configurations
-app.config['POSTGRES_HOST'] = 'localhost'
-app.config['POSTGRES_PORT'] = '5432'  # Specify the PostgreSQL port
-app.config['POSTGRES_USER'] = 'postgres'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = 'logistics'  # Change to your PostgreSQL password
-app.config['POSTGRES_DB'] = 'LogisticsDB'  # Database name
+# Dummy Data
+suppliers = [
+    {'id': 1, 'company_name': 'Supplier A', 'contact_person': 'John Doe', 'email': 'johndoe@supplier.com', 'phone': '123-456-7890', 'address': '123 Supplier St'},
+    {'id': 2, 'company_name': 'Supplier B', 'contact_person': 'Jane Doe', 'email': 'janedoe@supplier.com', 'phone': '987-654-3210', 'address': '456 Supplier Ave'}
+]
 
-def get_db_connection():
-    return psycopg2.connect(
-        host=app.config['POSTGRES_HOST'],
-        port=app.config['POSTGRES_PORT'],  # Include the port in the connection
-        database=app.config['POSTGRES_DB'],
-        user=app.config['POSTGRES_USER'],
-        password=app.config['POSTGRES_PASSWORD']
-    )
+requisitions = [
+    {'id': 1, 'date': '2024-11-01', 'purpose': 'Medical Supplies', 'billing': '12345', 'total': 500},
+    {'id': 2, 'date': '2024-11-02', 'purpose': 'Office Supplies', 'billing': '67890', 'total': 300}
+]
 
 @app.route('/')
 def index():
@@ -32,27 +24,12 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        # Connect to the database and validate user
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT user_type, password FROM users WHERE username = %s", (username,))
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        # Check if user exists and password matches
-        if user and user['password'] == password:  # Compare stored password with entered password
+        # Dummy user validation (Replace with real authentication logic)
+        if username == 'admin' and password == 'admin':
             session['username'] = username
-            session['user_type'] = user['user_type']  # Save user type in session
-            flash(f"Welcome, {username} ({user['user_type']})")
-
-            # Redirect user based on user type
-            if user['user_type'] == 'Signatory':
-                return redirect(url_for('signatory_dashboard'))
-            elif user['user_type'] == 'Pharmacy':
-                return redirect(url_for('pharmacy_dashboard'))
-            elif user['user_type'] == 'Admin':
-                return redirect(url_for('admin_dashboard'))
+            session['user_type'] = 'Admin'
+            flash(f"Welcome, {username} (Admin)")
+            return redirect(url_for('admin_dashboard'))
         else:
             flash('Invalid login credentials')
             return redirect(url_for('login'))
@@ -74,90 +51,39 @@ def admin_dashboard():
 
 @app.route('/suppliers')
 def admin_supplier():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM suppliers")
-    suppliers = cur.fetchall()
-    cur.close()
-    conn.close()
     return render_template('admin_supplier.html', suppliers=suppliers)
 
 # Route to fetch a single supplier by ID
 @app.route('/suppliers/<int:supplier_id>', methods=['GET'])
 def get_supplier(supplier_id):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT company_name, contact_person, email, phone, address FROM suppliers WHERE id = %s", (supplier_id,))
-        supplier = cursor.fetchone()
-        if supplier is None:
-            return jsonify({'message': 'Supplier not found'}), 404
-        return jsonify(supplier)
-    finally:
-        cursor.close()
-        conn.close()
+    supplier = next((sup for sup in suppliers if sup['id'] == supplier_id), None)
+    if supplier is None:
+        return jsonify({'message': 'Supplier not found'}), 404
+    return jsonify(supplier)
 
-# Route to add a new supplier
+# Route to add a new supplier (no DB insertion, just returning mock data)
 @app.route('/suppliers', methods=['POST'])
 def add_supplier():
     new_supplier = request.json
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(""" 
-            INSERT INTO suppliers (company_name, contact_person, email, phone, address)
-            VALUES (%s, %s, %s, %s, %s)
-            RETURNING id
-        """, (new_supplier['companyName'], new_supplier['contactPerson'], new_supplier['email'], new_supplier['phone'], new_supplier['address']))
-        supplier_id = cursor.fetchone()[0]
-        conn.commit()
-        return jsonify({"id": supplier_id}), 201
-    finally:
-        cursor.close()
-        conn.close()
+    new_supplier['id'] = len(suppliers) + 1  # Mock adding supplier
+    suppliers.append(new_supplier)
+    return jsonify({"id": new_supplier['id']}), 201
 
+# Route to update a supplier (no DB update, just modifying mock data)
 @app.route('/suppliers/<int:id>', methods=['PUT'])
 def update_supplier(id):
+    supplier = next((sup for sup in suppliers if sup['id'] == id), None)
+    if supplier is None:
+        return jsonify({'message': 'Supplier not found'}), 404
+
     data = request.get_json()
-    company_name = data.get('company_name')
-    contact_person = data.get('contact_person')
-    email = data.get('email')
-    phone = data.get('phone')
-    address = data.get('address')
-
-    conn = psycopg2.connect(...)  # Fill in your connection details
-    cursor = conn.cursor()
-    
-    cursor.execute("""
-        UPDATE suppliers
-        SET company_name = %s,
-            contact_person = %s,
-            email = %s,
-            phone = %s,
-            address = %s
-        WHERE id = %s
-        RETURNING id;
-    """, (company_name, contact_person, email, phone, address, id))
-    
-    conn.commit()
-    updated_id = cursor.fetchone()
-    cursor.close()
-    conn.close()
-
-    if updated_id:
-        return jsonify({'message': 'Supplier updated successfully'}), 200
-
+    supplier.update(data)
+    return jsonify({'message': 'Supplier updated successfully'}), 200
 
 @app.route('/admin_requisition')
 def admin_requisition():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM requisitions")
-    requisitions = cur.fetchall()
-    cur.close()
-    conn.close()
     return render_template('admin_requisition.html', requisitions=requisitions)
-    
+
 @app.route('/requisition', methods=['GET', 'POST'])
 def user_requisition():
     if request.method == 'POST':
@@ -167,113 +93,29 @@ def user_requisition():
         item_names = request.form.getlist('item-name[]')
         item_quantities = request.form.getlist('item-quantity[]')
         item_prices = request.form.getlist('item-price[]')
+
+        # Mock data handling
+        requisition_id = len(requisitions) + 1
+        requisition_total = sum(int(q) * float(p) for q, p in zip(item_quantities, item_prices))
+
+        requisitions.append({
+            'id': requisition_id,
+            'date': date,
+            'purpose': purpose,
+            'billing': billing,
+            'total': requisition_total
+        })
         
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        # Insert the requisition details
-        cur.execute(
-            "INSERT INTO requisitions (date, purpose, billing) VALUES (%s, %s, %s) RETURNING id",
-            (date, purpose, billing)
-        )
-        requisition_id = cur.fetchone()[0]  # Get the id of the newly inserted requisition
-
-        # Initialize total sum for the requisition
-        requisition_total = 0
-
-        # Insert the items associated with the requisition and calculate total for the requisition
-        for i in range(len(item_names)):
-            quantity = int(item_quantities[i])  # Convert quantity to int
-            price = float(item_prices[i])  # Convert price to float
-            total = quantity * price  # Calculate total for this item
-
-            # Add item total to requisition total
-            requisition_total += total
-
-            # Insert the item into requisition_items table
-            cur.execute(
-                "INSERT INTO requisition_items (requisition_id, name, quantity, price, total, status) VALUES (%s, %s, %s, %s, %s, %s)",
-                (requisition_id, item_names[i], quantity, price, total, 'pending')  # Assuming status is 'pending'
-            )
-
-        # Update the total for the requisition in requisitions table
-        cur.execute(
-            "UPDATE requisitions SET total = %s WHERE id = %s",
-            (requisition_total, requisition_id)
-        )
-
-        conn.commit()
-        cur.close()
-        conn.close()
         return jsonify({"message": "Requisition saved successfully!"}), 201
 
-    # Handle the GET request for fetching all requisitions
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM requisitions")
-    requisitions = cur.fetchall()
-    cur.close()
-    conn.close()
     return render_template('admin_requisition.html', requisitions=requisitions)
-
-
 
 @app.route('/requisitions/<int:id>', methods=['GET'])
 def get_requisition(id):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    
-    try:
-        # Fetch the requisition
-        cur.execute("SELECT * FROM requisitions WHERE id = %s", (id,))
-        requisition = cur.fetchone()
-        
-        if requisition:
-            # Fetch associated items
-            cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (id,))
-            items = cur.fetchall()
-            
-            # Calculate total price from the items
-            total = sum(item['quantity'] * item['price'] for item in items)
-            
-            # Include items and total in the response
-            response = {
-                "requisition": requisition,
-                "items": items,
-                "total": total  
-            }
-            return jsonify(response), 200
-        else:
-            return jsonify({"message": "Requisition not found"}), 404
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-    finally:
-        # Ensure the connection is closed properly
-        cur.close()
-        conn.close()
-        
-@app.route('/save_total/<int:requisition_id>', methods=['POST'])
-def save_total(requisition_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    # Calculate the total for the given requisition ID by summing the item totals
-    cur.execute("SELECT requisition_items FROM requisition_items WHERE requisition_id = %s", (requisition_id,))
-    requisition_total = cur.fetchone()[0] or 0  # Default to 0 if no items found
-
-    # Insert or update the total in the 'total' table
-    cur.execute("""
-        INSERT INTO total (requisition_id, total_amount)
-        VALUES (%s, %s)
-        ON CONFLICT (requisition_id) DO UPDATE
-        SET total_amount = EXCLUDED.total_amount
-    """, (requisition_id, requisition_total))
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    return jsonify({"message": "Total saved successfully!", "requisition_id": requisition_id, "total": requisition_total}), 200
+    requisition = next((req for req in requisitions if req['id'] == id), None)
+    if requisition is None:
+        return jsonify({"message": "Requisition not found"}), 404
+    return jsonify(requisition)
 
 @app.route('/inventory')
 def inventory():
@@ -286,7 +128,6 @@ def signatory_view():
 @app.route('/purchase_order')
 def purchase_order():
     return render_template('purchase_order.html')
-    
+
 if __name__ == "__main__":
     app.run(debug=True)  # Set debug=True for detailed error output
-# Update the supplier endpoints similarly to use PostgreSQL
