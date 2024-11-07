@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
@@ -291,6 +290,3 @@ def purchase_order():
 if __name__ == "__main__":
     app.run(debug=True)  # Set debug=True for detailed error output
 # Update the supplier endpoints similarly to use PostgreSQL
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5432))
-    app.run(host="localhost", port=port)
