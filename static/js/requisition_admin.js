@@ -1,25 +1,32 @@
 let currentRequisitionId = 1001; // Starting ID (modify as needed)
 
-// Fetch Requisition Data from the server
+// Format number as currency
+const formatCurrency = amount => '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// Fetch Requisition Data from the server, already sorted in ascending order by ID
 async function fetchRequisition() {
     try {
         const response = await fetch('/requisitions');
         if (!response.ok) throw new Error('Failed to fetch requisitions');
-        const data = await response.json();
-        renderRequisition(data.requisitions);
+        const { requisitions } = await response.json();
+        renderRequisition(requisitions); // Assume data is already sorted
     } catch (error) {
         showError('Error: ' + error.message);
     }
 }
 
+// Render requisition list with formatted currency in ascending order
 function renderRequisition(requisitions) {
+    // Sort requisitions in ascending order by id
+    requisitions.sort((a, b) => a.id - b.id);
+
     const requisitionList = document.getElementById('requisition-list');
     requisitionList.innerHTML = requisitions.map(requisition => `
         <tr>
-            <td>${requisition.id}</td> 
+            <td>${requisition.id}</td>
             <td>${requisition.purpose}</td>
             <td>${requisition.billing}</td>
-            <td>${requisition.total}</td>
+            <td>${formatCurrency(requisition.total)}</td>
             <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
         </tr>
     `).join('');
@@ -31,13 +38,14 @@ async function saveRequisition(event) {
     
     const form = document.getElementById('requisition-form');
     const items = getItemsFromForm(form);
+    const total = parseFloat(document.getElementById('total-price').value) || 0;
 
     const requisitionData = {
         date: form.date.value,
         purpose: form.purpose.value,
         billing: form.billing.value,
-        total: parseFloat(document.getElementById('total-price').value) || 0,
-        items: items
+        total,
+        items
     };
 
     try {
@@ -51,10 +59,12 @@ async function saveRequisition(event) {
         showSuccessMessage('Requisition saved successfully!');
         fetchRequisition(); // Refresh the list
         closeModal(); // Close modal after saving
+        location.reload(); // Automatically refresh the page
     } catch (error) {
         showError('Error: ' + error.message);
     }
 }
+
 
 // Helper function to get items from the form
 function getItemsFromForm(form) {
@@ -65,82 +75,32 @@ function getItemsFromForm(form) {
     })).filter(item => item.name); // Filter out items with empty names
 }
 
-function viewDetails(requisitionId) {
-    // Fetch requisition details from the Flask route
-    fetch(`/requisitions/${requisitionId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.requisition) {
-                // Populate modal content
-                document.getElementById('details-content').innerHTML = `
-                    <p><strong>ID:</strong> ${data.requisition.id}</p>
-                    <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
-                    <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                    <p><strong>Billing:</strong> ${data.requisition.billing}</p>
-                    <p><strong>Total:</strong> ₱<span id="total-price">${data.requisition.total.toFixed(2)}</span></p>
-                    <p><strong>Status:</strong> ${data.requisition.status}</p>
-                    <h3>Items Requested:</h3>
-                    <table id="items-requested-table">
-                        <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Quantity</th>
-                                <th>Price per Unit</th>
-                                <th>Total Price</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Item rows will be populated here -->
-                            ${data.items.map(item => `
-                                <tr>
-                                    <td>${item.name}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>₱${item.price.toFixed(2)}</td>
-                                    <td>₱${(item.quantity * item.price).toFixed(2)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } else {
-                showError('Requisition not found');
-            }
-
-            // Open the modal
-            openDetailsModal();
-        })
-        .catch(error => {
-            console.error('Error fetching requisition details:', error);
-            // Show a simple error message to the user
-            showError('Failed to fetch requisition details. Please try again later.');
-        });
+// View requisition details with formatted item prices and total
+async function viewDetails(requisitionId) {
+    try {
+        const response = await fetch(`/requisitions/${requisitionId}`);
+        const { requisition, items } = await response.json();
+        document.getElementById('details-content').innerHTML = `
+            <p><strong>ID:</strong> ${requisition.id}</p>
+            <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
+            <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+            <p><strong>Billing:</strong> ${requisition.billing}</p>
+            <p><strong>Status:</strong> ${requisition.status}</p>
+            <h3>Items Requested:</h3>
+            <ul>
+                ${items.map(item => `
+                    <li>${item.name} - Qty: ${item.quantity}, Price: ${formatCurrency(item.price)}, Total: ${formatCurrency(item.quantity * item.price)}</li>
+                `).join('')}
+            </ul>
+        `;
+        openDetailsModal();
+    } catch (error) {
+        console.error('Error fetching requisition details:', error);
+        showError('Failed to fetch requisition details. Please try again later.');
+    }
 }
 
-// Populate the details modal with fetched requisition details
-function populateDetailsModal(requisition) {
-    document.getElementById('details-content').innerHTML = `
-        <p><strong>ID:</strong> ${requisition.id}</p>
-        <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
-        <p><strong>Purpose:</strong> ${requisition.purpose}</p>
-        <p><strong>Billing:</strong> ${requisition.billing}</p>
-        <p><strong>Total:</strong> ₱${requisition.total}</p>
-        <p><strong>Status:</strong> ${requisition.status || 'Not specified'}</p>
-        <h3>Items Requested:</h3>
-        <ul id="items-requested-list"></ul>
-    `;
-
-    const itemsList = document.getElementById('items-requested-list');
-    requisition.items.forEach(item => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${item.name} - Qty: ${item.quantity}, Price: ₱${item.price.toFixed(2)}`;
-        itemsList.appendChild(listItem);
-    });
-
-    openDetailsModal();
-}
-
-
-// Open/close modal functions
+// Modal handling functions
 function toggleModal(modalId, display) {
     const modal = document.getElementById(modalId);
     modal.style.display = display ? 'block' : 'none';
