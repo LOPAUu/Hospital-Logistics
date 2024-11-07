@@ -1,6 +1,0 @@
-
-{
-  "start": "node server.js",
-  "build": "webpack --config webpack.config.js", 
-  "dev": "yarn run dev" 
-}
