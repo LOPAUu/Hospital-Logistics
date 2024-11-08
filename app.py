@@ -4,12 +4,13 @@ from psycopg2.extras import RealDictCursor
 
 
 app = Flask(__name__)
+app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
 # PostgreSQL configurations
 app.config['POSTGRES_HOST'] = 'localhost'
 app.config['POSTGRES_PORT'] = '5432'  # Specify the PostgreSQL port
 app.config['POSTGRES_USER'] = 'postgres'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = 'miko02262004'  # Change to your PostgreSQL password
+app.config['POSTGRES_PASSWORD'] = 'logistics'  # Change to your PostgreSQL password
 app.config['POSTGRES_DB'] = 'LogisticsDB'  # Database name
 
 def get_db_connection():
