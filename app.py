@@ -10,7 +10,7 @@ app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 app.config['POSTGRES_HOST'] = 'localhost'
 app.config['POSTGRES_PORT'] = '5432'  # Specify the PostgreSQL port
 app.config['POSTGRES_USER'] = 'postgres'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = 'miko02262004'  # Change to your PostgreSQL password
+app.config['POSTGRES_PASSWORD'] = 'logistics'  # Change to your PostgreSQL password
 app.config['POSTGRES_DB'] = 'LogisticsDB'  # Database name
 
 def get_db_connection():
@@ -24,7 +24,7 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('admin_dashboard'))
 
 # Login route
 @app.route('/login_portal', methods=['GET', 'POST'])
