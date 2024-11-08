@@ -189,6 +189,20 @@ document.addEventListener('DOMContentLoaded', () => {
         closeEditModal();
         renderTable(inventoryData);
     };
+    
+    // Function to delete an item from the inventory
+window.deleteItem = function(id) {
+    const index = inventoryData.findIndex(item => item.id === id);
+    if (index !== -1) {
+        // Confirm deletion before proceeding
+        const confirmDelete = confirm(`Are you sure you want to delete the item: ${inventoryData[index].description}?`);
+        if (confirmDelete) {
+            inventoryData.splice(index, 1); // Remove item from the array
+            renderTable(inventoryData); // Refresh the table
+        }
+    }
+};
+
 
     // Initial render
     renderTable(inventoryData);
