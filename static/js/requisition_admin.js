@@ -74,49 +74,40 @@ function viewDetails(requisitionId) {
     }
 }
 
-
-function editRequisition(requisitionId) {
-    // Fetch requisition data based on the ID
-    const requisition = requisitions[requisitionId];
-    if (requisition) {
-        document.getElementById('requisition-id').textContent = requisitionId;
-        document.getElementById('date').value = requisition.date;
-        document.getElementById('purpose').value = requisition.purpose;
-        document.getElementById('supplier').value = requisition.supplier;
-        
-        // Populate items table in modal with requisition items
-        const itemsTableBody = document.getElementById('items-table').getElementsByTagName('tbody')[0];
-        itemsTableBody.innerHTML = ''; // Clear existing rows
-
-        requisition.items.forEach(item => {
-            const newRow = itemsTableBody.insertRow();
-            newRow.innerHTML = `
-                <td><input type="text" name="item-name[]" value="${item.name}" placeholder="Item Name"></td>
-                <td><input type="number" name="item-quantity[]" value="${item.quantity}" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
-                <td><input type="number" name="item-price[]" value="${item.price}" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
-                <td><input type="text" name="item-total[]" value="${item.total.toFixed(2)}" placeholder="Total" class="item-total" readonly></td>
-                <td><button type="button" onclick="removeItem(this)">Remove</button></td>
-            `;
-        });
-
-        updateTotalPrice();
-        openModal(); // Show the modal for editing
-    } else {
-        console.error("Requisition not found for editing:", requisitionId);
-    }
-}
-
 function deleteRequisition(requisitionId) {
-    const row = document.querySelector(`tr[data-id="${requisitionId}"]`);
-    if (row) {
-        row.remove();
-        console.log("Requisition deleted:", requisitionId);
-        // Add any additional code here if deletion needs to be saved to a database or storage.
-    } else {
-        console.error("Requisition not found for deletion:", requisitionId);
-    }
+    // SweetAlert confirmation dialog
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this deletion!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'No, keep it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with deletion if confirmed
+            const row = document.querySelector(`tr[data-id="${requisitionId}"]`);
+            if (row) {
+                row.remove();
+                console.log("Requisition deleted:", requisitionId);
+                Swal.fire(
+                    'Deleted!',
+                    'The requisition has been deleted.',
+                    'success'
+                );
+                // Add any additional code here if deletion needs to be saved to a database or storage.
+            } else {
+                console.error("Requisition not found for deletion:", requisitionId);
+            }
+        } else {
+            Swal.fire(
+                'Cancelled',
+                'The requisition was not deleted.',
+                'info'
+            );
+        }
+    });
 }
-
 
 function getStatusClass(status) {
     if (status === "Rejected") {
@@ -163,7 +154,7 @@ function closeModal() {
 }
 
 // Global variable to store the requisition ID
-let currentRequisitionId = 1003; // Starting ID (modify as needed)
+let currentRequisitionId = 1002; // Starting ID (modify as needed)
 
 function submitRequisition(event) {
     event.preventDefault(); // Prevent the default form submission behavior

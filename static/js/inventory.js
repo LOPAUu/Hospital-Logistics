@@ -191,17 +191,37 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Function to delete an item from the inventory
-window.deleteItem = function(id) {
-    const index = inventoryData.findIndex(item => item.id === id);
-    if (index !== -1) {
-        // Confirm deletion before proceeding
-        const confirmDelete = confirm(`Are you sure you want to delete the item: ${inventoryData[index].description}?`);
-        if (confirmDelete) {
-            inventoryData.splice(index, 1); // Remove item from the array
-            renderTable(inventoryData); // Refresh the table
+    window.deleteItem = function(id) {
+        const item = inventoryData.find(item => item.id === id);
+        if (item) {
+            // Use Alert for confirmation
+            Swal.fire({
+                title: "Are you sure?",
+                text: `Deleting ${item.description} from inventory.`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proceed with deletion
+                    const index = inventoryData.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        inventoryData.splice(index, 1); // Remove item from the array
+                        renderTable(inventoryData); // Refresh the table
+                    }
+    
+                    // Show success message
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "The item has been deleted.",
+                        icon: "success"
+                    });
+                }
+            });
         }
-    }
-};
+    };
 
 
     // Initial render
