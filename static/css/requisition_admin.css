@@ -73,7 +73,7 @@ button:hover {
     margin: 9% auto;
     padding: 13px;
     border: 1px solid #888;
-    width: 40%; /* Adjusted width to make the modal smaller */
+    width: 50%; /* Adjusted width to make the modal smaller */
     border-radius: 8px; /* Rounded corners */
     box-shadow: 0 0 15px rgba(0,0,0,0.3); /* Shadow for depth */
 }
@@ -123,6 +123,7 @@ button:hover {
     width: 17%; /* -width submit button */
     padding: 12px;
     background-color: #28a745; /* Green for submission */
+    margin-left: 80%;
 }
 
 .modal-content button[type="submit"]:hover {
