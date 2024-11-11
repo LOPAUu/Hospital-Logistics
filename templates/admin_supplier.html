@@ -4,6 +4,7 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/supplier.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock %}
 
 {% block body %}
@@ -16,10 +17,12 @@
             <a href="{{ url_for('inventory') }}">Inventory</a>
         </div>
     </div>
+    
+    <h1>Supplier List
+        <button id="add-button" onclick="openAddSupplierModal()">CREATE SUPPLIER</button>
+    </h1>
 
     <div class="container">
-        <h1>Supplier List</h1>
-        
         <table id="supplier-list">
             <thead>
                 <tr>
@@ -40,14 +43,20 @@
                     <td>{{ supplier.phone }}</td>
                     <td>{{ supplier.address }}</td>
                     <td>
-                        <button onclick="openEditSupplierModal({{ supplier.id }})">Edit</button>
-                        <button onclick="removeSupplier({{ supplier.id }})">Delete</button>
+                        <button class="view-button" onclick="openViewSupplierModal({{ supplier.id }})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="edit-button" onclick="openEditSupplierModal({{ supplier.id }})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-button" onclick="removeSupplier({{ supplier.id }})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <button id="add-button" onclick="openAddSupplierModal()">Add Supplier</button>
     </div>
 
     <!-- Modal for adding suppliers -->
