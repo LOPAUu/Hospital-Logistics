@@ -167,6 +167,8 @@ function deleteRequisition(requisitionId) {
     });
 }
 
+
+
 function getStatusClass(status) {
     if (status === "Rejected") {
         return "status-rejected";

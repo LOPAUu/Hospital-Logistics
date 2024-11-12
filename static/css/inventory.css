@@ -1,3 +1,4 @@
+
 h2 {
     display: block;
     font-size: 2em; /* Increase or decrease as needed */
@@ -205,9 +206,10 @@ h2 {
 }
 
 .inventory-container {
-    max-width: 100%;
+    max-width: 95%;
     margin: 150px auto;
     background: white;
-    padding: 50px;
+    padding: 30px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 15px;
 }
