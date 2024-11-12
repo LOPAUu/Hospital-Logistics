@@ -1,150 +1,123 @@
-
+/* General Container Styling */
 .container {
-    max-width: 100%;
-    margin: 150px auto;
+    max-width: 95%;
+    margin: 0px auto;
     background: white;
-    padding: 50px;
+    padding: 30px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 15px;
 }
 
 h2 {
-    display: block;
-    font-size: 2em; /* Increase or decrease as needed */
-    margin-block-start: 0.83em;
-    margin-block-end: 0.83em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-    unicode-bidi: isolate;
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 155px;
 }
 
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+h3 {
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 0px;
 }
 
-.header h1 {
-    font-size: 24px;
-    margin: 0;
-}
-
+h2 { font-size: 2em; }
+.header h1 { font-size: 24px; }
 .header p {
     font-size: 14px;
     color: #0056b3;
 }
 
-.header button {
+#createOrderBtn {
+    background-color: #0056b3;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 76%;
+}
+
+/* Button Styling */
+button, .header button, .filter-btn {
     background-color: #0056b3;
     color: white;
     border: none;
-    padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
+    padding: 10px 20px;
 }
-
-/* Filters Styles */
-.filters {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
+button:hover, .header button:hover, .filter-btn:hover {
+    background-color: #00448d;
 }
-
 .filter-btn {
     background-color: #e0e0e0;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
     font-size: 12px;
+    padding: 8px 12px;
+}
+.filter-btn.active { 
+    background-color: #0056b3; 
+    color: white; 
 }
 
-.filter-btn.active {
-    background-color: #0056b3;
-    color: white;
-}
-
-/* Table Styles */
+/* Table Styling */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
-
 table thead {
     background-color: #f1f1f1;
 }
-
-table thead th {
+table th, table td {
     padding: 12px;
     text-align: left;
-    font-weight: bold;
     font-size: 14px;
 }
-
-table tbody td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
+table thead th { 
+    background-color: #53649c;
+    color: #d1d1d1;
+    font-weight: bold; 
 }
+table tbody td { border-bottom: 1px solid #ddd; }
 
-.status-closed {
-    color: red;
-    font-weight: bold;
-}
+.status-open { color: green; font-weight: bold; }
+.status-closed { color: red; font-weight: bold; }
 
-.status-open {
-    color: green;
-    font-weight: bold;
-}
-
-/* Tab Navigation Styles */
+/* Tab Navigation Styling */
 .tabs--secondary {
     margin-top: 20px;
     border-bottom: 1px solid #ccc;
 }
-
 .tab__nav ul {
     display: flex;
-    list-style-type: none;
     padding: 0;
-    margin: 0;
-    margin-bottom: 13px;
+    margin: 0 0 13px;
+    list-style-type: none;
 }
-
 .tab__item {
     margin-right: 20px;
 }
-
 .tab__item a {
     text-decoration: none;
     padding: 10px 20px;
     color: #333;
     border-radius: 4px;
-    display: inline-block;
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.2s;
 }
-
 .tab__item a.is-activated {
-    background-color: #007bff;
+    background-color: #53649c;
     color: white;
 }
-
 .tab__item a:hover:not(.is-disabled) {
     background-color: #e7e7e7;
 }
-
 .tab__item a.is-disabled {
     color: #999;
     cursor: not-allowed;
 }
 
-.tab__content {
-    margin-top: 20px;
-}
-
-/* Modal Styles */
+/* Modal Styling */
 .modal {
     display: none;
     position: fixed;
@@ -156,123 +129,60 @@ table tbody td {
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.4);
 }
-
 .modal-content {
-    background-color: #fff;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
+    background-color: white;
     border-radius: 8px;
+    max-width: 600px;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
 }
-
 .close {
     color: #aaa;
     float: right;
     font-size: 28px;
     font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
     cursor: pointer;
 }
+.close:hover, .close:focus { color: black; }
 
-.form-section {
-    margin-bottom: 15px;
-}
+/* Form and Input Styling */
+.form-section { margin-bottom: 15px; }
+label { display: block; margin-bottom: 5px; font-size:  16px; }
 
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-input {
-    width: 70%;
+.input, .small-input, .small-select {
+    width: 50%;
     padding: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
-/* Flex container for order number and order status */
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
-/* Smaller width for order number input */
-.small-input {
-    width: 150px;
-    padding: 5px;
-    font-size: 14px;
-}
+.small-input { width: 150px; }
+.small-select { width: 120px; }
 
-/* Smaller width for order status select */
-.small-select {
-    width: 120px; /* Adjust this width to your preference */
-    padding: 5px;
-    font-size: 14px;
-}
-
-/* Make table rows clickable */
+/* Clickable Row */
 .clickable-row {
     cursor: pointer;
 }
-
 .clickable-row:hover {
     background-color: #f1f1f1;
 }
 
-
-button {
-    background-color: #0056b3;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 0%;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
+/* Layout for Modal Content */
 .modal-body {
     display: flex;
-    justify-content: space-between;
-    gap: 20px;
+    gap: 40px;
 }
-
-.left-section,
-.right-section {
+.left-section, .right-section {
     flex: 1;
 }
 
-.form-section {
-    margin-bottom: 15px;
+.container th:nth-child(2), 
+.container td:nth-child(2) {
+    font-weight: bold;
 }
 
-.small-input, .small-select {
-    width: 100%;
+.container th:nth-child(4), 
+.container td:nth-child(4) {
+    font-weight: bold;
 }
-
-.table {
-    width: 100%;
-    margin-top: 20px;
-}
-
-.modal-content {
-    padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    max-width: 800px;
-    margin: 0 auto;
-    margin-top: 150px;
-}
-
-
