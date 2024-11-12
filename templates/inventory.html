@@ -4,6 +4,7 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock %}
 
 {% block body %}
@@ -18,9 +19,8 @@
         </div>
     </div>
     <body>
+        <h2>Inventory Management</h2>
         <div class="inventory-container">
-            <h2>Inventory Management</h2>
-
             <div class="search-container">
                 <input type="text" id="search-id" placeholder="Search by ID">
                 <input type="text" id="search-description" placeholder="Search by Description">
@@ -36,14 +36,15 @@
             <table class="inventory-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Description</th>
+                        <th>SKU</th>
+                        <th>Item Name</th>
                         <th>Quantity</th>
                         <th>Status</th>
                         <th>Unit Cost</th>
                         <th>Unit Price</th>
                         <th>Category</th>
-                        <th>Base Unit of Measure</th>          
+                        <th>Base Unit of Measure</th>
+                        <th>Reorder Level</th>
                         <th>Actions</th>
                     </tr>
                 </thead>

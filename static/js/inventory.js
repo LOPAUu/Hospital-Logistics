@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const inventoryData = [
-        { id: 1, description: 'Biogesic', quantity: 100, status: 'Active', unitCost: 10.00, unitPrice: 15.00, category: 'Category A', baseUnit: 'PCS' },
-        { id: 2, description: 'BioFlu', quantity: 50, status: 'Inactive', unitCost: 8.00, unitPrice: 12.00, category: 'Category B', baseUnit: 'PCS' }
+        { id: 1, description: 'Biogesic', quantity: 100, status: 'Active', unitCost: 10.00, unitPrice: 15.00, category: 'Category A', baseUnit: 'PCS', reorderLevel: 1000 },
+        { id: 2, description: 'BioFlu', quantity: 50, status: 'Inactive', unitCost: 8.00, unitPrice: 12.00, category: 'Category B', baseUnit: 'PCS', reorderLevel: 500  }
     ];    
 
     const detailsData = {
@@ -37,10 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.unitPrice.toFixed(2)}</td>
                 <td>${item.category}</td>
                 <td>${item.baseUnit}</td>
+                <td>${item.reorderLevel}</td>
                 <td>
-                    <button class="action-btn view" onclick="viewItem(${item.id})">View</button>
-                    <button class="action-btn edit" onclick="editItem(${item.id})">Edit</button>
-                    <button class="action-btn delete" onclick="deleteItem(${item.id})">Delete</button>
+                    <button class="action-btn view" onclick="viewItem(${item.id})"> <i class="fas fa-eye"></i></button>
+                    <button class="action-btn edit" onclick="editItem(${item.id})"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn delete" onclick="deleteItem(${item.id})"><i class="fas fa-trash-alt"></i></i></button>
                 </td>
             `;
             tableBody.appendChild(row);
