@@ -171,4 +171,48 @@ function updateInventoryDisplay() {
     });
 }
 
+const searchInput = document.getElementById("search-input");  // Select search input
+
+// Function to filter inventory based on search input
+function filterInventory() {
+    const searchTerm = searchInput.value.toLowerCase();  // Get the search term and convert to lowercase
+    return inventory.filter(item => item.name.toLowerCase().includes(searchTerm));
+}
+
+// Function to update inventory display
+function updateInventoryDisplay() {
+    const filteredInventory = filterInventory();  // Get filtered inventory
+
+    // Clear the table
+    const tbody = document.querySelector(".inventory-panel tbody");
+    tbody.innerHTML = "";
+
+    // Loop through filtered inventory and populate the table
+    filteredInventory.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>₱${item.price.toFixed(2)}</td>
+            <td>Category A</td>
+            <td><button class="add-to-cart" data-name="${item.name}" data-price="${item.price}">Add</button></td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add event listeners for the new "Add to Cart" buttons
+    document.querySelectorAll(".add-to-cart").forEach(button => {
+        button.addEventListener("click", function() {
+            const productName = this.getAttribute("data-name");
+            const productPrice = parseFloat(this.getAttribute("data-price"));
+            addToCart(productName, productPrice);
+        });
+    });
+}
+
+// Add event listener to the search input to update inventory display
+searchInput.addEventListener("input", updateInventoryDisplay);
+
+// Initial inventory display
 updateInventoryDisplay();
