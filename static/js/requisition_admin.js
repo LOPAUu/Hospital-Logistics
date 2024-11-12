@@ -1,34 +1,88 @@
-function viewDetails(requisitionId) {
-    const requisitions = {
-        1001: {
-            purpose: "Order More Vaccines",
-            supplier: "Mercury Drugs collab",
-            items: [
-                { name: "Vaccine A", quantity: 50, price: 25.50, total: 1275.00 },
-                { name: "Vaccine B", quantity: 100, price: 15.00, total: 1500.00 }
-            ],
-            signatory1: { approved: true, name: "Maverick Ko" },
-            signatory2: { approved: null, name: "Rene Letegio" },
-            signatory3: { approved: null, name: "Paulo Sangreo" }
-        },
-        1002: {
-            purpose: "Restock Masks",
-            supplier: "ABC Pharmaceuticals",
-            items: [
-                { name: "Surgical Mask", quantity: 1000, price: 0.50, total: 500.00 }
-            ],
-            signatory1: { approved: true, name: "Maverick Ko" },
-            signatory2: { approved: false, name: "Rene Letegio" },
-            signatory3: { approved: null, name: "Paulo Sangreo" }
-        }
+// Initialize a global requisitions object
+const requisitions = {
+    1001: {
+        purpose: "Order More Vaccines",
+        supplier: "Mercury Drugs collab",
+        items: [
+            { name: "Vaccine A", quantity: 50, price: 25.50, total: 1275.00 },
+            { name: "Vaccine B", quantity: 100, price: 15.00, total: 1500.00 }
+        ],
+        signatory1: { approved: true, name: "Maverick Ko" },
+        signatory2: { approved: null, name: "Rene Letegio" },
+        signatory3: { approved: null, name: "Paulo Sangreo" }
+    },
+    1002: {
+        purpose: "Restock Masks",
+        supplier: "ABC Pharmaceuticals",
+        items: [
+            { name: "Surgical Mask", quantity: 1000, price: 0.50, total: 500.00 }
+        ],
+        signatory1: { approved: true, name: "Maverick Ko" },
+        signatory2: { approved: false, name: "Rene Letegio" },
+        signatory3: { approved: null, name: "Paulo Sangreo" }
+    }
+};
+
+function submitRequisition(event) {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    // Capture the form data
+    const purpose = document.getElementById('purpose').value;
+    const supplier = document.getElementById('supplier').value;
+    const items = Array.from(document.querySelectorAll('input[name="item-name[]"]')).map((input, index) => {
+        const name = input.value;
+        const quantity = parseFloat(document.querySelectorAll('input[name="item-quantity[]"]')[index].value);
+        const price = parseFloat(document.querySelectorAll('input[name="item-price[]"]')[index].value);
+        const total = quantity * price;
+        return { name, quantity, price, total };
+    });
+
+    const totalPrice = items.reduce((sum, item) => sum + item.total, 0);
+
+    // Add the new requisition to the global requisitions object
+    requisitions[currentRequisitionId] = {
+        purpose,
+        supplier,
+        items,
+        signatory1: { approved: null, name: "Maverick Ko" },
+        signatory2: { approved: null, name: "Rene Letegio" },
+        signatory3: { approved: null, name: "Paulo Sangreo" }
     };
 
+    // Create a new row for the requisition list table
+    const table = document.getElementById('requisition-list').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow(table.rows.length);
+    newRow.setAttribute('data-id', currentRequisitionId);
+
+    // Insert the requisition data into the table row
+    newRow.innerHTML = `
+        <td>${currentRequisitionId}</td>
+        <td>${getCurrentDate()}</td>
+        <td>${purpose}</td>
+        <td>${supplier}</td>
+        <td>₱${totalPrice.toFixed(2)}</td>
+        <td>Pending</td>
+        <td>
+            <button onclick="viewDetails(${currentRequisitionId})">View</button>
+            <button onclick="editRequisition(${currentRequisitionId})">Edit</button>
+            <button onclick="deleteRequisition(${currentRequisitionId})">Delete</button>
+        </td>
+    `;
+
+    // Increment the requisition ID for the next submission
+    currentRequisitionId++;
+
+    // Close the modal and reset the form
+    closeModal();
+    document.getElementById('requisition-form').reset();
+}
+
+// Adjust the viewDetails function to use the global requisitions object
+function viewDetails(requisitionId) {
     const requisition = requisitions[requisitionId];
 
     if (requisition) {
-        // Calculate total of all items
         const total = requisition.items.reduce((sum, item) => sum + item.total, 0).toFixed(2);
-
         const status = getStatus(requisition.signatory1, requisition.signatory2, requisition.signatory3);
         const statusClass = getStatusClass(status);
 
@@ -36,8 +90,8 @@ function viewDetails(requisitionId) {
             `<tr>
                 <td>${item.name}</td>
                 <td>${item.quantity}</td>
-                <td>₱${item.price.toFixed(2)}</td> <!-- Changed to Peso -->
-                <td>₱${item.total.toFixed(2)}</td> <!-- Changed to Peso -->
+                <td>₱${item.price.toFixed(2)}</td>
+                <td>₱${item.total.toFixed(2)}</td>
             </tr>`).join('');
 
         const approvalDetails = `
@@ -62,7 +116,7 @@ function viewDetails(requisitionId) {
                     ${itemsRequested}
                 </tbody>
             </table>
-            <p><strong>Total:</strong> ₱${total}</p> <!-- Changed to Peso -->
+            <p><strong>Total:</strong> ₱${total}</p>
             <p><strong>Status:</strong> <span class="${statusClass}">${status}</span></p>
             ${approvalDetails}
         `;
@@ -73,6 +127,10 @@ function viewDetails(requisitionId) {
         console.error("Details not found for requisition ID:", requisitionId);
     }
 }
+
+let currentRequisitionId = 1003; // Initialize with the next requisition ID
+document.getElementById('date').value = getCurrentDate();
+
 
 function deleteRequisition(requisitionId) {
     // SweetAlert confirmation dialog
@@ -153,52 +211,6 @@ function closeModal() {
     document.getElementById('manage-requisition-modal').style.display = 'none';
 }
 
-// Global variable to store the requisition ID
-let currentRequisitionId = 1002; // Starting ID (modify as needed)
-
-function submitRequisition(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
-
-    // Capture the form data
-    const purpose = document.getElementById('purpose').value;
-    const supplier = document.getElementById('supplier').value;
-    const items = Array.from(document.querySelectorAll('input[name="item-name[]"]')).map((input, index) => {
-        const name = input.value;
-        const quantity = document.querySelectorAll('input[name="item-quantity[]"]')[index].value;
-        const price = document.querySelectorAll('input[name="item-price[]"]')[index].value;
-        const total = document.querySelectorAll('input[name="item-total[]"]')[index].value;
-        return { name, quantity, price, total };
-    });
-
-    const totalPrice = document.getElementById('total-price').value;
-
-    // Create a new row for the requisition list table
-    const table = document.getElementById('requisition-list').getElementsByTagName('tbody')[0];
-    const newRow = table.insertRow(table.rows.length);
-    newRow.setAttribute('data-id', currentRequisitionId);
-
-    // Insert the requisition data into the table row
-    newRow.innerHTML = `
-        <td>${currentRequisitionId}</td>
-        <td>${getCurrentDate()}</td>
-        <td>${purpose}</td>
-        <td>${supplier}</td>
-        <td>₱${totalPrice}</td>
-        <td>Pending</td>
-        <td>
-            <button onclick="viewDetails(${currentRequisitionId})">View</button>
-            <button onclick="editRequisition(${currentRequisitionId})">Edit</button>
-            <button onclick="deleteRequisition(${currentRequisitionId})">Delete</button>
-        </td>
-    `;
-
-    // Increment the requisition ID for the next submission
-    currentRequisitionId++;
-
-    // Close the modal and reset the form
-    closeModal();
-    document.getElementById('requisition-form').reset();
-}
 
 // Attach the submit function to the form's submit event
 document.getElementById('requisition-form').addEventListener('submit', submitRequisition);
@@ -223,9 +235,6 @@ function openModal() {
     currentRequisitionId++; // Increment for the next requisition
 }
 
-function closeModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'none';
-}
 function addItem() {
     const table = document.getElementById('items-table').getElementsByTagName('tbody')[0];
     const newRow = table.insertRow(table.rows.length);
