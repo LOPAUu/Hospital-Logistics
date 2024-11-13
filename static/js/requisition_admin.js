@@ -186,9 +186,9 @@ function submitRequisition(event) {
         <td>₱${totalPrice}</td>
         <td>Pending</td>
         <td>
-            <button onclick="viewDetails(${currentRequisitionId})">View</button>
-            <button onclick="editRequisition(${currentRequisitionId})">Edit</button>
-            <button onclick="deleteRequisition(${currentRequisitionId})">Delete</button>
+            <button onclick="viewDetails(${currentRequisitionId})"><i class="fas fa-eye"></button>
+            <button onclick="editRequisition(${currentRequisitionId})"><i class="fas fa-edit"></button>
+            <button onclick="deleteRequisition(${currentRequisitionId})"><i class="fas fa-trash-alt"></i></button>
         </td>
     `;
 

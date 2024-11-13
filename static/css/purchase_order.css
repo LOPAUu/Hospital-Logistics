@@ -30,12 +30,18 @@ h2 { font-size: 2em; }
 #createOrderBtn {
     background-color: #0056b3;
     color: white;
-    padding: 15px;
+    padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     margin-left: 76%;
+    transition: background-color 0.3s ease; /* Smooth transition */
 }
+
+#createOrderBtn:hover {
+    background-color: #003f7f; /* Deep navy blue on hover */
+}
+
 
 /* Button Styling */
 button, .header button, .filter-btn {

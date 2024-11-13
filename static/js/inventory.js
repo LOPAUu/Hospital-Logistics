@@ -39,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.baseUnit}</td>
                 <td>${item.reorderLevel}</td>
                 <td>
-                    <button class="action-btn view" onclick="viewItem(${item.id})"> <i class="fas fa-eye"></i></button>
+                    <button class="action-btn view" onclick="viewItem(${item.id})"><i class="fas fa-eye"></i></button>
                     <button class="action-btn edit" onclick="editItem(${item.id})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn delete" onclick="deleteItem(${item.id})"><i class="fas fa-trash-alt"></i></i></button>
+                    <button class="action-btn delete" onclick="deleteItem(${item.id})"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
             tableBody.appendChild(row);
