@@ -117,36 +117,67 @@ def add_supplier():
         cursor.close()
         conn.close()
 
-@app.route('/suppliers/<int:id>', methods=['PUT'])
-def update_supplier(id):
-    data = request.get_json()
-    company_name = data.get('company_name')
-    contact_person = data.get('contact_person')
-    email = data.get('email')
-    phone = data.get('phone')
-    address = data.get('address')
+@app.route('/suppliers/<int:supplier_id>', methods=['PUT'])
+def update_supplier(supplier_id):
+    updated_supplier = request.json
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    conn = psycopg2.connect(...)  # Fill in your connection details
-    cursor = conn.cursor()
-    
-    cursor.execute("""
-        UPDATE suppliers
-        SET company_name = %s,
-            contact_person = %s,
-            email = %s,
-            phone = %s,
-            address = %s
-        WHERE id = %s
-        RETURNING id;
-    """, (company_name, contact_person, email, phone, address, id))
-    
-    conn.commit()
-    updated_id = cursor.fetchone()
-    cursor.close()
-    conn.close()
+        cursor.execute("SELECT * FROM suppliers WHERE id = %s", (supplier_id,))
+        supplier = cursor.fetchone()
 
-    if updated_id:
-        return jsonify({'message': 'Supplier updated successfully'}), 200
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+
+        cursor.execute("""
+            UPDATE suppliers
+            SET company_name = %s,
+                contact_person = %s,
+                email = %s,
+                phone = %s,
+                address = %s
+            WHERE id = %s
+        """, (
+            updated_supplier['companyName'],
+            updated_supplier['contactPerson'],
+            updated_supplier['email'],
+            updated_supplier['phone'],
+            updated_supplier['address'],
+            supplier_id
+        ))
+
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "No changes made"}), 400
+
+        return jsonify({"message": "Supplier updated successfully"}), 200
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/suppliers/<int:supplier_id>', methods=['DELETE'])
+def delete_supplier(supplier_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM suppliers WHERE id = %s", (supplier_id,))
+        supplier = cursor.fetchone()
+
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+
+        cursor.execute("DELETE FROM suppliers WHERE id = %s", (supplier_id,))
+        conn.commit()
+
+        return jsonify({"message": "Supplier deleted successfully"}), 200
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 @app.route('/admin_requisition')

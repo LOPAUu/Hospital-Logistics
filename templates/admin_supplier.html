@@ -5,6 +5,7 @@
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/supplier.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
 
 {% block body %}
@@ -46,7 +47,7 @@
                         <button class="view-button" onclick="openViewSupplierModal({{ supplier.id }})">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="edit-button" onclick="openEditSupplierModal({{ supplier.id }})">
+                        <button class="edit-button" onclick="openupdateSupplierModal({{ supplier.id }})">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="delete-button" onclick="removeSupplier({{ supplier.id }})">
@@ -95,7 +96,7 @@
     <!-- Modal for editing supplier details -->
     <div id="edit-supplier-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close-button" onclick="closeEditSupplierModal()">&times;</span>
+            <span class="close-button" onclick="closeupdateSupplierModal()">&times;</span>
             <h2>Edit Supplier</h2>
             <form id="edit-supplier-form" onsubmit="updateSupplier(event)">
                 <div class="form-group">

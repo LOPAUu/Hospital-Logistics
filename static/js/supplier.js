@@ -66,86 +66,262 @@ async function addSupplier(event) {
             body: JSON.stringify(formData)
         });
         if (response.ok) {
-            fetchSuppliers();
+            closeAddSupplierModal(); // Close the modal
+            Swal.fire({
+                icon: 'success',
+                title: 'Supplier Added',
+                text: 'The supplier has been added successfully!',
+                showConfirmButton: true,
+                allowOutsideClick: true, // Allow user to click outside to close
+                backdrop: true, // Ensure the modal background is active
+            }).then(() => {
+                window.location.reload(); // Reload the entire page after dismissal
+            });
+        } else {
             closeAddSupplierModal();
+            const errorData = await response.json();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorData.error || 'Failed to add supplier.',
+                showConfirmButton: true,
+            });
         }
     } catch (error) {
+        closeAddSupplierModal();
         console.error("Error adding supplier:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'DUPLICATE ENTRY DETECTED.',
+            showConfirmButton: true,
+        });
     }
 }
 
-// Remove a supplier
-async function removeSupplier(id) {
-    try {
-        const response = await fetch(`/suppliers/${id}`, { method: 'DELETE' });
-        if (response.ok) fetchSuppliers();
-    } catch (error) {
-        console.error("Error deleting supplier:", error);
-    }
-}
-
-// Open the modal for editing supplier details and set the supplierId
-function openEditSupplierModal(supplierId) {
-    window.supplierId = supplierId; // Set the global supplierId
-
+// Open the edit supplier modal and load the supplier data
+function openupdateSupplierModal(supplierId) {
     fetch(`/suppliers/${supplierId}`)
         .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch supplier data');
+            if (!response.ok) {
+                throw new Error('Failed to fetch supplier data');
+            }
             return response.json();
         })
         .then(supplier => {
-            document.getElementById('edit-company-name').value = supplier.company_name || '';
-            document.getElementById('edit-contact-person').value = supplier.contact_person || '';
-            document.getElementById('edit-email').value = supplier.email || '';
-            document.getElementById('edit-phone').value = supplier.phone || '';
-            document.getElementById('edit-address').value = supplier.address || '';
+            // Fill the modal with supplier data
+            document.getElementById('edit-company-name').value = supplier.company_name;
+            document.getElementById('edit-contact-person').value = supplier.contact_person;
+            document.getElementById('edit-email').value = supplier.email;
+            document.getElementById('edit-phone').value = supplier.phone;
+            document.getElementById('edit-address').value = supplier.address;
 
+            // Store the supplier ID globally for later use
+            window.supplierId = supplierId;
+            window.originalSupplier = supplier; // Store the original supplier data
+
+            // Open the modal
             document.getElementById('edit-supplier-modal').style.display = 'block';
         })
-        .catch(error => console.error('Error fetching supplier data:', error));
+        .catch(error => {
+            console.error('Error fetching supplier data:', error);
+            alert('Failed to fetch supplier data');
+        });
 }
 
-function closeEditSupplierModal() {
+// Close the edit supplier modal
+function closeupdateSupplierModal() {
     document.getElementById('edit-supplier-modal').style.display = 'none';
 }
 
+// Function to check if there are any changes to the data
+function hasChanges(updatedData) {
+    return (
+        updatedData.companyName !== originalData.companyName ||
+        updatedData.contactPerson !== originalData.contactPerson ||
+        updatedData.email !== originalData.email ||
+        updatedData.phone !== originalData.phone ||
+        updatedData.address !== originalData.address
+    );
+}
 
-// Function to update the supplier details
-function updateSupplier(event) {
+// Open the edit supplier modal and load the supplier data
+function openupdateSupplierModal(supplierId) {
+    fetch(`/suppliers/${supplierId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch supplier data');
+            }
+            return response.json();
+        })
+        .then(supplier => {
+            // Fill the modal with supplier data
+            document.getElementById('edit-company-name').value = supplier.company_name;
+            document.getElementById('edit-contact-person').value = supplier.contact_person;
+            document.getElementById('edit-email').value = supplier.email;
+            document.getElementById('edit-phone').value = supplier.phone;
+            document.getElementById('edit-address').value = supplier.address;
+
+            // Store the supplier ID globally for later use
+            window.supplierId = supplierId;
+
+            // Store the initial values
+            window.initialData = {
+                companyName: supplier.company_name,
+                contactPerson: supplier.contact_person,
+                email: supplier.email,
+                phone: supplier.phone,
+                address: supplier.address,
+            };
+
+            // Open the modal
+            document.getElementById('edit-supplier-modal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching supplier data:', error);
+            alert('Failed to fetch supplier data');
+        });
+}
+
+// Close the edit supplier modal
+function closeupdateSupplierModal() {
+    document.getElementById('edit-supplier-modal').style.display = 'none';
+}
+
+// Check for changes
+function checkForChanges() {
+    const currentData = {
+        companyName: document.getElementById('edit-company-name').value,
+        contactPerson: document.getElementById('edit-contact-person').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        address: document.getElementById('edit-address').value,
+    };
+
+    // Compare the initial data with the current data
+    return JSON.stringify(currentData) !== JSON.stringify(window.initialData);
+}
+
+// Enable or disable the update button based on changes
+function toggleUpdateButton() {
+    const updateButton = document.getElementById('update-button'); // Ensure the button has this ID
+    if (checkForChanges()) {
+        updateButton.disabled = false;
+    } else {
+        updateButton.disabled = true;
+    }
+}
+
+// Update supplier data
+async function updateSupplier(event) {
     event.preventDefault();
 
-    const supplierId = supplierId/* Obtain supplier ID (e.g., from a hidden field or state) */;
-    const companyName = document.getElementById("edit-company-name").value;
-    const contactPerson = document.getElementById("edit-contact-person").value;
-    const email = document.getElementById("edit-email").value;
-    const phone = document.getElementById("edit-phone").value;
-    const address = document.getElementById("edit-address").value;
+    // If no changes, show error message
+    if (!checkForChanges()) {
+        closeupdateSupplierModal();
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No changes have been made to the data. Please modify the fields before submitting.',
+            showConfirmButton: true,
+        });
+        return;
+    }
 
-    fetch('/update_supplier', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            supplier_id: supplierId,
-            company_name: companyName,
-            contact_person: contactPerson,
-            email: email,
-            phone: phone,
-            address: address
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message) {
-            alert(data.message); // Success message
-            closeEditSupplierModal();
+    const updatedData = {
+        companyName: document.getElementById('edit-company-name').value,
+        contactPerson: document.getElementById('edit-contact-person').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        address: document.getElementById('edit-address').value,
+    };
+
+    try {
+        const response = await fetch(`/suppliers/${window.supplierId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData),
+        });
+
+        if (response.ok) {
+            closeupdateSupplierModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Supplier Edited',
+                text: 'Supplier edited successfully!',
+                showConfirmButton: true,
+            }).then(() => {
+                window.location.reload(); // Reload to reflect the changes
+            });
         } else {
-            alert(data.error || 'An error occurred.');
+            closeupdateSupplierModal();
+            const errorData = await response.json();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorData.error || 'Failed to update supplier.',
+                showConfirmButton: true,
+            });
         }
-    })
-    .catch(error => console.error('Error:', error));
+    } catch (error) {
+        closeupdateSupplierModal();
+        console.error('Error updating supplier:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred.',
+            showConfirmButton: true,
+        });
+    }
 }
+
+// Listen for changes and enable/disable the update button
+document.querySelectorAll('.edit-modal-input').forEach(input => {
+    input.addEventListener('input', toggleUpdateButton);
+});
+
+// Delete supplier
+function removeSupplier(supplierId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/suppliers/${supplierId}`, { method: 'DELETE' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete supplier');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    window.location.reload()
+                    closeremoveSupplier();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Supplier has been deleted.',
+                    }).then(() => {
+                        window.location.reload(); // Reload to remove the supplier from the list
+                    });
+                })
+                .catch(error => {
+                    closeremoveSupplier();
+                    console.error('Error deleting supplier:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to delete supplier.',
+                        showConfirmButton: true,
+                    });
+                });
+        }
+    });
+}
+
 
 // Load suppliers when the page is ready
 document.addEventListener('DOMContentLoaded', fetchSuppliers);
