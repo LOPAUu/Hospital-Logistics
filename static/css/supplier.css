@@ -46,7 +46,7 @@ h1 {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 82%;
+    margin-left: 83.5%;
 }
 
 .view-button {
@@ -168,6 +168,10 @@ textarea {
 
 .btn-submit {
     background-color: #28a745;
+    color:#fefefe;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
 }
 
 .btn-submit:hover {

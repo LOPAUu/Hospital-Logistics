@@ -20,13 +20,6 @@ h3 {
     margin-top: 0px;
 }
 
-h2 { font-size: 2em; }
-.header h1 { font-size: 24px; }
-.header p {
-    font-size: 14px;
-    color: #0056b3;
-}
-
 #createOrderBtn {
     background-color: #0056b3;
     color: white;
@@ -34,7 +27,7 @@ h2 { font-size: 2em; }
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 76%;
+    margin-left: 78%;
     transition: background-color 0.3s ease; /* Smooth transition */
 }
 
@@ -42,17 +35,6 @@ h2 { font-size: 2em; }
     background-color: #003f7f; /* Deep navy blue on hover */
 }
 
-
-/* Button Styling */
-button, .header button, .filter-btn {
-    background-color: #0056b3;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    padding: 10px 20px;
-}
 button:hover, .header button:hover, .filter-btn:hover {
     background-color: #00448d;
 }
@@ -92,7 +74,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
 
 /* Tab Navigation Styling */
 .tabs--secondary {
-    margin-top: 20px;
+    margin-top: 0px;
     border-bottom: 1px solid #ccc;
 }
 .tab__nav ul {
