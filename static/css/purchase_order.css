@@ -21,13 +21,14 @@ h3 {
 }
 
 #createOrderBtn {
+    font-size: 14px;
     background-color: #0056b3;
     color: white;
     padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 78%;
+    margin-left: 77.8%;
     transition: background-color 0.3s ease; /* Smooth transition */
 }
 

@@ -322,6 +322,5 @@ function removeSupplier(supplierId) {
     });
 }
 
-
 // Load suppliers when the page is ready
 document.addEventListener('DOMContentLoaded', fetchSuppliers);

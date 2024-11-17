@@ -32,6 +32,12 @@ CREATE TABLE supplier (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE supplier_items (
+    id SERIAL PRIMARY KEY,
+    supplier_id INT NOT NULL REFERENCES supplier(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL
+);
+
 -- Table for requisitions
 CREATE TABLE requisitions (
     id SERIAL PRIMARY KEY,
