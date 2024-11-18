@@ -277,7 +277,41 @@ async function addSupplier(event) {
 }
 
 
+// Open the Edit Supplier Modal and populate the form with supplier data
+async function openEditSupplierModal(supplierId) {
+    // Fetch supplier data from backend
+    const response = await fetch(`/supplier/${supplierId}`);
+    console.log(response);
+    const data = await response.json();
 
+    if (response.ok) {
+        // Populate the supplier information fields
+        document.getElementById('edit-company-name').value = data.supplier[0]; // company_name
+        document.getElementById('edit-contact-person').value = data.supplier[1]; // contact_person
+        document.getElementById('edit-email').value = data.supplier[2]; // email
+        document.getElementById('edit-phone').value = data.supplier[3]; // phone
+        document.getElementById('edit-address').value = data.supplier[4]; // address
+
+        // Populate the items offered by the supplier
+        const itemsTable = document.getElementById('edit-supplier-items-table').getElementsByTagName('tbody')[0];
+        itemsTable.innerHTML = ''; // Clear existing rows
+
+        data.items.forEach(item => {
+            const row = itemsTable.insertRow();
+            const cell = row.insertCell(0);
+            cell.innerHTML = `
+                <input type="text" name="edit-supplier-item-name[]" value="${item}" placeholder="Item Name">
+                <button type="button" onclick="removeItem(this)">Remove</button>
+            `;
+        });
+
+        // Show the modal
+        document.getElementById('edit-supplier-modal').style.display = 'block';
+    } else {
+        console.error(data.error || 'Failed to fetch supplier data');
+        alert('Error: ' + (data.error || 'Failed to load data'));
+    }
+}
 
 
 // Close the edit supplier modal
@@ -308,13 +342,10 @@ function openupdateSupplierModal(supplierId) {
             document.getElementById('edit-email').value = supplier.email;
             document.getElementById('edit-phone').value = supplier.phone;
             document.getElementById('edit-address').value = supplier.address;
-            // Populate the items offered by the supplier (assuming `data.items` is an array)
-            const itemsTable = document.getElementById('edit-supplier-items-table').getElementsByTagName('tbody')[0];
-            itemsTable.innerHTML = ''; // Clear existing rows
 
             window.supplierId = supplierId;
             window.initialData = { 
-                companyName: supplier.company_name, 
+                companyName: supplier.company_name,
                 contactPerson: supplier.contact_person,
                 email: supplier.email,
                 phone: supplier.phone,

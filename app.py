@@ -88,6 +88,7 @@ def admin_supplier():
     close_db_connection(cur, conn)
     return render_template('admin_supplier.html', suppliers=suppliers)
 
+
 # Route to fetch a single supplier by ID
 @app.route('/suppliers/<int:supplier_id>', methods=['GET'])
 def get_supplier(supplier_id):
