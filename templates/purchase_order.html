@@ -78,85 +78,130 @@
                 </tbody>
             </table>
 
-            <!-- Create Purchase Order Modal -->
-            <div id="purchaseOrderModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2>Purchase Order</h2>
+           <!-- Create Purchase Order Modal -->
+<div id="purchaseOrderModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Create Purchase Order</h2>
 
-                    <div class="modal-body">
-                        <div class="left-section">
-                            <div class="form-section">
-                                <label>From</label>
-                                <input type="text" id="fromDetails" readonly>
-                            </div>
+        <div class="modal-body">
+            <div class="left-section">
+                <div class="form-section">
+                    <label>From</label>
+                    <input type="text" id="fromDetails" readonly>
+                </div>
 
-                            <div class="form-section">
-                                <label>Bill To</label>
-                                <input type="text" id="billToDetails" readonly>
-                            </div>
-                        </div>
-
-                        <div class="right-section">
-                            <div class="form-section form-row">
-                                <label>Order Number</label>
-                                <select id="orderNumberDropdown" class="small-select">
-                                    <option value="" disabled selected>Select an Order</option>
-                                    <option value="#PO4">#PO4</option>
-                                    <option value="#PO5">#PO5</option>
-                                    <option value="#PO6">#PO6</option>
-                                    <option value="#PO7">#PO7</option>
-                                    <option value="#PO8">#PO8</option>
-                                    <option value="#PO9">#PO9</option>
-                                </select>
-                            </div>
-                            <div class="form-section form-row">
-                                <label>Order Status</label>
-                                <select id="orderStatus" class="small-select">
-                                    <option value="Ordered">Ordered</option>
-                                    <option value="Received">Received</option>
-                                </select>
-                            </div>
-
-                            <div class="form-section form-row">
-                                <label>Issue Date</label>
-                                <input type="date" id="issueDate" value="" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Quantity</th>
-                                    <th>Unit</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="itemList">
-                                <!-- Items will be populated automatically -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="form-section">
-                        <label>Total</label>
-                        <input type="text" id="total" disabled>
-                    </div>
-                    <button id="confirmOrderBtn">Confirm</button>
+                <div class="form-section">
+                    <label>Bill To</label>
+                    <input type="text" id="billToDetails" readonly>
                 </div>
             </div>
 
-            <!-- New Modal for Table Row Click -->
-        <div id="orderDetailsModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div class="modal-body"></div>
+            <div class="right-section">
+                <div class="form-section form-row">
+                    <label>Order Number</label>
+                    <select id="orderNumberDropdown" class="small-select">
+                        <option value="" disabled selected>Select an Order</option>
+                        <!-- Populate dynamically -->
+                    </select>
+                </div>
+                <div class="form-section form-row">
+                    <label>Order Status</label>
+                    <input type="text" id="orderStatus" value="Ordered" readonly>
+                </div>
+
+                <div class="form-section form-row">
+                    <label>Issue Date</label>
+                    <input type="date" id="issueDate" readonly>
+                </div>
             </div>
         </div>
+
+        <div class="form-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemList">
+                    <!-- Items will be populated automatically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-section">
+            <label>Total</label>
+            <input type="text" id="total" disabled>
+        </div>
+        <button id="confirmOrderBtn">Confirm</button>
+    </div>
+</div>
+
+<!-- View Purchase Order Modal -->
+<div id="orderDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>View Purchase Order</h2>
+
+        <div class="modal-body">
+            <div class="left-section">
+                <div class="form-section">
+                    <label>From</label>
+                    <input type="text" id="viewFromDetails" readonly>
+                </div>
+
+                <div class="form-section">
+                    <label>Bill To</label>
+                    <input type="text" id="viewBillToDetails" readonly>
+                </div>
+            </div>
+
+            <div class="right-section">
+                <div class="form-section form-row">
+                    <label>Order Number</label>
+                    <input type="text" id="viewOrderNumber" readonly>
+                </div>
+                <div class="form-section form-row">
+                    <label>Order Status</label>
+                    <input type="text" id="viewOrderStatus" readonly>
+                </div>
+                <div class="form-section form-row">
+                    <label>Issue Date</label>
+                    <input type="date" id="viewIssueDate" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="viewItemList">
+                    <!-- Items will be populated automatically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-section">
+            <label>Total</label>
+            <input type="text" id="viewTotal" disabled>
+        </div>
+    </div>
+</div>
+
+
 
         <script src="{{ url_for('static', filename='js/purchase_order.js') }}"></script>
 </html>

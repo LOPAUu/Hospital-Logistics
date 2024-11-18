@@ -277,3 +277,6 @@ button:hover {
 }
 
 
+input[readonly] {
+    cursor: default; /* Use 'default' or 'not-allowed' to indicate non-editable */
+}

@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
         resetDropdownOptions(); // Reset the dropdown options
         document.getElementById('fromDetails').value = ""; // Clear From field
         document.getElementById('billToDetails').value = ""; // Clear Bill To field
+        document.getElementById('fromDetails').setAttribute('readonly', true); // Make "From" field readonly
+        document.getElementById('billToDetails').setAttribute('readonly', true); // Make "Bill To" field readonly
+        document.getElementById('orderStatus').value = "Ordered"; // Set Order Status to "Ordered"
+        document.getElementById('orderStatus').setAttribute('readonly', true); // Make Order Status readonly
         document.getElementById('issueDate').value = new Date().toISOString().split('T')[0]; // Set today's date
         itemList.innerHTML = ''; // Clear existing items
         document.getElementById('total').value = ""; // Reset total

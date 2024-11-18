@@ -41,17 +41,17 @@ th {
 }
 
 /* Style for the Manage Requisition button */
-#manage-button {
+#create-button {
     background-color: #0056b3;
     color: white;
     padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 80%;
+    margin-left: 67%;
 }
 
-#manage-button:hover {
+#create-button:hover {
     background-color: #002244;
 }
 
@@ -215,3 +215,15 @@ button:hover {
     width: 200px;
 }
 
+#generate-report {
+    background-color: #28a745; /* Green for generate/print button */
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#generate-report:hover {
+    background-color: #218838; /* Darker green on hover */
+}

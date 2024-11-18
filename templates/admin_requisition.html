@@ -19,7 +19,19 @@
     </div>
 
     <div class="container">
-        <h1>Requisition List  <button id="manage-button" onclick="openModal()">Manage Requisition</button></h1>
+        <h1>Requisition List<button id="create-button" onclick="openModal()">Create Requisition</button></h1>
+    
+            <!-- Filter Section -->
+    <div class="search-filters">
+        <input type="date" id="filter-date" placeholder="Filter by Date">
+        <select id="filter-status">
+            <option value="">Filter by Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+        <button id="generate-report" onclick="generateReport()">Generate/Print Report</button>
+    </div>
     
         <!-- Requisition Table -->
         <table id="requisition-list">
@@ -67,10 +79,10 @@
     </div>
     
     <!-- Modal for managing requisitions -->
-    <div id="manage-requisition-modal" class="modal">
+    <div id="create-requisition-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeModal()">&times;</span>
-            <h2>Manage Requisition</h2>
+            <h2>Create Requisition</h2>
             <form id="requisition-form">
                 <fieldset>
                     <legend>Requisition Information</legend>
@@ -149,6 +161,74 @@
             </div>
         </div>
     </div>
+
+    <!-- Edit Modal for managing requisitions -->
+<div id="edit-requisition-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeEditModal()">&times;</span>
+        <h2>Edit Requisition</h2>
+        <form id="edit-requisition-form">
+            <fieldset>
+                <legend>Requisition Information</legend>
+                <div class="form-group">
+                    <label for="edit-requisition-id">Requisition ID:</label>
+                    <span id="edit-requisition-id"></span>
+                </div>
+                <div class="form-group">
+                    <label for="edit-date">Date:</label>
+                    <input type="text" id="edit-date" name="date" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="edit-purpose">Purpose:</label>
+                    <input type="text" id="edit-purpose" name="purpose" required>
+                </div>
+            </fieldset>
+            
+            <fieldset>
+                <legend>Supplier</legend>
+                <div class="form-group">
+                    <label for="edit-supplier">Supplier Information:</label>
+                    <input type="text" id="edit-supplier" name="supplier" required>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Items and Details</legend>
+                <div class="form-group">
+                    <label for="edit-attachments">Attachments:</label>
+                    <input type="file" id="edit-attachments" name="attachments" multiple>
+                </div>
+                <div class="form-group">
+                    <label>Items Requested:</label>
+                    <table id="edit-items-table">
+                        <thead>
+                            <tr>
+                                <th>Name of Item</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Existing items will be populated here -->
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="addItem()">Add Item</button>
+                </div>
+                <div class="form-group">
+                    <label for="edit-total-price">Total Price:</label>
+                    <input type="text" id="edit-total-price" name="total-price" readonly>
+                </div>
+            </fieldset>
+
+            <div class="form-action">
+                <button type="button" class="btn-submit" onclick="saveEditedRequisition()">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
     <script src="{{ url_for('static', filename='js/requisition_admin.js') }}"></script>
     <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>

@@ -23,6 +23,8 @@ const requisitions = {
     }
 };
 
+let currentRequisitionId = 1003; // Initialize with the next requisition ID
+
 function submitRequisition(event) {
     event.preventDefault(); // Prevent the default form submission behavior
 
@@ -128,9 +130,6 @@ function viewDetails(requisitionId) {
     }
 }
 
-let currentRequisitionId = 1003; // Initialize with the next requisition ID
-document.getElementById('date').value = getCurrentDate();
-
 
 function deleteRequisition(requisitionId) {
     // SweetAlert confirmation dialog
@@ -166,8 +165,6 @@ function deleteRequisition(requisitionId) {
         }
     });
 }
-
-
 
 function getStatusClass(status) {
     if (status === "Rejected") {
@@ -205,12 +202,9 @@ function openDetailsModal() {
 function closeDetailsModal() {
     document.getElementById('details-modal').style.display = 'none';
 }
-function openModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'block';
-}
 
 function closeModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'none';
+    document.getElementById('create-requisition-modal').style.display = 'none';
 }
 
 
@@ -218,11 +212,98 @@ function closeModal() {
 document.getElementById('requisition-form').addEventListener('submit', submitRequisition);
 
 
-function openModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'block';
-    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
-    currentRequisitionId++; // Increment for the next requisition
+function editRequisition(requisitionId) {
+    const requisition = requisitions[requisitionId];
+    console.log("Editing requisition", requisition);
+
+    if (requisition) {
+        // Ensure that totalPrice is calculated here, just in case it's undefined
+        const totalPrice = requisition.items.reduce((sum, item) => sum + item.total, 0);
+
+        // Assign the requisition ID, purpose, supplier, and the calculated totalPrice
+        document.getElementById('edit-requisition-id').textContent = requisitionId;
+        document.getElementById('edit-date').value = requisition.date || getCurrentDate(); // Ensure a date exists
+        document.getElementById('edit-purpose').value = requisition.purpose;
+        document.getElementById('edit-supplier').value = requisition.supplier;
+        document.getElementById('edit-total-price').value = totalPrice.toFixed(2);  // Use the calculated totalPrice
+
+        const itemsTable = document.getElementById('edit-items-table').getElementsByTagName('tbody')[0];
+        itemsTable.innerHTML = ''; // Clear existing rows
+        requisition.items.forEach(item => {
+            const newRow = itemsTable.insertRow();
+            newRow.innerHTML = `
+                <td><input type="text" name="item-name[]" value="${item.name}"></td>
+                <td><input type="number" name="item-quantity[]" value="${item.quantity}" class="item-quantity" oninput="calculateTotal(this)"></td>
+                <td><input type="number" name="item-price[]" value="${item.price}" class="item-price" oninput="calculateTotal(this)"></td>
+                <td><input type="text" name="item-total[]" value="${item.total.toFixed(2)}" class="item-total" readonly></td>
+                <td><button type="button" onclick="removeItem(this)">Remove</button></td>
+            `;
+        });
+
+        document.getElementById('edit-requisition-modal').style.display = 'block';
+    } else {
+        console.error("Requisition not found:", requisitionId);
+    }
 }
+
+
+function saveEditedRequisition() {
+    const requisitionId = document.getElementById('edit-requisition-id').textContent;
+    const requisition = requisitions[requisitionId];
+
+    if (requisition) {
+        requisition.purpose = document.getElementById('edit-purpose').value;
+        requisition.supplier = document.getElementById('edit-supplier').value;
+
+        const itemNames = document.querySelectorAll('input[name="item-name[]"]');
+        const itemQuantities = document.querySelectorAll('input[name="item-quantity[]"]');
+        const itemPrices = document.querySelectorAll('input[name="item-price[]"]');
+        const itemTotals = document.querySelectorAll('input[name="item-total[]"]');
+
+        requisition.items = [];
+        itemNames.forEach((input, index) => {
+            const name = input.value;
+            const quantity = parseFloat(itemQuantities[index].value);
+            const price = parseFloat(itemPrices[index].value);
+            const total = quantity * price;
+            requisition.items.push({ name, quantity, price, total });
+        });
+
+        requisition.totalPrice = requisition.items.reduce((sum, item) => sum + item.total, 0);
+
+        requisitions[requisitionId] = requisition;  // Update requisition data
+
+        closeEditModal(); // Close the modal
+        updateRequisitionRow(requisitionId); // Optional: update the requisition row on the page
+    }
+}
+
+function closeEditModal() {
+    document.getElementById('edit-requisition-modal').style.display = 'none';
+}
+
+function openEditModal() {
+    document.getElementById('edit-requisition-modal').style.display = 'block';
+}
+
+
+function updateRequisitionRow(requisitionId) {
+    const row = document.querySelector(`tr[data-id="${requisitionId}"]`);
+    if (row) {
+        const requisition = requisitions[requisitionId];
+        const totalPrice = requisition.items.reduce((sum, item) => sum + item.total, 0);
+        row.cells[4].textContent = `₱${totalPrice.toFixed(2)}`; // Update the total price in the table
+        row.cells[5].textContent = getStatus(requisition.signatory1, requisition.signatory2, requisition.signatory3); // Update status
+    }
+}
+
+
+// Function to close the modal
+function closeModal() {
+    document.getElementById('create-requisition-modal').style.display = 'none';
+}
+
+
 // Function to get the current date in YYYY-MM-DD format
 function getCurrentDate() {
     const today = new Date();
@@ -231,10 +312,17 @@ function getCurrentDate() {
 
 
 function openModal() {
-    document.getElementById('manage-requisition-modal').style.display = 'block';
+    document.getElementById('create-requisition-modal').style.display = 'block';
     document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
     document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
     currentRequisitionId++; // Increment for the next requisition
+        // Reset the form each time to clear any previous data
+        document.getElementById('requisition-form').reset();
+        const itemsTable = document.getElementById('items-table').getElementsByTagName('tbody')[0];
+        itemsTable.innerHTML = ''; // Clear any pre-existing items
+
+        // Add a default row to the item table if needed
+        addItem(); // This ensures the item table starts empty
 }
 
 function addItem() {
@@ -252,15 +340,9 @@ function addItem() {
 function removeItem(button) {
     let row = button.parentNode.parentNode;
     row.parentNode.removeChild(row);
+    updateTotalPrice();  // Recalculate the total price after removal
 }
 
-function calculateTotal(input) {
-    let row = input.parentNode.parentNode;
-    let quantity = row.getElementsByClassName('item-quantity')[0].value;
-    let price = row.getElementsByClassName('item-price')[0].value;
-    let total = row.getElementsByClassName('item-total')[0];
-    total.value = (quantity * price).toFixed(2); // Calculates total and fixes to 2 decimal places
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     const initialInputs = document.querySelectorAll('.item-quantity, .item-price');
@@ -271,11 +353,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function calculateTotal(input) {
     let row = input.parentNode.parentNode;
-    let quantity = row.getElementsByClassName('item-quantity')[0].value;
-    let price = row.getElementsByClassName('item-price')[0].value;
+    let quantity = parseFloat(row.getElementsByClassName('item-quantity')[0].value) || 0; // Default to 0 if invalid
+    let price = parseFloat(row.getElementsByClassName('item-price')[0].value) || 0; // Default to 0 if invalid
     let total = row.getElementsByClassName('item-total')[0];
     
-    // Calculate the total for this row
+    // Calculate the total for this row and fix to 2 decimal places
     total.value = (quantity * price).toFixed(2);
     
     // Update the overall total
@@ -284,19 +366,14 @@ function calculateTotal(input) {
 
 function updateTotalPrice() {
     let totalPrice = 0;
-    
-    // Get all the item total fields
     const totals = document.querySelectorAll('.item-total');
-    
-    // Sum the values of all item totals
     totals.forEach(total => {
-        let value = parseFloat(total.value) || 0;  // Convert to number, default to 0 if empty
+        let value = parseFloat(total.value) || 0;
         totalPrice += value;
     });
-    
-    // Set the overall total price
     document.getElementById('total-price').value = totalPrice.toFixed(2);
 }
+
 
 function addItem() {
     const table = document.getElementById('items-table').getElementsByTagName('tbody')[0];
@@ -309,6 +386,90 @@ function addItem() {
         <td><button type="button" onclick="removeItem(this)">Remove</button></td>
     `;
 }
+
+function applyFilters() {
+    const filterDate = document.getElementById("filter-date").value;
+    const filterStatus = document.getElementById("filter-status").value.toLowerCase();
+    const tableRows = document.querySelectorAll("#requisition-list tbody tr");
+
+    tableRows.forEach(row => {
+        const rowDate = row.children[1].textContent;
+        const rowStatus = row.children[5].textContent.toLowerCase();
+
+        // Show or hide the row based on filters
+        if (
+            (filterDate && rowDate !== filterDate) ||
+            (filterStatus && rowStatus !== filterStatus)
+        ) {
+            row.style.display = "none";
+        } else {
+            row.style.display = "";
+        }
+    });
+}
+
+function generateReport() {
+    const filterDate = document.getElementById('filter-date').value;
+    const filterStatus = document.getElementById('filter-status').value;
+    const tableRows = document.querySelectorAll('#requisition-list tbody tr');
+
+    // Filter rows based on input
+    tableRows.forEach(row => {
+        const rowDate = row.children[1].textContent.trim();
+        const rowStatus = row.children[5].textContent.trim();
+
+        if ((filterDate && rowDate !== filterDate) || 
+            (filterStatus && rowStatus !== filterStatus)) {
+            row.style.display = 'none';
+        } else {
+            row.style.display = '';
+        }
+    });
+
+    // Create a copy of the table without the actions column
+    const table = document.querySelector('#requisition-list').cloneNode(true);
+    const actionIndex = Array.from(table.querySelectorAll('thead th')).findIndex(th =>
+        th.textContent.trim().toLowerCase() === 'actions'
+    );
+
+    // Remove the "Actions" column from header and rows
+    if (actionIndex >= 0) {
+        table.querySelectorAll('thead th')[actionIndex].remove();
+        table.querySelectorAll('tbody tr').forEach(row => {
+            row.children[actionIndex]?.remove();
+        });
+    }
+
+    // Add title and styles for the report
+    const title = `<h1 style="text-align: center; font-family: Arial, sans-serif;">Requisition Report</h1>`;
+    const styles = `
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f4f4f4; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            h1 { color: #333; }
+        </style>
+    `;
+
+    // Open print window with title and styled table
+    const printWindow = window.open('', '', 'height=500,width=800');
+    printWindow.document.write('<html><head><title>Requisition Report</title>');
+    printWindow.document.write(styles);
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(title);
+    printWindow.document.write(table.outerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+
+    // Reset the table view after printing
+    tableRows.forEach(row => row.style.display = '');
+}
+
+
+
 
 
 function searchRequisitions() {
