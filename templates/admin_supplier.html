@@ -100,6 +100,7 @@
             <div class="supplier-items-column">
                 <div class="form-group">
                     <label>Supplies Offered</label>
+                    <button type="button" onclick="addsupplierItem()">Add Item</button>
                     <table id="supplier-items-table">
                         <thead>
                             <tr>
@@ -111,7 +112,6 @@
                                 <td>
                                     <input type="text" name="supplier-item-name[]" placeholder="Item Name">
                                     <button type="button" onclick="removeItem(this)">Remove</button>
-                                    <button type="button" onclick="addsupplierItem()">Add Item</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -123,67 +123,68 @@
 
 
         <!-- Modal for editing supplier details -->
-        <div id="edit-supplier-modal" class="modal">
-            <div class="edit-modal-container">
-                <!-- Modal Content with Two Columns -->
-                <div class="modal-content">
-                    <span class="close-button" onclick="closeupdateSupplierModal()">&times;</span>
-                    <!-- First Column: Supplier Information -->
-                    <div class="supplier-info-column">
-                        <h2>Edit Supplier</h2>
-                        <form id="edit-supplier-form" onsubmit="updateSupplier(event)">
-                            <div class="form-group">
-                                <label for="edit-company-name">Company Name:</label>
-                                <input type="text" id="edit-company-name" name="edit-company-name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-contact-person">Contact Person:</label>
-                                <input type="text" id="edit-contact-person" name="edit-contact-person" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-email">Email:</label>
-                                <input type="email" id="edit-email" name="edit-email" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-phone">Phone:</label>
-                                <input type="tel" id="edit-phone" name="edit-phone" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-address">Address:</label>
-                                <textarea id="edit-address" name="edit-address" required></textarea>
-                            </div>
-                            <!-- Form Action -->
-                            <div class="form-action">
-                                <button type="submit" class="btn-submit">Update Supplier</button>
-                            </div>
-                        </form>
-                    </div>
+    <div id="edit-supplier-modal" class="modal">
+        <div class="edit-modal-container">
+            <!-- Modal Content with Two Columns -->
+            <div class="modal-content">
+                <span class="close-button" onclick="closeupdateSupplierModal()">&times;</span>
+                <!-- First Column: Supplier Information -->
+                <div class="supplier-info-column">
+                    <h2>Edit Supplier</h2>
+                    <form id="edit-supplier-form" onsubmit="updateSupplier(event)">
+                        <div class="form-group">
+                            <label for="edit-company-name">Company Name:</label>
+                            <input type="text" id="edit-company-name" name="edit-company-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-contact-person">Contact Person:</label>
+                            <input type="text" id="edit-contact-person" name="edit-contact-person" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email:</label>
+                            <input type="email" id="edit-email" name="edit-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-phone">Phone:</label>
+                            <input type="tel" id="edit-phone" name="edit-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-address">Address:</label>
+                            <textarea id="edit-address" name="edit-address" required></textarea>
+                        </div>
+                        <!-- Form Action -->
+                        <div class="form-action">
+                            <button type="submit" class="btn-submit">Update Supplier</button>
+                        </div>
+                    </form>
                 </div>
+            </div>
 
-                <!-- Second Column: Items Supplied -->
-                <div class="supplier-items-information-column">
-                    <div class="form-group">
-                        <label>Supplies Offered</label>
-                        <table id="edit-supplier-items-table">
-                            <thead>
-                                <tr>
-                                    <th>Name of Item</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <input type="text" name="edit-supplier-item-name[]" placeholder="Item Name">
-                                        <button type="button" onclick="removeItem(this)">Remove</button>
-                                        <button type="button" onclick="addEditedSupplierItem()">Add Item</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- Second Column: Items Supplied -->
+            <div class="supplier-items-information-column">
+                <div class="form-group">
+                    <label>Supplies Offered</label>
+                    <button type="button" onclick="addEditedSupplierItem()">Add Item</button>
+                    <table id="edit-supplier-items-table">
+                        <thead>
+                            <tr>
+                                <th>Name of Item</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="text" name="edit-supplier-item-name[]" placeholder="Item Name">
+                                    <button type="button" onclick="removeItem(this)">Remove</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+    </div>
+
 
     <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
 {% endblock %}

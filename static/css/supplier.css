@@ -71,10 +71,20 @@ button:hover {
     background-color: #004e11;
 }
 
-.edit-button,
-button[onclick="addsupplierItem()"],
-button[onclick="addEditedSupplierItem()"] {
+.edit-button {
     margin-left: 5px;
+    background-color: #0d4e84;
+    color: white;
+}
+
+button[onclick="addsupplierItem()"] {
+    margin-left: 300px;
+    background-color: #0d4e84;
+    color: white;
+}
+
+button[onclick="addEditedSupplierItem()"] {
+    margin-left: 300px;
     background-color: #0d4e84;
     color: white;
 }
@@ -174,9 +184,12 @@ textarea {
     resize: vertical;
 }
 
-input[type="text"][name*="supplier-item-name[]"],
+input[type="text"][name*="supplier-item-name[]"] {
+    width: 76%;
+}
+
 input[type="text"][name*="edit-supplier-item-name[]"] {
-    width: 56.7%;
+    width: 76%;
 }
 
 input:focus,
@@ -220,6 +233,5 @@ textarea:focus {
 #supplier-items-table td,
 #edit-supplier-items-table td {
     padding: 8px;
-    border: 1px solid #ddd;
     font-size: 14px;
 }

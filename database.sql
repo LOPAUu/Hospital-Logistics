@@ -34,8 +34,8 @@ CREATE TABLE supplier (
 
 CREATE TABLE supplier_items (
     id SERIAL PRIMARY KEY,
-    supplier_id INT NOT NULL REFERENCES supplier(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL
+    supplier_id INTEGER NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+    item_name VARCHAR(255) NOT NULL
 );
 
 -- Table for requisitions
