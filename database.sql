@@ -1,7 +1,5 @@
 CREATE DATABASE LogisticsDB;
 
-USE LogisticsDB;
-
 -- Table for users with PostgreSQL equivalent to MySQL AUTO_INCREMENT
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,  -- SERIAL is PostgreSQL's auto-incrementing integer
@@ -21,7 +19,7 @@ INSERT INTO users (username, password, user_type)
 VALUES ('admin', 'admin', 'Admin');
 
 -- Table for suppliers with PostgreSQL timestamp handling
-CREATE TABLE supplier (
+CREATE TABLE suppliers (
     id SERIAL PRIMARY KEY,
     company_name VARCHAR(255) NOT NULL,
     contact_person VARCHAR(255) NOT NULL,
