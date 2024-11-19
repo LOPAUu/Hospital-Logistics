@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}POS{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pos.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+
+{% block body %}
+    <!-- New Top Bar -->
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_supplier') }}">Supplier</a>
+            <a href="{{ url_for('admin_requisition') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
+            <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('pos') }}">POS</a>
+        </div>
+    </div>
+
+    <h2>Point of Sales</h2>
+
+    <!-- Add Products Row without background -->
+    <div class="add-products">
+        <label for="medicine-dropdown">Select Product:</label>
+        <select id="medicine-dropdown">
+            <option value="">Select Medicine</option>
+            {% for medicine in medicines %}
+                <option 
+                    value="{{ medicine.medicine_id }}" 
+                    data-price="{{ medicine.unit_price }}" 
+                    data-sku="{{ medicine.sku }}" 
+                    data-name="{{ medicine.medicine_name }}">
+                    {{ medicine.sku }} - {{ medicine.medicine_name }}
+                </option>
+            {% endfor %}
+        </select>        
+
+        <label for="quantity-input">Quantity:</label>
+        <input type="number" id="quantity-input" placeholder="Enter Quantity" min="1" />
+
+        <button id="add-item-btn" onclick="addItem()">Add Item</button>
+    </div>
+
+    <!-- Main Container for Left and Right Sides -->
+    <div class="pos-container">
+        <!-- Left Side: Item Table -->
+        <div class="pos-left">
+            <h3>Items Added</h3>
+            <table id="item-table">
+                <thead>
+                    <tr>
+                        <th>Remove</th>
+                        <th>Quantity</th>
+                        <th>Medicine Name</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="item-table-body">
+                    <!-- Dynamically added items will appear here -->
+                </tbody>
+            </table>
+        </div>
+        <!-- Right Side: Summary -->
+        <div class="pos-right">
+            <h3>Summary</h3>
+
+            <form action="{{ url_for('send_to_billing') }}" method="POST" id="billing-form">
+                <label for="customer-name">Customer Name:</label>
+                <input type="text" id="customer-name" name="full_name" placeholder="Enter Customer Name" required />
+            
+                <label for="contact-number">Contact Number:</label>
+                <input type="text" id="contact-number" name="contact_number" placeholder="Enter Contact Number (Optional)" />
+            
+                <label for="date-of-birth">Date of Birth:</label>
+                <input type="date" id="date-of-birth" name="date_of_birth" />
+            
+                <label for="senior-pwd">Senior/PWD?</label>
+                <select id="senior-pwd" name="senior_or_pwd">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            
+                <!-- Hidden field for medicines data -->
+                <input type="hidden" id="medicines-data" name="medicines_data" />
+            
+                <button type="submit">Send to Billing</button>
+            </form>            
+        </div>
+    </div>
+    {% block scripts %}
+    <script src="{{ url_for('static', filename='js/pos.js') }}"></script>
+    {% endblock %}
+{% endblock %}

@@ -1,0 +1,184 @@
+/* Basic Styles for POS */
+body {
+    font-family: 'Lato', Arial, sans-serif; /* Change font to Lato Regular */
+}
+
+/* Header Style */
+h2 {
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 155px;
+}
+
+/* Add Products Row without background */
+.add-products {
+    display: flex;
+    align-items: center;
+    margin: 0 20px;  /* Aligns with pos-container's margins */
+    background-color: transparent;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+}
+
+/* Add Product Field Styling */
+.add-products label {
+    margin-right: 10px;
+    flex: 0 0 150px;  /* Give space for the label */
+}
+
+/* Extend the width of dropdown and input field */
+.add-products select, .add-products input {
+    flex-grow: 1;  /* Make the dropdown and input fields stretch */
+    padding: 8px;
+    margin-right: 10px;
+}
+
+/* Add Item Button Styling */
+#add-item-btn {
+    padding: 8px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px; /* Space between button and fields */
+    align-self: flex-start; /* Position the button at the top of the row */
+}
+
+#add-item-btn:hover {
+    background-color: #218838;
+}
+
+/* Main container for Left and Right Side */
+.pos-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 0 20px;  /* Left and right margins */
+}
+
+/* Left Side Table */
+.pos-left {
+    flex: 1;
+    margin-right: 20px;
+}
+
+#item-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#item-table th, #item-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+#item-table th {
+    background-color: #f4f4f4;
+}
+
+#item-table td button {
+    background-color: #ff4b5c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+/* Right Side Summary */
+.pos-right {
+    flex: 0 0 300px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.pos-right h3 {
+    margin-bottom: 10px;
+}
+
+.pos-right p {
+    margin-bottom: 10px;
+}
+
+#send-billing-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    width: 100%;
+}
+
+#send-billing-btn:hover {
+    background-color: #45a049;
+}
+
+/* Style for the table in the left section */
+.items-table-container {
+    width: 60%;
+}
+
+.items-table-container h3 {
+    margin-bottom: 10px;
+}
+
+.items-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table table, th, td {
+    border: 1px solid #ddd;
+}
+
+.items-table th, .items-table td {
+    padding: 8px;
+    text-align: center;
+}
+
+.items-table th {
+    background-color: #f2f2f2;
+}
+
+.items-table .remove-item {
+    color: red;
+    cursor: pointer;
+}
+
+.summary-container {
+    width: 35%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.summary-container h3 {
+    margin-bottom: 20px;
+}
+
+.summary-container input {
+    padding: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.send-to-billing {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.send-to-billing:hover {
+    background-color: #45a049;
+}

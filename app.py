@@ -1,22 +1,18 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-import psycopg2
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+import psycopg2, requests, json
 from psycopg2.extras import RealDictCursor
 
-
 app = Flask(__name__)
-app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
 # PostgreSQL configurations
 app.config['POSTGRES_HOST'] = 'localhost'
-app.config['POSTGRES_PORT'] = '5432'  # Specify the PostgreSQL port
 app.config['POSTGRES_USER'] = 'postgres'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = 'logistics'  # Change to your PostgreSQL password
+app.config['POSTGRES_PASSWORD'] = 'fms-group3'  # Change to your PostgreSQL password
 app.config['POSTGRES_DB'] = 'LogisticsDB'  # Database name
 
 def get_db_connection():
     return psycopg2.connect(
         host=app.config['POSTGRES_HOST'],
-        port=app.config['POSTGRES_PORT'],  # Include the port in the connection
         database=app.config['POSTGRES_DB'],
         user=app.config['POSTGRES_USER'],
         password=app.config['POSTGRES_PASSWORD']
@@ -25,40 +21,6 @@ def get_db_connection():
 @app.route('/')
 def index():
     return redirect(url_for('admin_dashboard'))
-
-# Login route
-@app.route('/login_portal', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        # Connect to the database and validate user
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT user_type, password FROM users WHERE username = %s", (username,))
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        # Check if user exists and password matches
-        if user and user['password'] == password:  # Compare stored password with entered password
-            session['username'] = username
-            session['user_type'] = user['user_type']  # Save user type in session
-            flash(f"Welcome, {username} ({user['user_type']})")
-
-            # Redirect user based on user type
-            if user['user_type'] == 'Signatory':
-                return redirect(url_for('signatory_dashboard'))
-            elif user['user_type'] == 'Pharmacy':
-                return redirect(url_for('pharmacy_dashboard'))
-            elif user['user_type'] == 'Admin':
-                return redirect(url_for('admin_dashboard'))
-        else:
-            flash('Invalid login credentials')
-            return redirect(url_for('login'))
-
-    return render_template('login.html')
 
 # Routes for each user type dashboard
 @app.route('/signatory_dashboard')
@@ -353,7 +315,221 @@ def save_total(requisition_id):
 
 @app.route('/inventory')
 def inventory():
-    return render_template('inventory.html')
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # Query to fetch all medicines
+    query = """
+        SELECT * FROM medicines
+    """
+    cursor.execute(query)
+    medicines = cursor.fetchall()
+
+    # Convert data into a list of dictionaries for easier access in the template
+    medicines_list = [
+        {
+            'medicine_id': row[0],  # The first column is medicine_id
+            'sku': row[1],           # The second column is sku
+            'medicine_name': row[2], # The third column is medicine_name
+            'quantity': row[3],      # The fourth column is quantity
+            'status': row[4],        # The fifth column is status
+            'unit_cost': row[5],     # The sixth column is unit_cost
+            'unit_price': row[6],    # The seventh column is unit_price
+            'category': row[7],      # The eighth column is category
+            'base_unit': row[8],     # The ninth column is base_unit
+            'created_at': row[9],    # The tenth column is created_at
+            'updated_at': row[10],   # The eleventh column is updated_at
+            'po_number': row[11],    # The twelfth column is po_number
+            'description': row[12],  # The thirteenth column is description
+            'expiration_date': row[13], # The fourteenth column is expiration_date
+            'lot_position': row[14],    # The fifteenth column is lot_position
+        }
+        for row in medicines
+    ]
+
+    cursor.close()
+    connection.close()
+
+    # Pass medicines_list to the template
+    return render_template('inventory.html', medicines=medicines_list)
+
+@app.route('/pos')
+def pos():
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # Query to fetch all medicines for POS
+    query = """
+        SELECT * FROM medicines
+    """
+    cursor.execute(query)
+    medicines = cursor.fetchall()
+
+    # Convert data into a list of dictionaries for easier access in the template
+    medicines_list = [
+        {
+            'medicine_id': row[0],
+            'sku': row[1],          
+            'medicine_name': row[2],
+            'unit_price': row[6]
+        }
+        for row in medicines
+    ]
+
+    cursor.close()
+    connection.close()
+
+    # Pass medicines_list to the pos template
+    return render_template('pos.html', medicines=medicines_list)
+
+@app.route('/send_to_billing', methods=['POST'])
+def send_to_billing():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Save data to your database
+        customer_data = {
+            'full_name': request.form['full_name'],
+            'contact_number': request.form.get('contact_number'),
+            'date_of_birth': request.form.get('date_of_birth'),
+            'senior_or_pwd': request.form.get('senior_or_pwd'),
+        }
+        medicines_data = json.loads(request.form['medicines_data'])  # Parse JSON string
+
+        # Insert customer data into `pharmacy_customers`
+        cur.execute("""
+            INSERT INTO pharmacy_customers (full_name, contact_number, date_of_birth, senior_or_pwd)
+            VALUES (%s, %s, %s, %s)
+            RETURNING customer_id
+        """, (customer_data['full_name'], customer_data['contact_number'],
+              customer_data['date_of_birth'], customer_data['senior_or_pwd']))
+        customer_id = cur.fetchone()[0]
+
+        # Insert medicines into `medicine_bought` and get the purchase_id
+        purchase_data = {}  # To aggregate data
+
+        for medicine in medicines_data:
+            cur.execute("""
+                INSERT INTO medicine_bought (customer_id, medicine_id, quantity)
+                VALUES (%s, %s, %s)
+                RETURNING purchase_id, medicine_id, quantity
+            """, (customer_id, medicine['medicine_id'], medicine['quantity']))
+            purchase_id, medicine_id, quantity = cur.fetchone()
+
+            # Aggregating purchase data
+            if (customer_id, purchase_id) not in purchase_data:
+                purchase_data[(customer_id, purchase_id)] = {
+                    'purchase_id': purchase_id,
+                    'customer_id': customer_id,
+                    'medicines': [],
+                    'total_cost': 0
+                }
+
+            purchase_data[(customer_id, purchase_id)]['medicines'].append({
+                'medicine_id': medicine_id,
+                'quantity': quantity,
+                'medicine_cost': medicine.get('medicine_cost', 0)
+            })
+
+        # Send aggregated data to FMS
+        fms_api_url = "http://127.0.0.1:7000/api/lms_purchase"
+        for data in purchase_data.values():
+            for medicine in data['medicines']:
+                purchase_payload = {
+                    'purchase_id': data['purchase_id'],
+                    'customer_id': data['customer_id'],
+                    'medicine_id': medicine['medicine_id'],
+                    'quantity': medicine['quantity'],
+                    'medicine_cost': medicine['medicine_cost']
+                }
+                try:
+                    response = requests.post(fms_api_url, json=purchase_payload)
+                    if response.status_code != 200:
+                        app.logger.error(f"Failed to send purchase {data['purchase_id']} to FMS: {response.text}")
+                        flash("Error occurred while sending data to billing.", "danger")
+                        return redirect(url_for('pos'))
+                except Exception as e:
+                    app.logger.error(f"Exception while sending purchase {data['purchase_id']} to FMS: {e}")
+                    flash("Error occurred while sending data to billing.", "danger")
+                    return redirect(url_for('pos'))
+
+        # Commit to the local database
+        conn.commit()
+
+    except Exception as e:
+        conn.rollback()
+        app.logger.error(f"Error: {e}")
+        flash("An error occurred during the transaction. Please try again.", "danger")
+    
+    finally:
+        cur.close()
+        conn.close()
+
+    return redirect(url_for('pos'))
+
+@app.route('/api/customers/<int:customer_id>', methods=['GET'])
+def get_customer_details(customer_id):
+    try:
+        conn_lms = get_db_connection()
+        cur_lms = conn_lms.cursor()
+
+        # Query to fetch customer details, including date_of_birth
+        cur_lms.execute("""
+            SELECT customer_id, full_name, contact_number, date_of_birth
+            FROM pharmacy_customers
+            WHERE customer_id = %s
+        """, (customer_id,))
+
+        customer = cur_lms.fetchone()
+
+        if not customer:
+            return jsonify({"error": "Customer not found"}), 404
+
+        customer_data = {
+            "customer_id": customer[0],
+            "full_name": customer[1],
+            "contact_number": customer[2],
+            "date_of_birth": customer[3] 
+        }
+
+        cur_lms.close()
+        conn_lms.close()
+
+        return jsonify(customer_data), 200
+
+    except Exception as e:
+        print(f"Error retrieving customer details: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+
+@app.route('/api/medicines/<int:medicine_id>', methods=['GET'])
+def get_medicine_details(medicine_id):
+    try:
+        conn_lms = get_db_connection()
+        cur_lms = conn_lms.cursor()
+
+        # Query to fetch medicine details
+        cur_lms.execute("SELECT medicine_id, medicine_name, unit_price FROM medicines WHERE medicine_id = %s", (medicine_id,))
+        medicine = cur_lms.fetchone()
+
+        if not medicine:
+            return jsonify({"error": "Medicine not found"}), 404
+
+        medicine_data = {
+            "medicine_id": medicine[0],
+            "medicine_name": medicine[1],
+            "unit_price": float(medicine[2])  
+        }
+
+        cur_lms.close()
+        conn_lms.close()
+
+        return jsonify(medicine_data), 200
+
+    except Exception as e:
+        print(f"Error retrieving medicine details: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
 
 @app.route('/signatory_view')
 def signatory_view():
@@ -364,5 +540,4 @@ def purchase_order():
     return render_template('purchase_order.html')
     
 if __name__ == "__main__":
-    app.run(debug=True)  # Set debug=True for detailed error output
-# Update the supplier endpoints similarly to use PostgreSQL
+    app.run(debug=True, host='0.0.0.0', port=8000)

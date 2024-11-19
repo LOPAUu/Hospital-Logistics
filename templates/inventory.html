@@ -16,6 +16,7 @@
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
             <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
             <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('pos') }}">POS</a>
         </div>
     </div>
     <body>
@@ -49,7 +50,24 @@
                     </tr>
                 </thead>
                 <tbody id="inventory-table-body">
-                    <!-- Rows will be dynamically added here -->
+                    {% for medicine in medicines %}
+                        <tr>
+                            <td>{{ medicine.sku }}</td>
+                            <td>{{ medicine.medicine_name }}</td>
+                            <td>{{ medicine.quantity }}</td>
+                            <td>{{ medicine.status }}</td>
+                            <td>{{ medicine.unit_cost }}</td>
+                            <td>{{ medicine.unit_price }}</td>
+                            <td>{{ medicine.category }}</td>
+                            <td>{{ medicine.base_unit }}</td>
+                            <td>{{ medicine.quantity | int * 0.2 | round(0) }}</td> 
+                            <td>
+                                <button class="action-btn view" onclick="viewItem({{ medicine.id }})"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn edit" onclick="editItem({{ medicine.id }})"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete" onclick="deleteItem({{ medicine.id }})"><i class="fas fa-trash-alt"></i></button>
+                            </td>                            
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
