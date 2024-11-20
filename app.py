@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import psycopg2, requests, json
 from psycopg2.extras import RealDictCursor
-from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
@@ -598,23 +597,11 @@ def purchase_order():
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    # Clear the session on logout
-    session.pop('username', None)
-    session.pop('role', None)
+    # Clear the user session or token here
     session.clear()
-    flash("You have successfully logged out.", "info")
-    
-    # Strip the 'system' query parameter explicitly if present
-    url = request.url
-    parsed_url = urlparse(url)
-    query_params = parse_qs(parsed_url.query)
-    query_params.pop('system', None)  # Remove the 'system' parameter if present
-    
-    # Construct the URL without the 'system' parameter
-    clean_url = parsed_url._replace(query=urlencode(query_params, doseq=True)).geturl()
-    
-    # Redirect to the cleaned-up URL
-    return redirect(clean_url)
+
+    # Log out and redirect to login page without the system parameter
+    return redirect(url_for('login')) 
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8000)
