@@ -68,16 +68,23 @@
         <div class="pos-right">
             <h3>Summary</h3>
 
-            <form action="{{ url_for('send_to_billing') }}" method="POST" id="billing-form">
+            <form
+                action="{{ url_for('send_to_billing') }}" method="POST" id="billing-form">
                 <label for="customer-name">Customer Name:</label>
                 <input type="text" id="customer-name" name="full_name" placeholder="Enter Customer Name" required />
-            
+            </form>
+
+            <form>
                 <label for="contact-number">Contact Number:</label>
                 <input type="text" id="contact-number" name="contact_number" placeholder="Enter Contact Number (Optional)" />
+            </form>
             
+            <form>
                 <label for="date-of-birth">Date of Birth:</label>
                 <input type="date" id="date-of-birth" name="date_of_birth" />
+            </form>
             
+            <form>
                 <label for="senior-pwd">Senior/PWD?</label>
                 <select id="senior-pwd" name="senior_or_pwd">
                     <option value="no">No</option>
@@ -86,8 +93,9 @@
             
                 <!-- Hidden field for medicines data -->
                 <input type="hidden" id="medicines-data" name="medicines_data" />
+            </form>
             
-                <button type="submit">Send to Billing</button>
+                <button type="submit" class="submit">Send to Billing</button>
             </form>            
         </div>
     </div>
