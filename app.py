@@ -5,7 +5,7 @@ from psycopg2.extras import RealDictCursor
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
-AUTH_SERVICE_URL = "https://authentication-microservice-1-ux4a.onrender.com"
+AUTH_SERVICE_URL = "https://evaluation-deployed-authentication.onrender.com"
 
 # PostgreSQL configurations
 app.config['POSTGRES_HOST'] = 'dpg-csuks7l2ng1s73eefvhg-a.oregon-postgres.render.com'
