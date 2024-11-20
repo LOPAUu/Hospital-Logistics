@@ -97,7 +97,7 @@ button.submit {
     color: white; /* White text */
     border: none; 
     cursor: pointer; 
-    margin-left: 140px; /* Adds spacing to the left of the button */
+    margin-left: 135px; /* Adds spacing to the left of the button */
     align-self: flex-start; /* Positions the button at the start of the row */
 }
 
