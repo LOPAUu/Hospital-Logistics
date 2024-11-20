@@ -21,7 +21,7 @@ body {
     background-color: #003366;
     color: #ffffff;
     box-sizing: border-box;
-    z-index: 2001;
+    z-index: 1001;
 }
 
 /* Menu Logo and Title Styling */
@@ -40,7 +40,7 @@ body {
 .header .menu-logo h1 {
     font-size: 24px;
     margin: 0;
-    line-height: 50;
+    line-height: 1.2;
 }
 
 /* Hamburger Menu Bars Styling */

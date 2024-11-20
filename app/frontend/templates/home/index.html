@@ -1,0 +1,36 @@
+
+{% block title %} Home Page {% endblock %}
+
+{% block pageContent %}
+
+<h1>Inventory Products</h1>
+
+<!-- Search Form -->
+<form method="GET" action="{{ url_for('search_product') }}">
+    <input type="text" name="query" placeholder="Search for a product" />
+    <button type="submit">Search</button>
+</form>
+
+<!-- Products List -->
+<table>
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>${{ product.price }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="2">No products found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

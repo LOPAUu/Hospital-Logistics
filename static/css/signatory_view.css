@@ -27,7 +27,7 @@ body {
     box-sizing: border-box;
     height: 80px;
     z-index: 1001;
-}
+} 
 
 .header .menu-logo img {
     max-width: 190px;
