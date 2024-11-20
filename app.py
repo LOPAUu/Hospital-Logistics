@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import psycopg2, requests, json
 from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
+app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
+
+AUTH_SERVICE_URL = "https://authentication-microservice-1-ux4a.onrender.com"
 
 # PostgreSQL configurations
 app.config['POSTGRES_HOST'] = 'localhost'
@@ -20,7 +23,50 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('login'))  # Redirect to the login page
+
+@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/<system>', methods=['GET', 'POST'])
+def login(system='lms'):  # Default to 'lms' system
+    auth_url = f'{AUTH_SERVICE_URL}?system={system}'  # Pass the system parameter to the auth service
+    print(f"Redirecting to authentication service: {auth_url}")  # Debugging log
+    return redirect(auth_url)
+
+# Callback route for authentication microservice
+@app.route('/auth/callback', methods=['GET'])
+def auth_callback():
+    token = request.args.get('token')  # Capture the token from the URL
+    print(f"Token received in callback: {token}")
+    
+    if token:
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.post(f'{AUTH_SERVICE_URL}/verify-token', headers=headers)
+
+        if response.status_code == 200:
+            user_data = response.json()
+            session['username'] = user_data['username']
+            session['role'] = user_data['role']
+            print(f"Session after storing user data: {session}")
+
+            flash('Login successful!', 'success')
+
+            # Normalize role comparison (to avoid case sensitivity issues)
+            if session['role'].strip().lower() == 'lms admin':  # Case insensitive check
+                return redirect(url_for('admin_dashboard'))
+            else:
+                flash('Role not authorized', 'danger')
+                return redirect(url_for('login'))
+
+        else:
+            flash('Invalid token or session expired.', 'danger')
+            return redirect(url_for('login'))
+
+    flash('Authentication failed. No token received.', 'danger')
+    return redirect(url_for('login'))
+
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    return render_template('admin_dashboard.html')
 
 # Routes for each user type dashboard
 @app.route('/signatory_dashboard')
@@ -30,10 +76,6 @@ def signatory_dashboard():
 @app.route('/pharmacy_dashboard')
 def pharmacy_dashboard():
     return render_template('pharmacy_dashboard.html')
-
-@app.route('/admin_dashboard')
-def admin_dashboard():
-    return render_template('admin_dashboard.html')
 
 # Utility function to close database resources
 def close_db_connection(cursor, conn):
@@ -320,7 +362,7 @@ def inventory():
 
     # Query to fetch all medicines
     query = """
-        SELECT * FROM medicines
+        SELECT * FROM medicines ORDER BY medicine_id
     """
     cursor.execute(query)
     medicines = cursor.fetchall()
@@ -406,7 +448,7 @@ def send_to_billing():
               customer_data['date_of_birth'], customer_data['senior_or_pwd']))
         customer_id = cur.fetchone()[0]
 
-        # Insert medicines into `medicine_bought` and get the purchase_id
+        # Insert medicines into `medicine_bought` and update `medicines` stock
         purchase_data = {}  # To aggregate data
 
         for medicine in medicines_data:
@@ -416,6 +458,19 @@ def send_to_billing():
                 RETURNING purchase_id, medicine_id, quantity
             """, (customer_id, medicine['medicine_id'], medicine['quantity']))
             purchase_id, medicine_id, quantity = cur.fetchone()
+
+            # Subtract the quantity from the `medicines` table
+            cur.execute("""
+                UPDATE medicines
+                SET quantity = quantity - %s
+                WHERE medicine_id = %s AND quantity >= %s
+            """, (quantity, medicine_id, quantity))
+
+            # Check if the update was successful (enough stock available)
+            if cur.rowcount == 0:
+                conn.rollback()
+                flash(f"Not enough stock for medicine ID {medicine_id}.", "danger")
+                return redirect(url_for('pos'))
 
             # Aggregating purchase data
             if (customer_id, purchase_id) not in purchase_data:
