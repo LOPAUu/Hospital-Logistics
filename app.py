@@ -298,8 +298,6 @@ def user_requisition():
     conn.close()
     return render_template('admin_requisition.html', requisitions=requisitions)
 
-
-
 @app.route('/requisitions/<int:id>', methods=['GET'])
 def get_requisition(id):
     conn = get_db_connection()
@@ -595,6 +593,15 @@ def signatory_view():
 @app.route('/purchase_order')
 def purchase_order():
     return render_template('purchase_order.html')
-    
+
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    # Clear the user session or token here
+    session.clear()
+
+    # Log out and redirect to login page without the system parameter
+    return redirect(url_for('login')) 
+
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8000)
