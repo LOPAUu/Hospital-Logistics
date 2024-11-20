@@ -29,17 +29,23 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 @app.route('/login/<system>', methods=['GET', 'POST'])
-def login(system='lms'):  # Default to 'lms' system
-    auth_url = f'{AUTH_SERVICE_URL}?system={system}'  # Pass the system parameter to the auth service
-    print(f"Redirecting to authentication service: {auth_url}")  # Debugging log
+def login(system='lms'):
+    # Get the system parameter explicitly from the request if available
+    system = request.args.get('system', system)  # Default to 'lms' if not provided
+    print(f"System parameter for login: {system}")  # Debugging log
+
+    # Redirect to the authentication service with the system parameter
+    auth_url = f'{AUTH_SERVICE_URL}/login/{system}'
+    print(f"Redirecting to authentication service: {auth_url}")
     return redirect(auth_url)
 
 # Callback route for authentication microservice
 @app.route('/auth/callback', methods=['GET'])
 def auth_callback():
-    token = request.args.get('token')  # Capture the token from the URL
-    print(f"Token received in callback: {token}")
-    
+    token = request.args.get('token')  # Get token from URL
+    system = request.args.get('system', 'lms')  # Get system, defaulting to 'lms'
+    print(f"Token: {token}, System: {system}")  # Debugging log
+
     if token:
         headers = {'Authorization': f'Bearer {token}'}
         response = requests.post(f'{AUTH_SERVICE_URL}/verify-token', headers=headers)
@@ -48,23 +54,23 @@ def auth_callback():
             user_data = response.json()
             session['username'] = user_data['username']
             session['role'] = user_data['role']
-            print(f"Session after storing user data: {session}")
+            session['system'] = system  # Store system in session for future use
+            print(f"Session data: {session}")
 
             flash('Login successful!', 'success')
 
-            # Normalize role comparison (to avoid case sensitivity issues)
-            if session['role'].strip().lower() == 'lms admin':  # Case insensitive check
+            # Redirect based on user role and system
+            if session['role'].strip().lower() == 'lms admin' and system == 'lms':
                 return redirect(url_for('admin_dashboard'))
             else:
-                flash('Role not authorized', 'danger')
-                return redirect(url_for('login'))
-
+                flash('Role not authorized or system mismatch.', 'danger')
+                return redirect(url_for('login', system=system))
         else:
             flash('Invalid token or session expired.', 'danger')
-            return redirect(url_for('login'))
+            return redirect(url_for('login', system=system))
 
     flash('Authentication failed. No token received.', 'danger')
-    return redirect(url_for('login'))
+    return redirect(url_for('login', system=system))
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
