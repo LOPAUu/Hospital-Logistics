@@ -488,7 +488,7 @@ def send_to_billing():
             })
 
         # Send aggregated data to FMS
-        fms_api_url = "http://127.0.0.1:7000/api/lms_purchase"
+        fms_api_url = "https://fms-w1la.onrender.com/api/lms_purchase"
         for data in purchase_data.values():
             for medicine in data['medicines']:
                 purchase_payload = {
