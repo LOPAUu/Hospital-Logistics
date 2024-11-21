@@ -4,6 +4,7 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition_admin.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock %}
 
 {% block body %}
@@ -15,9 +16,11 @@
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
             <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
             <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('pos') }}">POS</a>
         </div>
     </div>
 
+<<<<<<< HEAD
     <div class="container">
         <h1>Requisition List<button id="create-button" onclick="openModal()">Create Requisition</button></h1>
     
@@ -32,7 +35,11 @@
         </select>
         <button id="generate-report" onclick="generateReport()">Generate/Print Report</button>
     </div>
+=======
+    <h1>Requisition List  <button id="manage-button" onclick="openModal()">Manage Requisition</button></h1>
+>>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
     
+    <div class="container">
         <!-- Requisition Table -->
         <table id="requisition-list">
             <thead>
@@ -55,9 +62,15 @@
                     <td>₱2775.00</td>
                     <td>Pending</td>
                     <td>
-                        <button onclick="viewDetails(1001)">View</button>
-                        <button onclick="editRequisition(1001)">Edit</button>
-                        <button onclick="deleteRequisition(1001)">Delete</button>
+                        <button class="btn-view" onclick="viewDetails(1001)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-edit" onclick="editRequisition(1001)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteRequisition(1001)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </td>
                 </tr>
                 <tr data-id="1002">
@@ -68,9 +81,15 @@
                     <td>₱500.00</td>
                     <td>Rejected</td>
                     <td>
-                        <button onclick="viewDetails(1002)">View</button>
-                        <button onclick="editRequisition(1002)">Edit</button>
-                        <button onclick="deleteRequisition(1002)">Delete</button>
+                        <button class="btn-view" onclick="viewDetails(1001)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-edit" onclick="editRequisition(1001)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteRequisition(1001)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </td>
                 </tr>
             </tbody>

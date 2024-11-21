@@ -5,6 +5,7 @@
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/supplier.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
 
 {% block body %}
@@ -15,11 +16,12 @@
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
             <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
             <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('pos') }}">POS</a>
         </div>
     </div>
     
     <h1>Supplier List
-        <button id="add-button" onclick="openAddSupplierModal()">CREATE SUPPLIER</button>
+        <button id="add-button" onclick="openAddSupplierModal()">Create Supplier</button>
     </h1>
 
     <div class="container">
@@ -46,7 +48,7 @@
                         <button class="view-button" onclick="openViewSupplierModal({{ supplier.id }})">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="edit-button" onclick="openEditSupplierModal({{ supplier.id }})">
+                        <button class="edit-button" onclick="openupdateSupplierModal({{ supplier.id }})">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="delete-button" onclick="removeSupplier({{ supplier.id }})">
@@ -61,69 +63,129 @@
 
     <!-- Modal for adding suppliers -->
     <div id="add-supplier-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeAddSupplierModal()">&times;</span>
-            <h2>Add Supplier</h2>
-            <form id="supplier-form" onsubmit="addSupplier(event)">
+        <div class="add-modal-container">
+            <!-- First Column: Modal Content -->
+            <div class="modal-content">
+                <span class="close-button" onclick="closeAddSupplierModal()">&times;</span>
+                <h2>Add Supplier</h2>
+                <form id="supplier-form" onsubmit="addSupplier(event)">
+                    <!-- Supplier Information Section (Column 1 - modal-content) -->
+                    <div class="form-group">
+                        <label for="company-name">Company Name:</label>
+                        <input type="text" id="company-name" name="company-name" placeholder="Enter company name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-person">Contact Person:</label>
+                        <input type="text" id="contact-person" name="contact-person" placeholder="Enter contact person's name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" placeholder="Enter email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone:</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address:</label>
+                        <textarea id="address" name="address" placeholder="Enter address" required></textarea>
+                    </div>
+                    <!-- Form Action -->
+                    <div class="form-action">
+                        <button type="submit" class="btn-submit">Create Supplier</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Second Column: Items Supplied -->
+            <div class="supplier-items-column">
                 <div class="form-group">
-                    <label for="company-name">Company Name:</label>
-                    <input type="text" id="company-name" name="company-name" placeholder="Enter company name" required>
+                    <label>Supplies Offered</label>
+                    <button type="button" onclick="addsupplierItem()">Add Item</button>
+                    <table id="supplier-items-table">
+                        <thead>
+                            <tr>
+                                <th>Name of Item</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="text" name="supplier-item-name[]" placeholder="Item Name">
+                                    <button type="button" onclick="removeItem(this)">Remove</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="form-group">
-                    <label for="contact-person">Contact Person:</label>
-                    <input type="text" id="contact-person" name="contact-person" placeholder="Enter contact person's name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" placeholder="Enter email" required>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Phone:</label>
-                    <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
-                </div>
-                <div class="form-group">
-                    <label for="address">Address:</label>
-                    <textarea id="address" name="address" placeholder="Enter address" required></textarea>
-                </div>
-                <div class="form-action">
-                    <button type="submit" class="btn-submit">Add Supplier</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
-    <!-- Modal for editing supplier details -->
-    <div id="edit-supplier-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeEditSupplierModal()">&times;</span>
-            <h2>Edit Supplier</h2>
-            <form id="edit-supplier-form" onsubmit="updateSupplier(event)">
-                <div class="form-group">
-                    <label for="edit-company-name">Company Name:</label>
-                    <input type="text" id="edit-company-name" name="edit-company-name" required>
+
+        <!-- Modal for editing supplier details -->
+    <div id="edit-supplier-modal" class="modal">
+        <div class="edit-modal-container">
+            <!-- Modal Content with Two Columns -->
+            <div class="modal-content">
+                <span class="close-button" onclick="closeupdateSupplierModal()">&times;</span>
+                <!-- First Column: Supplier Information -->
+                <div class="supplier-info-column">
+                    <h2>Edit Supplier</h2>
+                    <form id="edit-supplier-form" onsubmit="updateSupplier(event)">
+                        <div class="form-group">
+                            <label for="edit-company-name">Company Name:</label>
+                            <input type="text" id="edit-company-name" name="edit-company-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-contact-person">Contact Person:</label>
+                            <input type="text" id="edit-contact-person" name="edit-contact-person" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email:</label>
+                            <input type="email" id="edit-email" name="edit-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-phone">Phone:</label>
+                            <input type="tel" id="edit-phone" name="edit-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-address">Address:</label>
+                            <textarea id="edit-address" name="edit-address" required></textarea>
+                        </div>
+                        <!-- Form Action -->
+                        <div class="form-action">
+                            <button type="submit" class="btn-submit">Update Supplier</button>
+                        </div>
+                    </form>
                 </div>
+            </div>
+
+            <!-- Second Column: Items Supplied -->
+            <div class="supplier-items-information-column">
                 <div class="form-group">
-                    <label for="edit-contact-person">Contact Person:</label>
-                    <input type="text" id="edit-contact-person" name="edit-contact-person" required>
+                    <label>Supplies Offered</label>
+                    <button type="button" onclick="addEditedSupplierItem()">Add Item</button>
+                    <table id="edit-supplier-items-table">
+                        <thead>
+                            <tr>
+                                <th>Name of Item</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="text" name="edit-supplier-item-name[]" placeholder="Item Name">
+                                    <button type="button" onclick="removeItem(this)">Remove</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="form-group">
-                    <label for="edit-email">Email:</label>
-                    <input type="email" id="edit-email" name="edit-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-phone">Phone:</label>
-                    <input type="tel" id="edit-phone" name="edit-phone" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-address">Address:</label>
-                    <textarea id="edit-address" name="edit-address" required></textarea>
-                </div>
-                <div class="form-action">
-                    <button type="submit" class="btn-submit">Update Supplier</button>
-                </div>          
-            </form>
+            </div>
         </div>
-    </div>    
+    </div>
 
     <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
 {% endblock %}
+<!-- Second Column: Items Supplied -->

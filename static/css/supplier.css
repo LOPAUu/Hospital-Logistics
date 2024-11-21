@@ -1,21 +1,24 @@
-.user-profile {
-    display: flex;
-    align-items: center;
-}
-
+/* General Styling */
 .container {
     max-width: 95%;
-    margin: 0px auto;
+    margin: 0 auto;
     background: white;
     padding: 30px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 15px;
 }
 
+h1 {
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 155px;
+}
+
+/* Table Styles */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 th, td {
@@ -27,82 +30,83 @@ th, td {
 th {
     background-color: #53649c;
     color: #d1d1d1;
+    font-weight: bold;
 }
 
 th:nth-child(2), td:nth-child(2) {
     font-weight: bold;
 }
 
-h1 {
-    margin-left: 2%;
-    font-size: 30px;
-    margin-top: 155px;
+/* Buttons */
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, border 0.3s;
 }
 
+button:hover {
+    background-color: darkred;
+}
+
+/* Specific Button Colors */
 #add-button {
     background-color: #0056b3;
     color: white;
-    padding: 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 82%;
-}
-
-.view-button {
-    background-color: #388E3C; 
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 5px;
-}
-
-.edit-button {
-    background-color: #0d4e84; 
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 5px;
-}
-
-.delete-button {
-    background-color: #d32f2f; 
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    margin-left: 83%;
 }
 
 #add-button:hover {
     background-color: #002244;
 }
 
+.view-button {
+    background-color: #388E3C;
+    color: white;
+}
+
 .view-button:hover {
-    background-color: #004e11; 
+    background-color: #004e11;
 }
 
-.edit-button:hover {
-    background-color: #002244; 
+.edit-button {
+    margin-left: 5px;
+    background-color: #0d4e84;
+    color: white;
 }
 
-.delete-button:hover {
+button[onclick="addsupplierItem()"] {
+    margin-left: 300px;
+    background-color: #0d4e84;
+    color: white;
+}
+
+button[onclick="addEditedSupplierItem()"] {
+    margin-left: 300px;
+    background-color: #0d4e84;
+    color: white;
+}
+
+.edit-button:hover,
+button[onclick="addsupplierItem()"]:hover,
+button[onclick="addEditedSupplierItem()"]:hover {
+    background-color: #002244;
+}
+
+.delete-button,
+button[onclick="removeItem(this)"] {
+    margin-left: 5px;
+    background-color: #d32f2f;
+    color: white;
+}
+
+button[onclick="removeItem(this)"]:hover {
     background-color: darkred;
 }
 
-button.remove {
-    background-color: red;
-}
-
-button.remove:hover {
-    background-color: darkred;
-}
-
-/* Modal Styles */
+/* Modal Styling */
 .modal {
     display: none;
     position: fixed;
@@ -112,64 +116,122 @@ button.remove:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
-.modal-content {
+.add-modal-container,
+.edit-modal-container {
+    margin: 150px 400px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 2px;
+    padding: 0;
+}
+
+.modal-content, 
+.supplier-items-column, 
+.supplier-items-information-column {
+    flex: 1;
     background-color: #fefefe;
-    margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
-    max-width: 450px;
     border-radius: 5px;
+    box-sizing: border-box;
 }
 
+/* Modal Header */
+#add-supplier-modal h2, 
+#edit-supplier-modal h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #002244;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Close Button */
 .close-button {
     color: #aaa;
-    float: right;
+    float: left;
     font-size: 28px;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .close-button:hover,
 .close-button:focus {
     color: #012d74;
-    text-decoration: none;
-    cursor: pointer;
 }
 
+/* Form Styling */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+    width: 100%;
 }
 
-/* Input and Select Styles */
-input[type="text"],
-input[type="email"],
-input[type="tel"],
+input,
 select,
 textarea {
-    width: 100%;
-    max-width: 400px;
+    width: 94.7%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    margin-top: 1%;
 }
 
 textarea {
-    resize: none;
+    height: 100px;
+    resize: vertical;
 }
 
-/* Form Action and Submit Button */
-.form-action {
-    display: flex;
-    justify-content: flex-start;
+input[type="text"][name*="supplier-item-name[]"] {
+    width: 76%;
 }
 
+input[type="text"][name*="edit-supplier-item-name[]"] {
+    width: 76%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border: 2px solid #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Submit Button */
 .btn-submit {
     background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
 }
 
 .btn-submit:hover {
     background-color: #218838;
+}
+
+/* Supplier Items Table */
+#supplier-items-table,
+#edit-supplier-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#supplier-items-table th,
+#edit-supplier-items-table th {
+    background-color: #53649c;
+    color: #d1d1d1;
+    padding: 10px;
+    font-size: 16px;
+    border-bottom: 2px solid #ccc;
+}
+
+#supplier-items-table td,
+#edit-supplier-items-table td {
+    padding: 8px;
+    font-size: 14px;
 }

@@ -1,53 +1,66 @@
 
 h2 {
-    display: block;
-    font-size: 2em; /* Increase or decrease as needed */
-    margin-block-start: 0.83em;
-    margin-block-end: 0.83em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-    unicode-bidi: isolate;
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 155px;
 }
 
-
 /* Table Styles */
-.inventory-table {
+.inventory-table, .details-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
 .inventory-table thead {
-    background-color: #f1f1f1;
+    font-weight: bold;
+    background-color: #53649c;
 }
 
 .inventory-table thead th {
     padding: 12px;
     text-align: left;
-    font-weight: bold;
     font-size: 14px;
-    color: #333;
-    border-bottom: 2px solid #ddd;
+    color: #d1d1d1;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Header color for details table */
+.details-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    color: #d1d1d1; /* Medium gray text for details table headers */
+    background-color: #53649c; /* Slightly darker background than inventory table */
+}
+
+/* Table data color for details table */
+.details-table td {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    color: #333; /* Slightly darker gray text for table cells */
+    background-color: #ffffff; /* White background for table cells */
+    border-bottom: 1px solid #ddd;
+    padding: 12px;
 }
 
 .inventory-table tbody td {
     padding: 12px;
-    border-bottom: 1px solid #ddd;
     font-size: 14px;
     color: #333;
 }
 
-/* Hover effect for rows */
+/* Hover effect for table rows */
 .inventory-table tbody tr:hover {
     background-color: #f9f9f9;
     cursor: pointer;
 }
 
-/* Action buttons in the table */
-.inventory-table tbody td .action-btn {
+/* Action buttons */
+.action-btn {
     padding: 6px 12px;
-    margin: 0 5px;
+    margin: 0 2px;
     font-size: 12px;
     border: none;
     border-radius: 4px;
@@ -56,21 +69,28 @@ h2 {
 }
 
 .action-btn.view {
-    background-color: #28a745; /* Green */
+    background-color: #388E3C;
 }
 
 .action-btn.edit {
-    background-color: #ffc107; /* Yellow */
+    background-color: #0d4e84; 
 }
 
 .action-btn.delete {
-    background-color: #dc3545; /* Red */
+    background-color: #d32f2f;
 }
 
-.action-btn:hover {
-    opacity: 0.9;
+.action-btn.view:hover {
+    background-color: #004e11; /* Darker green on hover */
 }
 
+.action-btn.edit:hover {
+    background-color: #002244; /* Darker blue on hover */
+}
+
+.action-btn.delete:hover {
+    background-color: darkred; /* Darker red on hover */
+}
 /* Modal Styles */
 .modal {
     display: none;
@@ -86,8 +106,7 @@ h2 {
 
 .modal-content, .update-modal {
     background-color: #fff;
-    margin: 5% auto;
-    margin-top: 155px;
+    margin: 155px auto 5% auto;
     padding: 20px;
     border-radius: 8px;
     width: 90%;
@@ -108,71 +127,35 @@ h2 {
     cursor: pointer;
 }
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-}
+.close:hover, .close:focus { color: black; }
 
-/* Details Table Styling */
-.details-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.details-table th, .details-table td {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-    font-size: 14px;
-}
-
-.details-table thead {
-    background-color: #f1f1f1;
-    font-weight: bold;
-}
-
-/* Editable Inventory Fields Table Styles */
-.inventory-fields-table {
-    display: table;
-    width: 100%;
-    margin-top: 15px;
-}
-
-.row {
-    display: table-row;
-}
-
-.cell {
-    display: table-cell;
-    padding: 10px; /* Space between cells */
-    vertical-align: top; /* Aligns content to the top */
-}
-
-/* Label and Input Adjustments */
-.cell label {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-    display: block; /* Block display for proper label spacing */
-}
-
+/* Editable Table Fields */
+.details-table input, .details-table select,
 .cell input, .cell select {
-    width: 100%; /* Input fields and select take full width of the cell */
+    width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
 }
 
-/* Styles specifically for editable details fields */
-.details-table input, .details-table select {
-    width: 100%; /* Ensure full width for these inputs */
-    padding: 8px; /* Consistent padding */
-    border: 1px solid #ccc; /* Consistent border style */
-    border-radius: 4px; /* Consistent border radius */
-    box-sizing: border-box; /* Include padding and border in the element's total width */
+/* Editable Inventory Fields Table */
+.inventory-fields-table, .row {
+    display: table;
+    width: 100%;
+}
+
+.cell {
+    display: table-cell;
+    padding: 10px;
+    vertical-align: top;
+}
+
+.cell label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
 }
 
 /* Save Button */
@@ -187,10 +170,9 @@ h2 {
     margin-top: 20px;
 }
 
-.save-btn:hover {
-    background-color: #218838;
-}
+.save-btn:hover { background-color: #218838; }
 
+/* Search Container */
 .search-container {
     margin-bottom: 20px;
     display: flex;
@@ -205,11 +187,49 @@ h2 {
     border-radius: 4px;
 }
 
+/* Inventory Container */
 .inventory-container {
     max-width: 95%;
+<<<<<<< HEAD
     margin: 150px auto;
+=======
+    margin: 0px auto;
+>>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
     background: white;
     padding: 30px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     border-radius: 15px;
+<<<<<<< HEAD
+=======
+}
+
+/* Make the Quantity column bold (3rd column) */
+.inventory-table th:nth-child(3), 
+.inventory-table td:nth-child(3) {
+    font-weight: bold;
+}
+
+/* Make the Status column bold (4th column) */
+.inventory-table th:nth-child(4), 
+.inventory-table td:nth-child(4) {
+    font-weight: bold;
+}
+
+/* Make the Reorder Level column bold (9th column) */
+.inventory-table th:nth-child(9), 
+.inventory-table td:nth-child(9) {
+    font-weight: bold;
+}
+
+/* Make the Expiration Date column bold (6th column) */
+#view-modal .details-table th:nth-child(2), 
+#view-modal .details-table td:nth-child(2) {
+    font-weight: bold;
+}
+
+/* Make the Expiration Date column bold (6th column) */
+#view-modal .details-table th:nth-child(6), 
+#view-modal .details-table td:nth-child(6) {
+    font-weight: bold;
+>>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
 }

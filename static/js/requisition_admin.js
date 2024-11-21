@@ -23,7 +23,6 @@ const requisitions = {
     }
 };
 
-let currentRequisitionId = 1003; // Initialize with the next requisition ID
 
 function submitRequisition(event) {
     event.preventDefault(); // Prevent the default form submission behavior
@@ -207,6 +206,52 @@ function closeModal() {
     document.getElementById('create-requisition-modal').style.display = 'none';
 }
 
+// Global variable to store the requisition ID
+let currentRequisitionId = 1002; // Starting ID (modify as needed)
+
+function submitRequisition(event) {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    // Capture the form data
+    const purpose = document.getElementById('purpose').value;
+    const supplier = document.getElementById('supplier').value;
+    const items = Array.from(document.querySelectorAll('input[name="item-name[]"]')).map((input, index) => {
+        const name = input.value;
+        const quantity = document.querySelectorAll('input[name="item-quantity[]"]')[index].value;
+        const price = document.querySelectorAll('input[name="item-price[]"]')[index].value;
+        const total = document.querySelectorAll('input[name="item-total[]"]')[index].value;
+        return { name, quantity, price, total };
+    });
+
+    const totalPrice = document.getElementById('total-price').value;
+
+    // Create a new row for the requisition list table
+    const table = document.getElementById('requisition-list').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow(table.rows.length);
+    newRow.setAttribute('data-id', currentRequisitionId);
+
+    // Insert the requisition data into the table row
+    newRow.innerHTML = `
+        <td>${currentRequisitionId}</td>
+        <td>${getCurrentDate()}</td>
+        <td>${purpose}</td>
+        <td>${supplier}</td>
+        <td>₱${totalPrice}</td>
+        <td>Pending</td>
+        <td>
+            <button onclick="viewDetails(${currentRequisitionId})"><i class="fas fa-eye"></button>
+            <button onclick="editRequisition(${currentRequisitionId})"><i class="fas fa-edit"></button>
+            <button onclick="deleteRequisition(${currentRequisitionId})"><i class="fas fa-trash-alt"></i></button>
+        </td>
+    `;
+
+    // Increment the requisition ID for the next submission
+    currentRequisitionId++;
+
+    // Close the modal and reset the form
+    closeModal();
+    document.getElementById('requisition-form').reset();
+}
 
 // Attach the submit function to the form's submit event
 document.getElementById('requisition-form').addEventListener('submit', submitRequisition);

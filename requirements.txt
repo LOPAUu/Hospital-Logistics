@@ -1,11 +1,15 @@
 blinker==1.8.1
 click==8.1.7
-flask==3.0.3
+flask==2.3.2  
 importlib-metadata==7.1.0
 itsdangerous==2.2.0
 Jinja2==3.1.3
 MarkupSafe==2.1.5
 werkzeug==3.0.2
 zipp==3.18.1
-psycopg2
-gunicorn
+Flask-Cors==3.0.10             # For handling cross-origin requests (if applicable)
+Flask-JWT-Extended==4.4.4      # JWT authentication
+requests==2.31.0               # For handling HTTP requests
+psycopg2-binary==2.9.7         # PostgreSQL adapter
+python-dotenv==1.0.0           # Environment variable management
+gunicorn==21.2.0               # WSGI HTTP server for production

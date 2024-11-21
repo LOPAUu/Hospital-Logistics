@@ -15,14 +15,14 @@
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
             <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
             <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('pos') }}">POS</a>
+
         </div>
     </div>
-
+        <h2>Purchase Orders
+            <button id="createOrderBtn">Create Purchase Order</button>
+        </h2>
         <div class="container">
-                <div>
-                    <h2>Purchase Orders</h2> 
-                </div>
-
             <div class="tabs--secondary">
                 <nav class="tab__nav">
                     <ul>
@@ -30,7 +30,6 @@
                         <li class="tab__item"><a href="#" data-filter="ordered">Ordered</a></li>
                         <li class="tab__item"><a href="#" data-filter="partial">Partial</a></li>
                         <li class="tab__item"><a href="#" data-filter="received">Received</a></li>
-                        <li class="tab__item"><button id="createOrderBtn">Create Purchase Order</button></li>
                     </ul>
                 </nav>
             </div>
@@ -78,11 +77,19 @@
                 </tbody>
             </table>
 
+<<<<<<< HEAD
            <!-- Create Purchase Order Modal -->
 <div id="purchaseOrderModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Create Purchase Order</h2>
+=======
+            <!-- Create Purchase Order Modal -->
+            <div id="purchaseOrderModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3>Purchase Order</h3>
+>>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
 
         <div class="modal-body">
             <div class="left-section">
