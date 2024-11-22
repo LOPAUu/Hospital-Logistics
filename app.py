@@ -593,6 +593,17 @@ def signatory_view():
 @app.route('/purchase_order')
 def purchase_order():
     return render_template('purchase_order.html')
+
+# Logout route to clear the session
+@app.route('/logout', methods=['GET'])
+def logout():
+    # Clear the session
+    session.pop('username', None)
+    session.pop('role', None)
+    session.clear()
+    
+    # Redirect to the authentication service (without any query parameters)
+    return redirect(AUTH_SERVICE_URL)
     
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8000)
