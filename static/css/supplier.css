@@ -96,13 +96,28 @@ button[onclick="addEditedSupplierItem()"]:hover {
     background-color: #002244;
 }
 
+.save-button,
+button[onclick="saveSupplierItem(this)"] {
+    margin-left: 5px;
+    background-color: #f3c300;
+    color: white;
+}
+
+.save-button:hover,
+button[onclick="saveSupplierItem(this)"]:hover {
+    background-color: darkgoldenrod;
+}
+
 .delete-button,
+button[onclick="removeEditableItem(this)"],
 button[onclick="removeItem(this)"] {
     margin-left: 5px;
     background-color: #d32f2f;
     color: white;
 }
 
+.delete-button:hover,
+button[onclick="removeEditableItem(this)"]:hover,
 button[onclick="removeItem(this)"]:hover {
     background-color: darkred;
 }
@@ -111,7 +126,7 @@ button[onclick="removeItem(this)"]:hover {
 .modal {
     display: none;
     position: fixed;
-    z-index: 2004;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
@@ -136,7 +151,6 @@ button[onclick="removeItem(this)"]:hover {
     background-color: transparent;
     padding: 10px; /* Optional: Add padding for better spacing */
 }
-
 
 .modal-content, 
 .supplier-items-column, 
@@ -244,4 +258,15 @@ textarea:focus {
 #edit-supplier-items-table td {
     padding: 8px;
     font-size: 14px;
+}
+
+/* Ensure SweetAlert2 popup is above the modal */
+.swal-overlay-above-modal {
+    z-index: 2000 !important; /* Higher than the modal's z-index */
+}
+
+/* Optional: Dimmed background to show popup priority */
+.swal2-backdrop-show {
+    background-color: rgba(0, 0, 0, 0.4); /* Adjust transparency as needed */
+    z-index: 1999 !important; /* Just below the SweetAlert popup */
 }
