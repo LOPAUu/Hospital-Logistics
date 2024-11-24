@@ -55,7 +55,8 @@ button:hover {
 #add-button {
     background-color: #0056b3;
     color: white;
-    margin-left: 83%;
+    margin-top: 155px;
+    margin-right: 35px;
 }
 
 #add-button:hover {
@@ -128,6 +129,15 @@ button[onclick="removeItem(this)"]:hover {
     padding: 0;
 }
 
+.supplier {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensures proper spacing */
+    background-color: transparent;
+    padding: 10px; /* Optional: Add padding for better spacing */
+}
+
+
 .modal-content, 
 .supplier-items-column, 
 .supplier-items-information-column {
@@ -182,7 +192,7 @@ textarea {
 textarea {
     height: 100px;
     resize: vertical;
-}
+} 
 
 input[type="text"][name*="supplier-item-name[]"] {
     width: 76%;
