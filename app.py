@@ -52,11 +52,11 @@ def auth_callback():
 
             flash('Login successful!', 'success')
 
-            # Normalize role comparison (to avoid case sensitivity issues)
-            if session['role'].strip().lower() == 'lms admin':  # Case insensitive check
+            # Only one role: LMS Admin
+            if session['role'].strip().lower() == 'lms admin':
                 return redirect(url_for('admin_dashboard'))
             else:
-                flash('Role not authorized', 'danger')
+                flash('Role not authorized.', 'danger')
                 return redirect(url_for('login'))
 
         else:
