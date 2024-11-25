@@ -40,37 +40,14 @@ h1 {
     background-color: #f0f0f0;
 }
 
-<<<<<<< HEAD
-/* Style for the Manage Requisition button */
-#create-button {
-=======
 /* Button styles */
 button {
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
     background-color: #0056b3;
     padding: 10px;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-<<<<<<< HEAD
-    margin-left: 67%;
-}
-
-#create-button:hover {
-    background-color: #002244;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #0056b3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 20px;
-=======
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
 }
 
 button:hover {
@@ -240,39 +217,3 @@ table td button i {
     border-radius: 4px;
     background-color: #f9f9f9;
 }
-<<<<<<< HEAD
-#search-bar {
-    width: 50%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-.search-filters {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.search-filters input,
-.search-filters select {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 200px;
-}
-
-#generate-report {
-    background-color: #28a745; /* Green for generate/print button */
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-#generate-report:hover {
-    background-color: #218838; /* Darker green on hover */
-}
-=======
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
