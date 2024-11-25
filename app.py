@@ -8,19 +8,11 @@ app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 AUTH_SERVICE_URL = "https://evaluation-deployed-authentication.onrender.com"
 
 # PostgreSQL configurations
-<<<<<<< HEAD
 app.config['POSTGRES_HOST'] = 'localhost'
 app.config['POSTGRES_PORT'] = '5432'  # Specify the PostgreSQL port
 app.config['POSTGRES_USER'] = 'postgres'  # Change to your PostgreSQL username
 app.config['POSTGRES_PASSWORD'] = 'miko02262004'  # Change to your PostgreSQL password
 app.config['POSTGRES_DB'] = 'LogisticsDB'  # Database name
-=======
-app.config['POSTGRES_HOST'] = 'dpg-csuks7l2ng1s73eefvhg-a.oregon-postgres.render.com'
-app.config['POSTGRES_USER'] = 'lmsdb_user'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = 'EMgG60UaoPj9vC79jodS3cxfo4dM8Kt3'  # Change to your PostgreSQL password
-app.config['POSTGRES_DB'] = 'lmsdb_ul3w'  # Database name
-app.config['POSTGRES_PORT'] = '5432'  # Database name
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
 
 def get_db_connection():
     return psycopg2.connect(
