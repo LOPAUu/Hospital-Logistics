@@ -95,17 +95,39 @@ def admin_supplier():
     return render_template('admin_supplier.html', suppliers=suppliers)
 
 
-# Route to fetch a single supplier by ID
 @app.route('/suppliers/<int:supplier_id>', methods=['GET'])
 def get_supplier(supplier_id):
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT company_name, contact_person, email, phone, address FROM suppliers WHERE id = %s", (supplier_id,))
+        
+        # Fetch supplier details
+        cursor.execute("""
+            SELECT company_name, contact_person, email, phone, address 
+            FROM suppliers 
+            WHERE id = %s
+        """, (supplier_id,))
         supplier = cursor.fetchone()
-        if supplier is None:
+
+        if not supplier:
             return jsonify({'message': 'Supplier not found'}), 404
+
+        # Fetch supplier items
+        cursor.execute("""
+            SELECT item_name 
+            FROM supplier_items 
+            WHERE supplier_id = %s
+        """, (supplier_id,))
+        items = [row['item_name'] for row in cursor.fetchall()]
+
+        # Add items to the supplier data
+        supplier['items'] = items
+
         return jsonify(supplier)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
     finally:
         cursor.close()
         conn.close()
@@ -156,23 +178,23 @@ def add_supplier():
         cursor.close()
         conn.close()
 
+
 @app.route('/suppliers/<int:supplier_id>', methods=['PUT'])
 def update_supplier(supplier_id):
-    updated_supplier = request.json
-
-    # Update supplier information
+    updated_supplier = request.json  # Get the updated data from the request
     try:
+        # Get a connection to the PostgreSQL database
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Check if supplier exists
+        # Check if the supplier exists in the suppliers table
         cursor.execute("SELECT * FROM suppliers WHERE id = %s", (supplier_id,))
         supplier = cursor.fetchone()
 
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
-        # Update supplier details
+        # Update the supplier details in the suppliers table
         cursor.execute("""
             UPDATE suppliers
             SET company_name = %s,
@@ -182,29 +204,36 @@ def update_supplier(supplier_id):
                 address = %s
             WHERE id = %s
         """, (
-            updated_supplier['companyName'],
-            updated_supplier['contactPerson'],
-            updated_supplier['email'],
-            updated_supplier['phone'],
-            updated_supplier['address'],
+            updated_supplier.get('company_name'),
+            updated_supplier.get('contact_person'),
+            updated_supplier.get('email'),
+            updated_supplier.get('phone'),
+            updated_supplier.get('address'),
             supplier_id
         ))
 
-        # Update supplier items
+        # Update the supplier items in the supplier_items table
         if 'items' in updated_supplier:
-            # Delete existing items first
+            # Delete existing items for the supplier
             cursor.execute("DELETE FROM supplier_items WHERE supplier_id = %s", (supplier_id,))
-            # Add new items
+            # Add the new items
             for item in updated_supplier['items']:
                 cursor.execute("INSERT INTO supplier_items (supplier_id, item_name) VALUES (%s, %s)", (supplier_id, item))
 
+        # Commit the changes to the database
         conn.commit()
+
+        # Close the cursor and the connection
         cursor.close()
         conn.close()
 
         return jsonify({"message": "Supplier and items updated successfully"}), 200
 
     except Exception as e:
+        # Handle any exception and rollback the transaction
+        conn.rollback()
+        cursor.close()
+        conn.close()
         return jsonify({"error": str(e)}), 500
 
 
@@ -224,6 +253,37 @@ def delete_supplier(supplier_id):
         conn.commit()
 
         return jsonify({"message": "Supplier deleted successfully"}), 200
+
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/supplier-items/<string:item_name>', methods=['DELETE'])
+def delete_supplier_item(item_name):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Delete the item from the database
+        cursor.execute("""
+            DELETE FROM supplier_items 
+            WHERE item_name = %s
+            RETURNING id;
+        """, (item_name,))
+        
+        # Check if the item was deleted
+        deleted_item = cursor.fetchone()
+        
+        if not deleted_item:
+            return jsonify({'message': 'Item not found'}), 404
+
+        # Commit the transaction
+        conn.commit()
+
+        return jsonify({'message': 'Item deleted successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
     finally:
         cursor.close()
