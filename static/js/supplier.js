@@ -66,7 +66,7 @@ function populateSupplierForm(data) {
     window.supplierId = data.id;
 }
 
-// Check for changes
+// Function to check if any changes have been made to the supplier data
 function checkForChanges() {
     const currentData = {
         companyName: document.getElementById('edit-company-name').value,
@@ -74,11 +74,32 @@ function checkForChanges() {
         email: document.getElementById('edit-email').value,
         phone: document.getElementById('edit-phone').value,
         address: document.getElementById('edit-address').value,
+        items: Array.from(document.querySelectorAll('input[name="edit-supplier-item-name[]"]'))
+                .map(input => input.value)
+                .filter(item => item.trim() !== '') // Remove empty items
     };
 
-    // Compare the initial data with the current data
-    return JSON.stringify(currentData) !== JSON.stringify(window.initialData);
+    // Compare each field with the initial data
+    const isChanged = 
+        currentData.companyName !== window.initialData.companyName ||
+        currentData.contactPerson !== window.initialData.contactPerson ||
+        currentData.email !== window.initialData.email ||
+        currentData.phone !== window.initialData.phone ||
+        currentData.address !== window.initialData.address ||
+        !arraysEqual(currentData.items, window.initialData.items);
+
+    return isChanged;
 }
+
+// Helper function to compare two arrays (items)
+function arraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+}
+
 
 // Enable or disable the update button based on changes
 function toggleUpdateButton() {
@@ -192,7 +213,7 @@ async function updateSupplier(event) {
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'NO CHANGES have been made to the data. Please modify the fields before submitting.',
+            text: "You haven't made any changes; please enter or modify something.",
             showConfirmButton: true,
         });
         return;
@@ -427,6 +448,57 @@ function openupdateSupplierModal(supplierId) {
         });
 }
 
+// Function to open the view modal and display supplier data
+function openViewSupplierModal(supplierId) {
+    fetch(`/suppliers/${supplierId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(supplier => {
+            // Set supplier logo (if available)
+            const logo = supplier.logo || '';
+            document.getElementById('supplier-logo').src = logo;
+
+            // Populate supplier details
+            document.getElementById('view-company-name').textContent = supplier.company_name;
+            document.getElementById('view-contact-person').textContent = supplier.contact_person;
+            document.getElementById('view-email').textContent = supplier.email;
+            document.getElementById('view-phone').textContent = supplier.phone;
+            document.getElementById('view-address').textContent = supplier.address;
+
+            // Populate items into the table
+            const tableBody = document.querySelector("#view-supplier-items-table tbody");
+            tableBody.innerHTML = ''; // Clear any existing rows
+
+            const items = supplier.items || []; // Default to an empty array if items is undefined
+            if (Array.isArray(items)) {
+                items.forEach(item => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td style="padding: 8px;">${item}</td>
+                    `;
+                    tableBody.appendChild(newRow);
+                });
+            } else {
+                console.warn('Expected supplier.items to be an array, but got:', items);
+            }
+
+            // Open the modal
+            document.getElementById('view-supplier-modal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching supplier data:', error);
+            alert('Failed to fetch supplier data. Please try again.');
+        });
+}
+
+// Close the modal
+function closeViewSupplierModal() {
+    document.getElementById('view-supplier-modal').style.display = 'none';
+}
 
 // Close the modal
 function closeupdateSupplierModal() {

@@ -190,6 +190,54 @@
     </div>
 
 
+
+        <!-- Supplier Modal View -->
+    <div id="view-supplier-modal" class="modal">
+        <div class="view-content-modal">
+            <span class="close-button" onclick="closeViewSupplierModal()">&times;</span>
+            <!-- Supplier Logo at the top center -->
+            <img id="supplier-logo" src="" alt="Supplier Logo">
+
+            <!-- Supplier Details in Tabular Form -->
+            <table>
+                <tr>
+                    <th id="company-name-header">Company Name</th>
+                    <td id="view-company-name"></td>
+                </tr>
+                <tr>
+                    <th id="contact-person-header">Contact Person</th>
+                    <td id="view-contact-person"></td>
+                </tr>
+                <tr>
+                    <th id="email-header">Email</th>
+                    <td id="view-email"></td>
+                </tr>
+                <tr>
+                    <th id="phone-header">Phone</th>
+                    <td id="view-phone"></td>
+                </tr>
+                <tr>
+                    <th id="address-header">Address</th>
+                    <td id="view-address"></td>
+                </tr>
+            </table>
+
+            <h3>Items Supplied</h3>
+            <table id="view-supplier-items-table">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    
+        
+
+
     <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
 {% endblock %}
 <!-- Second Column: Items Supplied -->

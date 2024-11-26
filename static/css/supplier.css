@@ -63,6 +63,39 @@ button:hover {
     background-color: #002244;
 }
 
+/* Modal Content */
+.view-content-modal {
+    background-color: white;
+    padding: 30px;
+    margin: 200px auto;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+/* Heading for Items Supplied in Modal */
+.view-content-modal h3 {
+    text-align: center;  /* Center-align the text */
+    margin-top: 50px;    /* Add space above */
+}
+
+/* Supplier Details - Company Name (and similar fields) */
+#view-company-name,
+#view-email,
+#view-phone,
+#view-address {
+    font-weight: normal;  /* Remove bold styling */
+}
+
+/* Supplier Logo */
+#supplier-logo {
+    max-width: 150px;
+    margin: 0 auto 20px;
+    display: block;
+    border-radius: 50%;
+}
+
 .view-button {
     background-color: #388E3C;
     color: white;
