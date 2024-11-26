@@ -182,55 +182,63 @@ function collectSupplierFormData(itemInputName) {
     };
 }
 
+// Update supplier data
 async function updateSupplier(event) {
     event.preventDefault();
 
-    try {
-        // Collect form data
-        const formData = {
-            company_name: document.getElementById('edit-company-name').value,
-            contact_person: document.getElementById('edit-contact-person').value,
-            email: document.getElementById('edit-email').value,
-            phone: document.getElementById('edit-phone').value,
-            address: document.getElementById('edit-address').value,
-            items: Array.from(document.querySelectorAll('input[name="edit-supplier-item-name[]"]'))
-                .map(input => input.value) 
+     // If no changes, show error message
+    if (!checkForChanges()) {
+        closeupdateSupplierModal();
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'NO CHANGES have been made to the data. Please modify the fields before submitting.',
+            showConfirmButton: true,
+        });
+        return;
+    }
+
+    const updatedData = {
+        companyName: document.getElementById('edit-company-name').value,
+        contactPerson: document.getElementById('edit-contact-person').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        address: document.getElementById('edit-address').value,
+        items: Array.from(document.querySelectorAll('input[name="edit-supplier-item-name[]"]'))
+                .map(input => input.value)
                 .filter(item => item.trim() !== '') // Remove empty items
-        };
+    };
 
-        if (!window.supplierId) {
-            throw new Error('Supplier ID is missing');
-        }
-
-        // Send PUT request to update the supplier
+    try {
         const response = await fetch(`/suppliers/${window.supplierId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData),
         });
 
         if (response.ok) {
+            closeupdateSupplierModal();
             Swal.fire({
                 icon: 'success',
                 title: 'Supplier Edited',
-                text: 'The supplier has been edited successfully!',
+                text: 'Supplier edited successfully!',
                 showConfirmButton: true,
             }).then(() => {
-                window.location.reload(); // Reload the page after dismissal
+                window.location.reload(); // Reload to reflect the changes
             });
         } else {
+            closeupdateSupplierModal();
             const errorData = await response.json();
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: errorData.error || 'Failed to edit supplier.',
+                text: errorData.error || 'Failed to update supplier.',
                 showConfirmButton: true,
             });
         }
     } catch (error) {
-        console.error("Error editing supplier:", error);
+        closeupdateSupplierModal();
+        console.error('Error updating supplier:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -336,58 +344,6 @@ function addEditedSupplierItem() {
     tableBody.appendChild(newRow);
 }
 
-function removeEditableItem(button) {
-    // Get the row to be removed
-    const row = button.closest("tr");
-
-    // Get the item name from the input field
-    const itemName = row.querySelector('input').value;
-
-    // Send a DELETE request to the server to remove the item
-    fetch(`/supplier-items/${itemName}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        // If the request is successful, remove the row from the table
-        row.remove();
-
-        // Show a SweetAlert2 success message with a custom z-index
-        Swal.fire({
-            title: 'Item Removed',
-            text: `The item "${itemName}" has been successfully removed.`,
-            icon: 'success',
-            confirmButtonText: 'OK',
-            customClass: {
-                popup: 'swal-overlay-above-modal', // Use custom class to ensure it's above the modal
-            }
-        });
-    })
-    .catch(error => {
-        console.error('Error removing item:', error);
-
-        // Show a SweetAlert2 error message with a custom z-index
-        Swal.fire({
-            title: 'Error',
-            text: 'Failed to remove the item. Please try again.',
-            icon: 'error',
-            confirmButtonText: 'OK',
-            customClass: {
-                popup: 'swal-overlay-above-modal', // Use custom class to ensure it's above the modal
-            }
-        });
-    });
-}
-
-
-
-
 // Function to remove a specific row when the "Remove" button is clicked
 function removeItem(button) {
     const row = button.closest("tr"); // Find the closest <tr> element to the button
@@ -424,38 +380,43 @@ function openupdateSupplierModal(supplierId) {
             return response.json();
         })
         .then(supplier => {
-            console.log(supplier.items); // Check the items data in the console
-            
             // Populate supplier data fields
-            document.getElementById('edit-company-name').value = supplier.company_name || '';
-            document.getElementById('edit-contact-person').value = supplier.contact_person || '';
-            document.getElementById('edit-email').value = supplier.email || '';
-            document.getElementById('edit-phone').value = supplier.phone || '';
-            document.getElementById('edit-address').value = supplier.address || '';
+            document.getElementById('edit-company-name').value = supplier.company_name;
+            document.getElementById('edit-contact-person').value = supplier.contact_person;
+            document.getElementById('edit-email').value = supplier.email;
+            document.getElementById('edit-phone').value = supplier.phone;
+            document.getElementById('edit-address').value = supplier.address;
 
-            // Display supplier items in the table
-            const itemsTableBody = document.getElementById('edit-supplier-items-table').getElementsByTagName('tbody')[0];
-            itemsTableBody.innerHTML = ''; // Clear existing rows
+            // Populate items into the table
+            const tableBody = document.querySelector("#edit-supplier-items-table tbody");
+            tableBody.innerHTML = ''; // Clear any existing rows
 
-            if (supplier.items && supplier.items.length > 0) {
-                supplier.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    const cell = document.createElement('td');
-                    cell.innerHTML = `
-                        <input type="text" name="edit-supplier-item-name[]" value="${item}" placeholder="Item Name">
-                        <button type="button" onclick="removeEditableItem(this)">Remove</button>
+            const items = supplier.items || []; // Default to an empty array if items is undefined
+            if (Array.isArray(items)) {
+                items.forEach(item => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>
+                            <input type="text" name="edit-supplier-item-name[]" value="${item}" placeholder="Item Name">
+                            <button type="button" onclick="removeItem(this)">Remove</button>
+                        </td>
                     `;
-                    row.appendChild(cell);
-                    itemsTableBody.appendChild(row);
+                    tableBody.appendChild(newRow);
                 });
             } else {
-                const row = document.createElement('tr');
-                const cell = document.createElement('td');
-                cell.colSpan = 2;
-                cell.innerHTML = '<p>No items found for this supplier.</p>';
-                row.appendChild(cell);
-                itemsTableBody.appendChild(row);
+                console.warn('Expected supplier.items to be an array, but got:', items);
             }
+
+            // Store initial data for change detection
+            window.supplierId = supplierId;
+            window.initialData = { 
+                companyName: supplier.company_name,
+                contactPerson: supplier.contact_person,
+                email: supplier.email,
+                phone: supplier.phone,
+                address: supplier.address,
+                items: items
+            };
 
             // Open the modal
             document.getElementById('edit-supplier-modal').style.display = 'block';
@@ -465,6 +426,7 @@ function openupdateSupplierModal(supplierId) {
             alert('Failed to fetch supplier data. Please try again.');
         });
 }
+
 
 // Close the modal
 function closeupdateSupplierModal() {

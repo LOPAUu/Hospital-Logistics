@@ -178,23 +178,23 @@ def add_supplier():
         cursor.close()
         conn.close()
 
-
 @app.route('/suppliers/<int:supplier_id>', methods=['PUT'])
 def update_supplier(supplier_id):
-    updated_supplier = request.json  # Get the updated data from the request
+    updated_supplier = request.json
+
+    # Update supplier information
     try:
-        # Get a connection to the PostgreSQL database
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Check if the supplier exists in the suppliers table
+        # Check if supplier exists
         cursor.execute("SELECT * FROM suppliers WHERE id = %s", (supplier_id,))
         supplier = cursor.fetchone()
 
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
-        # Update the supplier details in the suppliers table
+        # Update supplier details
         cursor.execute("""
             UPDATE suppliers
             SET company_name = %s,
@@ -204,36 +204,29 @@ def update_supplier(supplier_id):
                 address = %s
             WHERE id = %s
         """, (
-            updated_supplier.get('company_name'),
-            updated_supplier.get('contact_person'),
-            updated_supplier.get('email'),
-            updated_supplier.get('phone'),
-            updated_supplier.get('address'),
+            updated_supplier['companyName'],
+            updated_supplier['contactPerson'],
+            updated_supplier['email'],
+            updated_supplier['phone'],
+            updated_supplier['address'],
             supplier_id
         ))
 
-        # Update the supplier items in the supplier_items table
+        # Update supplier items
         if 'items' in updated_supplier:
-            # Delete existing items for the supplier
+            # Delete existing items first
             cursor.execute("DELETE FROM supplier_items WHERE supplier_id = %s", (supplier_id,))
-            # Add the new items
+            # Add new items
             for item in updated_supplier['items']:
                 cursor.execute("INSERT INTO supplier_items (supplier_id, item_name) VALUES (%s, %s)", (supplier_id, item))
 
-        # Commit the changes to the database
         conn.commit()
-
-        # Close the cursor and the connection
         cursor.close()
         conn.close()
 
         return jsonify({"message": "Supplier and items updated successfully"}), 200
 
     except Exception as e:
-        # Handle any exception and rollback the transaction
-        conn.rollback()
-        cursor.close()
-        conn.close()
         return jsonify({"error": str(e)}), 500
 
 

@@ -124,7 +124,7 @@
     </div>
 
 
-        <!-- Modal for editing supplier details -->
+    <!-- Modal for editing supplier details -->
     <div id="edit-supplier-modal" class="modal">
         <div class="edit-modal-container">
             <!-- Modal Content with Two Columns -->
@@ -134,6 +134,7 @@
                 <div class="supplier-info-column">
                     <h2>Edit Supplier</h2>
                     <form id="edit-supplier-form" onsubmit="updateSupplier(event)">
+                        <input type="hidden" id="supplier-id" name="supplier-id" /> <!-- Hidden supplier ID -->
                         <div class="form-group">
                             <label for="edit-company-name">Company Name:</label>
                             <input type="text" id="edit-company-name" name="edit-company-name" required>
@@ -187,6 +188,7 @@
             </div>
         </div>
     </div>
+
 
     <script src="{{ url_for('static', filename='js/supplier.js') }}"></script>
 {% endblock %}
