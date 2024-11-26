@@ -531,7 +531,7 @@ def get_customer_details(customer_id):
 
         # Query to fetch customer details, including date_of_birth
         cur_lms.execute("""
-            SELECT customer_id, full_name, contact_number, date_of_birth
+            SELECT customer_id, full_name, contact_number, date_of_birth, senior_or_pwd
             FROM pharmacy_customers
             WHERE customer_id = %s
         """, (customer_id,))
@@ -545,7 +545,8 @@ def get_customer_details(customer_id):
             "customer_id": customer[0],
             "full_name": customer[1],
             "contact_number": customer[2],
-            "date_of_birth": customer[3] 
+            "date_of_birth": customer[3],
+            "senior_or_pwd": customer[4] 
         }
 
         cur_lms.close()
