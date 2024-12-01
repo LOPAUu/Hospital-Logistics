@@ -55,11 +55,45 @@ button:hover {
 #add-button {
     background-color: #0056b3;
     color: white;
-    margin-left: 83%;
+    margin-top: 155px;
+    margin-right: 35px;
 }
 
 #add-button:hover {
     background-color: #002244;
+}
+
+/* Modal Content */
+.view-content-modal {
+    background-color: white;
+    padding: 30px;
+    margin: 200px auto;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+/* Heading for Items Supplied in Modal */
+.view-content-modal h3 {
+    text-align: center;  /* Center-align the text */
+    margin-top: 50px;    /* Add space above */
+}
+
+/* Supplier Details - Company Name (and similar fields) */
+#view-company-name,
+#view-email,
+#view-phone,
+#view-address {
+    font-weight: normal;  /* Remove bold styling */
+}
+
+/* Supplier Logo */
+#supplier-logo {
+    max-width: 150px;
+    margin: 0 auto 20px;
+    display: block;
+    border-radius: 50%;
 }
 
 .view-button {
@@ -95,13 +129,28 @@ button[onclick="addEditedSupplierItem()"]:hover {
     background-color: #002244;
 }
 
+.save-button,
+button[onclick="saveSupplierItem(this)"] {
+    margin-left: 5px;
+    background-color: #f3c300;
+    color: white;
+}
+
+.save-button:hover,
+button[onclick="saveSupplierItem(this)"]:hover {
+    background-color: darkgoldenrod;
+}
+
 .delete-button,
+button[onclick="removeEditableItem(this)"],
 button[onclick="removeItem(this)"] {
     margin-left: 5px;
     background-color: #d32f2f;
     color: white;
 }
 
+.delete-button:hover,
+button[onclick="removeEditableItem(this)"]:hover,
 button[onclick="removeItem(this)"]:hover {
     background-color: darkred;
 }
@@ -110,7 +159,7 @@ button[onclick="removeItem(this)"]:hover {
 .modal {
     display: none;
     position: fixed;
-    z-index: 2004;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
@@ -126,6 +175,14 @@ button[onclick="removeItem(this)"]:hover {
     justify-content: space-between;
     gap: 2px;
     padding: 0;
+}
+
+.supplier {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensures proper spacing */
+    background-color: transparent;
+    padding: 10px; /* Optional: Add padding for better spacing */
 }
 
 .modal-content, 
@@ -182,7 +239,7 @@ textarea {
 textarea {
     height: 100px;
     resize: vertical;
-}
+} 
 
 input[type="text"][name*="supplier-item-name[]"] {
     width: 76%;
@@ -234,4 +291,15 @@ textarea:focus {
 #edit-supplier-items-table td {
     padding: 8px;
     font-size: 14px;
+}
+
+/* Ensure SweetAlert2 popup is above the modal */
+.swal-overlay-above-modal {
+    z-index: 2000 !important; /* Higher than the modal's z-index */
+}
+
+/* Optional: Dimmed background to show popup priority */
+.swal2-backdrop-show {
+    background-color: rgba(0, 0, 0, 0.4); /* Adjust transparency as needed */
+    z-index: 1999 !important; /* Just below the SweetAlert popup */
 }
