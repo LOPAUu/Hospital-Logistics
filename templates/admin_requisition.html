@@ -20,9 +20,12 @@
             <a href="{{ url_for('pos') }}">POS</a>
         </div>
     </div>
-
-    <h1>Requisition List  <button id="manage-button" onclick="openModal()">Manage Requisition</button></h1>
     
+    <div class="requisition">
+        <h1>Requisition List</h1>
+        <button id="manage-button" onclick="openModal()">Manage Requisition</button>
+    </div>
+
     <div class="container">
         <!-- Requisition Table -->
         <table id="requisition-list">

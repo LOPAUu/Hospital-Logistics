@@ -13,6 +13,14 @@
     border-radius: 15px;
 }
 
+.requisition {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensures proper spacing */
+    background-color: transparent;
+    padding: 10px; /* Optional: Add padding for better spacing */
+}
+
 table {
     width: 100%;
     border-collapse: collapse; /* Prevents gaps between cells */
@@ -100,9 +108,14 @@ table td button i {
 
 /* Manage Requisition button */
 #manage-button {
-    font-size: 14px;
-    padding: 10px;
-    margin-left: 80%;
+    background-color: #0056b3;
+    color: white;
+    margin-top: 155px;
+    margin-right: 35px;
+}
+
+#manage-button:hover {
+    background-color: #002244;
 }
 
 /* Modal styles */
