@@ -595,6 +595,56 @@ def signatory_view():
 def purchase_order():
     return render_template('purchase_order.html')
 
+@app.route('/update_medicine_quantity', methods=['POST'])
+def update_medicine_quantity():
+    try:
+        print("Received request to update medicine quantity")  # Log when the request is received
+        data = request.get_json()
+        if not data:
+            print("No JSON data received")  # Log when no data is sent
+            return jsonify({"error": "No data provided"}), 400
+
+        medicines = data.get('medicines', [])
+        if not medicines:
+            print("No medicines data provided")  # Log when data is empty
+            return jsonify({"error": "No medicines data provided"}), 400
+
+        print(f"Received medicines data: {medicines}")  # Log the received data
+
+        with get_db_connection() as conn_lms:
+            with conn_lms.cursor() as cursor_lms:
+                for medicine in medicines:
+                    # Corrected query to use medicine_name
+                    cursor_lms.execute("""
+                        SELECT medicine_id
+                        FROM medicines
+                        WHERE medicine_name = %s
+                    """, (medicine['medicine_name'],))
+                    result = cursor_lms.fetchone()
+
+                    if not result:
+                        print(f"Medicine '{medicine['medicine_name']}' not found in database.")
+                        return jsonify({"error": f"Medicine '{medicine['medicine_name']}' not found."}), 404
+                    
+                    medicine_id = result[0]
+
+                    # Update the stock using the found medicine_id
+                    cursor_lms.execute("""
+                        UPDATE medicines
+                        SET quantity = quantity + %s
+                        WHERE medicine_id = %s
+                    """, (medicine['quantity'], medicine_id))
+
+                conn_lms.commit()
+
+        print("Stock updated successfully")
+        return jsonify({"message": "Stock updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Error updating stock: {e}")  # Log any errors
+        app.logger.error(f"Error updating stock: {e}")
+        return jsonify({"error": "An error occurred while updating stock"}), 500
+
 # Logout route to clear the session
 @app.route('/logout', methods=['GET'])
 def logout():
@@ -605,6 +655,6 @@ def logout():
     
     # Redirect to the authentication service (without any query parameters)
     return redirect(AUTH_SERVICE_URL)
-    
+
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8000)
