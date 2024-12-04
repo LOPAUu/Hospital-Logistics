@@ -647,6 +647,70 @@ def signatory_view():
 def purchase_order():
     return render_template('purchase_order.html')
 
+@app.route('/medicine_request', methods=['GET', 'POST'])
+def medicine_request():
+    try:
+        # Establish database connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        if request.method == 'GET':
+            # Fetch all medicine requests
+            cursor.execute("""
+                SELECT medicine_request_id, request_status, medicine_id, quantity, 
+                       request_date, approved_by, approval_date 
+                FROM medicine_requests;
+            """)
+            medicine_requests = cursor.fetchall()
+
+            # Format the data for template rendering
+            formatted_requests = [
+                {
+                    "medicine_request_id": row[0],
+                    "request_status": row[1],
+                    "medicine_id": row[2],
+                    "quantity": row[3],
+                    "request_date": row[4],
+                    "approved_by": row[5],
+                    "approval_date": row[6]
+                } 
+                for row in medicine_requests
+            ]
+
+            return render_template('medicine_request.html', medicine_requests=formatted_requests)
+
+        elif request.method == 'POST':
+            # Add a new medicine request
+            data = request.get_json()
+
+            if not data or not all(key in data for key in ['medicine_id', 'quantity']):
+                return jsonify({"error": "Missing required fields"}), 400
+
+            request_status = data.get('request_status', 'Pending')
+            medicine_id = data['medicine_id']
+            quantity = data['quantity']
+            request_date = data.get('request_date', None)
+            approved_by = data.get('approved_by', None)
+            approval_date = data.get('approval_date', None)
+
+            cursor.execute("""
+                INSERT INTO medicine_requests (request_status, medicine_id, quantity, request_date, approved_by, approval_date)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING medicine_request_id;
+            """, (request_status, medicine_id, quantity, request_date, approved_by, approval_date))
+            new_request_id = cursor.fetchone()[0]
+            conn.commit()
+
+            return jsonify({"message": "Request added successfully", "medicine_request_id": new_request_id})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        # Close the connection
+        if 'conn' in locals():
+            cursor.close()
+            conn.close()
 
 # Logout route to clear the session
 @app.route('/logout', methods=['GET'])
