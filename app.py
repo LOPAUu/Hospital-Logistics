@@ -712,6 +712,35 @@ def medicine_request():
             cursor.close()
             conn.close()
 
+@app.route('/medicines-info')
+def medicines_info():
+    connection = get_db_connection()  # Function to connect to the database
+    cursor = connection.cursor()
+
+    # Query to fetch the required columns
+    query = """
+        SELECT medicine_id, medicine_name, unit_price FROM medicines ORDER BY medicine_id
+    """
+    cursor.execute(query)
+    medicines = cursor.fetchall()
+
+    # Convert data into a list of dictionaries
+    medicines_list = [
+        {
+            'medicine_id': row[0],  # The first column is medicine_id
+            'medicine_name': row[1], # The second column is medicine_name
+            'unit_price': row[2],    # The third column is unit_price
+        }
+        for row in medicines
+    ]
+
+    # Close the connection
+    cursor.close()
+    connection.close()
+
+    # Return the data as JSON
+    return jsonify(medicines_list)
+
 # Logout route to clear the session
 @app.route('/logout', methods=['GET'])
 def logout():
