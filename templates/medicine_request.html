@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Medicine Requests{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medicine_request.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('medicine_request') }}">Medicine Request</a>
+            <a href="{{ url_for('admin_supplier') }}">Supplier</a>
+            <a href="{{ url_for('admin_requisition') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
+            <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('pos') }}">POS</a>
+        </div>
+    </div>
+    
+    <div class="medicine-requests">
+        <h1>Medicine Requests</h1>
+    </div>
+    
+    <div class="container">
+        <table id="medicine-request-list">
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Status</th>
+                    <th>Medicine ID</th>
+                    <th>Quantity</th>
+                    <th>Request Date</th>
+                    <th>Approved By</th>
+                    <th>Approval Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in medicine_requests %}
+                <tr>
+                    <td>{{ request.medicine_request_id }}</td>
+                    <td>{{ request.request_status }}</td>
+                    <td>{{ request.medicine_id }}</td>
+                    <td>{{ request.quantity }}</td>
+                    <td>{{ request.request_date }}</td>
+                    <td>{{ request.approved_by if request.approved_by else 'N/A' }}</td>
+                    <td>{{ request.approval_date if request.approval_date else 'N/A' }}</td>
+                    <td>
+                        {% if request.request_status == "Pending" %}
+                        <button class="accept-button" onclick="acceptRequest({{ request.medicine_request_id }})">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                        {% endif %}
+                        <button class="delete-button" onclick="removeRequest({{ request.medicine_request_id }})">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <script src="{{ url_for('static', filename='js/medicine_request.js') }}"></script>
+{% endblock %}
+<!-- Second Column: Items Supplied -->
