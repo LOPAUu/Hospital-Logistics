@@ -355,6 +355,15 @@ def save_total(requisition_id):
 
     return jsonify({"message": "Total saved successfully!", "requisition_id": requisition_id, "total": requisition_total}), 200
 
+
+@app.route('/signatory_view')
+def signatory_view():
+    return render_template('signatory_view.html')
+
+@app.route('/purchase_order')
+def purchase_order():
+    return render_template('purchase_order.html')
+
 @app.route('/inventory')
 def inventory():
     connection = get_db_connection()
@@ -586,14 +595,6 @@ def get_medicine_details(medicine_id):
     except Exception as e:
         print(f"Error retrieving medicine details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
-
-@app.route('/signatory_view')
-def signatory_view():
-    return render_template('signatory_view.html')
-
-@app.route('/purchase_order')
-def purchase_order():
-    return render_template('purchase_order.html')
 
 @app.route('/update_medicine_quantity', methods=['POST'])
 def update_medicine_quantity():
