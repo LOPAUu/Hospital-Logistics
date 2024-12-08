@@ -408,6 +408,14 @@ def save_total(requisition_id):
 
     return jsonify({"message": "Total saved successfully!", "requisition_id": requisition_id, "total": requisition_total}), 200
 
+@app.route('/signatory_view')
+def signatory_view():
+    return render_template('signatory_view.html')
+
+@app.route('/purchase_order')
+def purchase_order():
+    return render_template('purchase_order.html')
+
 @app.route('/inventory')
 def inventory():
     connection = get_db_connection()
@@ -584,7 +592,7 @@ def get_customer_details(customer_id):
 
         # Query to fetch customer details, including date_of_birth
         cur_lms.execute("""
-            SELECT customer_id, full_name, contact_number, date_of_birth
+            SELECT customer_id, full_name, contact_number, date_of_birth, senior_or_pwd
             FROM pharmacy_customers
             WHERE customer_id = %s
         """, (customer_id,))
@@ -598,7 +606,8 @@ def get_customer_details(customer_id):
             "customer_id": customer[0],
             "full_name": customer[1],
             "contact_number": customer[2],
-            "date_of_birth": customer[3] 
+            "date_of_birth": customer[3],
+            "senior_or_pwd": customer[4] 
         }
 
         cur_lms.close()
@@ -609,7 +618,6 @@ def get_customer_details(customer_id):
     except Exception as e:
         print(f"Error retrieving customer details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
-
 
 @app.route('/api/medicines/<int:medicine_id>', methods=['GET'])
 def get_medicine_details(medicine_id):
@@ -638,14 +646,6 @@ def get_medicine_details(medicine_id):
     except Exception as e:
         print(f"Error retrieving medicine details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
-
-@app.route('/signatory_view')
-def signatory_view():
-    return render_template('signatory_view.html')
-
-@app.route('/purchase_order')
-def purchase_order():
-    return render_template('purchase_order.html')
 
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
@@ -741,6 +741,56 @@ def medicines_info():
     # Return the data as JSON
     return jsonify(medicines_list)
 
+@app.route('/update_medicine_quantity', methods=['POST'])
+def update_medicine_quantity():
+    try:
+        print("Received request to update medicine quantity")  # Log when the request is received
+        data = request.get_json()
+        if not data:
+            print("No JSON data received")  # Log when no data is sent
+            return jsonify({"error": "No data provided"}), 400
+
+        medicines = data.get('medicines', [])
+        if not medicines:
+            print("No medicines data provided")  # Log when data is empty
+            return jsonify({"error": "No medicines data provided"}), 400
+
+        print(f"Received medicines data: {medicines}")  # Log the received data
+
+        with get_db_connection() as conn_lms:
+            with conn_lms.cursor() as cursor_lms:
+                for medicine in medicines:
+                    # Corrected query to use medicine_name
+                    cursor_lms.execute("""
+                        SELECT medicine_id
+                        FROM medicines
+                        WHERE medicine_name = %s
+                    """, (medicine['medicine_name'],))
+                    result = cursor_lms.fetchone()
+
+                    if not result:
+                        print(f"Medicine '{medicine['medicine_name']}' not found in database.")
+                        return jsonify({"error": f"Medicine '{medicine['medicine_name']}' not found."}), 404
+                    
+                    medicine_id = result[0]
+
+                    # Update the stock using the found medicine_id
+                    cursor_lms.execute("""
+                        UPDATE medicines
+                        SET quantity = quantity + %s
+                        WHERE medicine_id = %s
+                    """, (medicine['quantity'], medicine_id))
+
+                conn_lms.commit()
+
+        print("Stock updated successfully")
+        return jsonify({"message": "Stock updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Error updating stock: {e}")  # Log any errors
+        app.logger.error(f"Error updating stock: {e}")
+        return jsonify({"error": "An error occurred while updating stock"}), 500
+    
 # Logout route to clear the session
 @app.route('/logout', methods=['GET'])
 def logout():
