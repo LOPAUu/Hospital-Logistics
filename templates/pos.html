@@ -12,7 +12,6 @@
     <div class="top-bar">
         <div class="top-nav">
             <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('medicine_request') }}">Medicine Request</a>
             <a href="{{ url_for('admin_supplier') }}">Supplier</a>
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
             <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
@@ -76,19 +75,16 @@
                 <label for="contact-number">Contact Number:</label>
                 <input type="text" id="contact-number" name="contact_number" placeholder="Enter Contact Number (Optional)" />
             
-                <label for="date-of-birth">Date of Birth:</label>
-                <input type="date" id="date-of-birth" name="date_of_birth" />
-            
                 <label for="senior-pwd">Senior/PWD?</label>
                 <select id="senior-pwd" name="senior_or_pwd">
-                    <option value="no">No</option>
-                    <option value="yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
                 </select>
             
                 <!-- Hidden field for medicines data -->
                 <input type="hidden" id="medicines-data" name="medicines_data" />
             
-                <button type="submit" class="submit">Send to Billing</button>
+                <button type="submit">Send to Billing</button>
             </form>            
         </div>
     </div>

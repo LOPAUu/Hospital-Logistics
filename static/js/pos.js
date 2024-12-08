@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Function to populate medicines data before form submission
-    function populateMedicinesData() {
+  function populateMedicinesData() {
     const itemTableBody = document.getElementById("item-table-body");
     const medicinesDataInput = document.getElementById("medicines-data");
     const rows = itemTableBody.querySelectorAll("tr");
@@ -41,33 +41,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Extract details from each row in the table
     rows.forEach((row) => {
-        const quantity = parseInt(row.children[1].textContent);
-        const medicineDetails = row.children[2].textContent.split(" - ");
-        const medicineId = row.getAttribute("data-medicine-id"); // Retrieve medicine_id
-        const medicineName = medicineDetails[1]; // Extract Medicine Name
-        const unitPrice = parseFloat(
+      const quantity = parseInt(row.children[1].textContent);
+      const medicineDetails = row.children[2].textContent.split(" - ");
+      const medicineId = row.getAttribute("data-medicine-id"); // Retrieve medicine_id
+      const medicineName = medicineDetails[1]; // Extract Medicine Name
+      const unitPrice = parseFloat(
         row.children[3].textContent.replace("₱", "").trim()
-        );
+      );
 
-        medicines.push({
+      medicines.push({
         medicine_id: medicineId,
         name: medicineName,
         quantity: quantity,
         unit_price: unitPrice,
-        });
+      });
     });
 
     // Populate the hidden input with JSON data
     medicinesDataInput.value = JSON.stringify(medicines);
-    }
+  }
 
   // Add item function
-    function addItem() {
+  function addItem() {
     const medicineDropdown = document.getElementById("medicine-dropdown");
     const quantityInput = document.getElementById("quantity-input");
 
     const selectedOption =
-        medicineDropdown.options[medicineDropdown.selectedIndex];
+      medicineDropdown.options[medicineDropdown.selectedIndex];
     const medicineId = selectedOption.value; // Extract medicine_id from the value attribute
     const medicineSku = selectedOption.getAttribute("data-sku");
     const medicineName = selectedOption.getAttribute("data-name");
@@ -77,8 +77,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Validate the quantity
     if (quantity <= 0 || isNaN(quantity)) {
-        alert("Please enter a valid quantity (greater than 0).");
-        return;
+      alert("Please enter a valid quantity (greater than 0).");
+      return;
     }
 
     const totalPrice = unitPrice * quantity;
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add the event listener to the remove button
     const removeButton = newRow.querySelector(".remove-item-btn");
     removeButton.addEventListener("click", function () {
-        removeItem(newRow);
+      removeItem(newRow);
     });
 
     // Reset dropdown and quantity input
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Update the summary after adding an item
     updateSummary();
-    }
+  }
 
   // Function to remove an item from the table
   function removeItem(row) {
@@ -145,6 +145,4 @@ document.addEventListener("DOMContentLoaded", function () {
     updateSummary();
     return;
   }
-
 });
-
