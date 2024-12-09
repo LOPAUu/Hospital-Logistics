@@ -34,7 +34,7 @@ th {
 }
 
 th:nth-child(2), td:nth-child(2) {
-    font-weight: bold;
+    font-weight: bold;  /* This line makes the 2nd column's text bold */
 }
 
 /* Buttons */
@@ -44,262 +44,56 @@ button {
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.3s, border 0.3s;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: darkred;
+    opacity: 0.9;
 }
 
-/* Specific Button Colors */
-#add-button {
-    background-color: #0056b3;
-    color: white;
-    margin-top: 155px;
-    margin-right: 35px;
-}
-
-#add-button:hover {
-    background-color: #002244;
-}
-
-/* Modal Content */
-.view-content-modal {
-    background-color: white;
-    padding: 30px;
-    margin: 200px auto;
-    max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
-
-/* Heading for Items Supplied in Modal */
-.view-content-modal h3 {
-    text-align: center;  /* Center-align the text */
-    margin-top: 50px;    /* Add space above */
-}
-
-/* Supplier Details - Company Name (and similar fields) */
-#view-company-name,
-#view-email,
-#view-phone,
-#view-address {
-    font-weight: normal;  /* Remove bold styling */
-}
-
-/* Supplier Logo */
-#supplier-logo {
-    max-width: 150px;
-    margin: 0 auto 20px;
-    display: block;
-    border-radius: 50%;
-}
-
-.view-button {
+/* Specific Button Styles */
+.accept-button {
     background-color: #388E3C;
     color: white;
 }
 
-.view-button:hover {
+.accept-button:hover {
     background-color: #004e11;
 }
 
-.edit-button {
-    margin-left: 5px;
-    background-color: #0d4e84;
-    color: white;
-}
-
-button[onclick="addsupplierItem()"] {
-    margin-left: 300px;
-    background-color: #0d4e84;
-    color: white;
-}
-
-button[onclick="addEditedSupplierItem()"] {
-    margin-left: 300px;
-    background-color: #0d4e84;
-    color: white;
-}
-
-.edit-button:hover,
-button[onclick="addsupplierItem()"]:hover,
-button[onclick="addEditedSupplierItem()"]:hover {
-    background-color: #002244;
-}
-
-.save-button,
-button[onclick="saveSupplierItem(this)"] {
-    margin-left: 5px;
-    background-color: #f3c300;
-    color: white;
-}
-
-.save-button:hover,
-button[onclick="saveSupplierItem(this)"]:hover {
-    background-color: darkgoldenrod;
-}
-
-.delete-button,
-button[onclick="removeEditableItem(this)"],
-button[onclick="removeItem(this)"] {
-    margin-left: 5px;
+.reject-button {
     background-color: #d32f2f;
     color: white;
 }
 
-.delete-button:hover,
-button[onclick="removeEditableItem(this)"]:hover,
-button[onclick="removeItem(this)"]:hover {
+.reject-button:hover {
     background-color: darkred;
 }
 
-/* Modal Styling */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-.add-modal-container,
-.edit-modal-container {
-    margin: 150px 400px 0;
-    display: flex;
-    justify-content: space-between;
-    gap: 2px;
-    padding: 0;
-}
-
-.supplier {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Ensures proper spacing */
-    background-color: transparent;
-    padding: 10px; /* Optional: Add padding for better spacing */
-}
-
-.modal-content, 
-.supplier-items-column, 
-.supplier-items-information-column {
-    flex: 1;
-    background-color: #fefefe;
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-
-/* Modal Header */
-#add-supplier-modal h2, 
-#edit-supplier-modal h2 {
-    font-size: 24px;
-    font-weight: bold;
-    color: #002244;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-/* Close Button */
-.close-button {
-    color: #aaa;
-    float: left;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: #012d74;
-}
-
-/* Form Styling */
-.form-group {
-    margin-bottom: 16px;
-    width: 100%;
-}
-
-input,
-select,
-textarea {
-    width: 94.7%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-top: 1%;
-}
-
-textarea {
-    height: 100px;
-    resize: vertical;
-} 
-
-input[type="text"][name*="supplier-item-name[]"] {
-    width: 76%;
-}
-
-input[type="text"][name*="edit-supplier-item-name[]"] {
-    width: 76%;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    border: 2px solid #007BFF;
-    outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-/* Submit Button */
-.btn-submit {
-    background-color: #28a745;
+.delete-button {
+    background-color: #6c757d;
     color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
 }
 
-.btn-submit:hover {
-    background-color: #218838;
+.delete-button:hover {
+    background-color: #5a6268;
 }
 
-/* Supplier Items Table */
-#supplier-items-table,
-#edit-supplier-items-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+/* Green font color for approved requests */
+.approved-status {
+    color: #388E3C;  /* Green */
 }
 
-#supplier-items-table th,
-#edit-supplier-items-table th {
-    background-color: #53649c;
-    color: #d1d1d1;
-    padding: 10px;
-    font-size: 16px;
-    border-bottom: 2px solid #ccc;
+/* Red font color for rejected requests */
+.rejected-status {
+    color: #d32f;  /* Red */
 }
 
-#supplier-items-table td,
-#edit-supplier-items-table td {
-    padding: 8px;
-    font-size: 14px;
+/* Apply the status-approved and status-rejected classes to the table cells */
+#medicine-request-list td.status-approved {
+    color: #388E3C;
 }
 
-/* Ensure SweetAlert2 popup is above the modal */
-.swal-overlay-above-modal {
-    z-index: 2000 !important; /* Higher than the modal's z-index */
-}
-
-/* Optional: Dimmed background to show popup priority */
-.swal2-backdrop-show {
-    background-color: rgba(0, 0, 0, 0.4); /* Adjust transparency as needed */
-    z-index: 1999 !important; /* Just below the SweetAlert popup */
+#medicine-request-list td.status-rejected {
+    color: #d32f;
 }
