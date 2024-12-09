@@ -293,66 +293,54 @@ def admin_requisition():
     cur.close()
     conn.close()
     return render_template('admin_requisition.html', requisitions=requisitions)
-    
-@app.route('/requisition', methods=['GET', 'POST'])
+
+@app.route('/requisition', methods=['POST'])
 def user_requisition():
-    if request.method == 'POST':
-        date = request.form['date']
-        purpose = request.form['purpose']
-        billing = request.form['billing']
-        item_names = request.form.getlist('item-name[]')
-        item_quantities = request.form.getlist('item-quantity[]')
-        item_prices = request.form.getlist('item-price[]')
-        
-        conn = get_db_connection()
-        cur = conn.cursor()
+    data = request.get_json()  # Get JSON data from the request
+    date = data['date']
+    purpose = data['purpose']
+    billing = data['billing']
+    items = data['items']  # Items come as a list of dictionaries
 
-        # Insert the requisition details
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Insert requisition details into the requisitions table
+    cur.execute(
+        "INSERT INTO requisitions (date, purpose, billing) VALUES (%s, %s, %s) RETURNING id",
+        (date, purpose, billing)
+    )
+    requisition_id = cur.fetchone()[0]
+
+    # Insert items associated with the requisition into the requisition_items table
+    for item in items:
+        quantity = item['quantity']
+        price = item['price']
+        total = item['total']
+
         cur.execute(
-            "INSERT INTO requisitions (date, purpose, billing) VALUES (%s, %s, %s) RETURNING id",
-            (date, purpose, billing)
-        )
-        requisition_id = cur.fetchone()[0]  # Get the id of the newly inserted requisition
-
-        # Initialize total sum for the requisition
-        requisition_total = 0
-
-        # Insert the items associated with the requisition and calculate total for the requisition
-        for i in range(len(item_names)):
-            quantity = int(item_quantities[i])  # Convert quantity to int
-            price = float(item_prices[i])  # Convert price to float
-            total = quantity * price  # Calculate total for this item
-
-            # Add item total to requisition total
-            requisition_total += total
-
-            # Insert the item into requisition_items table
-            cur.execute(
-                "INSERT INTO requisition_items (requisition_id, name, quantity, price, total, status) VALUES (%s, %s, %s, %s, %s, %s)",
-                (requisition_id, item_names[i], quantity, price, total, 'pending')  # Assuming status is 'pending'
-            )
-
-        # Update the total for the requisition in requisitions table
-        cur.execute(
-            "UPDATE requisitions SET total = %s WHERE id = %s",
-            (requisition_total, requisition_id)
+            "INSERT INTO requisition_items (requisition_id, name, quantity, price, total) VALUES (%s, %s, %s, %s, %s)",
+            (requisition_id, item['name'], quantity, price, total)
         )
 
-        conn.commit()
-        cur.close()
-        conn.close()
-        return jsonify({"message": "Requisition saved successfully!"}), 201
+    conn.commit()
+    cur.close()
+    conn.close()
 
-    # Handle the GET request for fetching all requisitions
+    # Return a success response
+    return jsonify({"message": "Requisition saved successfully!"}), 201
+
+
+@app.route('/requisition', methods=['GET'])
+def get_requisitions():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("SELECT * FROM requisitions")
     requisitions = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template('admin_requisition.html', requisitions=requisitions)
 
-
+    return jsonify(requisitions)  # Return the requisition data as JSON
 
 @app.route('/requisitions/<int:id>', methods=['GET'])
 def get_requisition(id):
@@ -387,29 +375,6 @@ def get_requisition(id):
         # Ensure the connection is closed properly
         cur.close()
         conn.close()
-        
-@app.route('/save_total/<int:requisition_id>', methods=['POST'])
-def save_total(requisition_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    # Calculate the total for the given requisition ID by summing the item totals
-    cur.execute("SELECT requisition_items FROM requisition_items WHERE requisition_id = %s", (requisition_id,))
-    requisition_total = cur.fetchone()[0] or 0  # Default to 0 if no items found
-
-    # Insert or update the total in the 'total' table
-    cur.execute("""
-        INSERT INTO total (requisition_id, total_amount)
-        VALUES (%s, %s)
-        ON CONFLICT (requisition_id) DO UPDATE
-        SET total_amount = EXCLUDED.total_amount
-    """, (requisition_id, requisition_total))
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    return jsonify({"message": "Total saved successfully!", "requisition_id": requisition_id, "total": requisition_total}), 200
 
 @app.route('/inventory')
 def inventory():
