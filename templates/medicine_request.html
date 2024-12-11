@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/medicine_request.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -23,13 +24,16 @@
     
     <div class="medicine-requests">
         <h1>Medicine Requests</h1>
+        <audio id="alert-sound" src="https://www.soundjay.com/button/beep-01.wav" preload="auto"></audio>
+        <div id="notification"></div>
     </div>
     
+
     <div class="container">
         <table id="medicine-request-list">
             <thead>
                 <tr>
-                    <th>Request ID</th>
+                    <th>Request ID</th>z
                     <th>Status</th>
                     <th>Medicine ID</th>
                     <th>Quantity</th>
@@ -41,29 +45,35 @@
             </thead>
             <tbody>
                 {% for request in medicine_requests %}
-                <tr>
+                <tr data-request-id="{{ request.medicine_request_id }}">
                     <td>{{ request.medicine_request_id }}</td>
-                    <td>{{ request.request_status }}</td>
+                    <td id="status-{{ request.medicine_request_id }}" 
+                        class="{% if request.request_status == 'Approved' %}approved-status{% elif request.request_status == 'Rejected' %}rejected-status{% endif %}">
+                        {{ request.request_status }}
+                    </td>
                     <td>{{ request.medicine_id }}</td>
                     <td>{{ request.quantity }}</td>
                     <td>{{ request.request_date }}</td>
                     <td>{{ request.approved_by if request.approved_by else 'N/A' }}</td>
                     <td>{{ request.approval_date if request.approval_date else 'N/A' }}</td>
-                    <td>
+                    <td id="actions-{{ request.medicine_request_id }}">
                         {% if request.request_status == "Pending" %}
-                        <button class="accept-button" onclick="acceptRequest({{ request.medicine_request_id }})">
-                            <i class="fas fa-check"></i> Accept
+                        <button class="accept-button" onclick="approveRequest({{ request.medicine_request_id }})">
+                            <i class="fas fa-check"></i> Approve
                         </button>
+                        <button class="reject-button" onclick="rejectRequest({{ request.medicine_request_id }})">
+                            <i class="fas fa-times-circle"></i> Reject
+                        </button>
+                        {% else %}
+                        <span class="approved-label">No further actions available</span>
                         {% endif %}
-                        <button class="delete-button" onclick="removeRequest({{ request.medicine_request_id }})">
-                            <i class="fas fa-trash-alt"></i> Delete
-                        </button>
                     </td>
                 </tr>
                 {% endfor %}
-            </tbody>
+            </tbody>    
         </table>
     </div>
+    
 
 
     <script src="{{ url_for('static', filename='js/medicine_request.js') }}"></script>
