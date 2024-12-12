@@ -625,7 +625,7 @@ def medicine_request():
         if request.method == 'GET':
             # Fetch all medicine requests
             cursor.execute("""
-                SELECT medicine_request_id, request_status, medicine_id, quantity, 
+                SELECT medicine_request_id, request_status, medicine_name, quantity, 
                        request_date, approved_by, approval_date 
                 FROM medicine_requests;
             """)
@@ -636,7 +636,7 @@ def medicine_request():
                 {
                     "medicine_request_id": row[0],
                     "request_status": row[1],
-                    "medicine_id": row[2],
+                    "medicine_name": row[2],
                     "quantity": row[3],
                     "request_date": row[4],
                     "approved_by": row[5],
@@ -651,21 +651,21 @@ def medicine_request():
             # Add a new medicine request
             data = request.get_json()
 
-            if not data or not all(key in data for key in ['medicine_id', 'quantity']):
+            if not data or not all(key in data for key in ['medicine_name', 'quantity']):
                 return jsonify({"error": "Missing required fields"}), 400
 
             request_status = data.get('request_status', 'Pending')
-            medicine_id = data['medicine_id']
+            medicine_name = data['medicine_name']
             quantity = data['quantity']
             request_date = data.get('request_date', None)
             approved_by = data.get('approved_by', None)
             approval_date = data.get('approval_date', None)
 
             cursor.execute("""
-                INSERT INTO medicine_requests (request_status, medicine_id, quantity, request_date, approved_by, approval_date)
+                INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING medicine_request_id;
-            """, (request_status, medicine_id, quantity, request_date, approved_by, approval_date))
+            """, (request_status, medicine_name, quantity, request_date, approved_by, approval_date))
             new_request_id = cursor.fetchone()[0]
             conn.commit()
 

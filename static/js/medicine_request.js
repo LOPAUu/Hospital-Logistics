@@ -210,7 +210,7 @@ function notifyNewRequest(request) {
     // Show the SweetAlert notification
     Swal.fire({
         title: 'New Medicine Request Received!',
-        text: `Medicine ID: ${request.medicine_id}\nQuantity: ${request.quantity}\nRequest Date: ${request.request_date}`,
+        text: `Medicine ID: ${request.medicine_name}\nQuantity: ${request.quantity}\nRequest Date: ${request.request_date}`,
         icon: 'info',
         confirmButtonText: 'OK',
     });
@@ -224,7 +224,7 @@ fetchNewRequests();
 
 notifyNewRequest({
     medicine_request_id: 123,
-    medicine_id: '105',
+    medicine_name: 'paracetamol',
     quantity: '30',
     request_date: '2024-12-03'
 });
@@ -243,7 +243,7 @@ function renderMedicineRequests(requests) {
                 class="${request.request_status === 'Approved' ? 'approved-status' : (request.request_status === 'Rejected' ? 'rejected-status' : '')}">
                 ${request.request_status}
             </td>
-            <td>${request.medicine_id}</td>
+            <td>${request.medicine_name}</td>
             <td>${request.quantity}</td>
             <td>${request.request_date}</td>
             <td>${request.approved_by || 'N/A'}</td>

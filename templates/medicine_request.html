@@ -33,30 +33,31 @@
         <table id="medicine-request-list">
             <thead>
                 <tr>
-                    <th>Request ID</th>z
-                    <th>Status</th>
-                    <th>Medicine ID</th>
-                    <th>Quantity</th>
-                    <th>Request Date</th>
-                    <th>Approved By</th>
-                    <th>Approval Date</th>
-                    <th>Actions</th>
+                    <th class="request-no">Request No.</th>
+                    <th class="status">Status</th>
+                    <th class="medicine-name">Medicine Name</th>
+                    <th class="quantity">Quantity</th>
+                    <th class="request-date">Request Date</th>
+                    <th class="approved-by">Approved By</th>
+                    <th class="approval-date">Approval Date</th>
+                    <th class="actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for request in medicine_requests %}
                 <tr data-request-id="{{ request.medicine_request_id }}">
-                    <td>{{ request.medicine_request_id }}</td>
-                    <td id="status-{{ request.medicine_request_id }}" 
-                        class="{% if request.request_status == 'Approved' %}approved-status{% elif request.request_status == 'Rejected' %}rejected-status{% endif %}">
+                    <td class="request-no">{{ request.medicine_request_id }}</td>
+                    <td 
+                        id="status-{{ request.medicine_request_id }}" 
+                        class="{{ 'approved-status' if request.request_status == 'Approved' else 'rejected-status' if request.request_status == 'Rejected' else '' }}">
                         {{ request.request_status }}
                     </td>
-                    <td>{{ request.medicine_id }}</td>
-                    <td>{{ request.quantity }}</td>
+                    <td>{{ request.medicine_name }}</td>
+                    <td class="quantity">{{ request.quantity }}</td>
                     <td>{{ request.request_date }}</td>
-                    <td>{{ request.approved_by if request.approved_by else 'N/A' }}</td>
-                    <td>{{ request.approval_date if request.approval_date else 'N/A' }}</td>
-                    <td id="actions-{{ request.medicine_request_id }}">
+                    <td>{{ request.approved_by or 'N/A' }}</td>
+                    <td>{{ request.approval_date or 'N/A' }}</td>
+                    <td class="actions" id="actions-{{ request.medicine_request_id }}">
                         {% if request.request_status == "Pending" %}
                         <button class="accept-button" onclick="approveRequest({{ request.medicine_request_id }})">
                             <i class="fas fa-check"></i> Approve
@@ -64,15 +65,20 @@
                         <button class="reject-button" onclick="rejectRequest({{ request.medicine_request_id }})">
                             <i class="fas fa-times-circle"></i> Reject
                         </button>
-                        {% else %}
+                        {% endif %}
+                        <button class="view-button" onclick="viewRequest({{ request.medicine_request_id }})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        {% if request.request_status != "Pending" %}
                         <span class="approved-label">No further actions available</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
-            </tbody>    
+            </tbody>  
         </table>
     </div>
+    
     
 
 
