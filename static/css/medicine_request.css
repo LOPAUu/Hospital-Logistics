@@ -33,9 +33,46 @@ th {
     font-weight: bold;
 }
 
+
 th:nth-child(2), td:nth-child(2) {
     font-weight: bold;  /* This line makes the 2nd column's text bold */
 }
+
+/* Column-Specific Widths */
+.request-no,
+.status {
+    width: 50px;
+}
+
+.medicine-name {
+    width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quantity {
+    width: 50px;
+    text-align: center; /* Centers the text horizontally */
+    vertical-align: middle; /* Centers the text vertically within the cell */
+}
+
+.request-date,
+.approved-by,
+.approval-date {
+    width: 100px;
+}
+
+.actions {
+    width: 180px;
+    text-align: center;
+}
+
+.request-no, .actions {
+    text-align: center; /* Centers the text horizontally */
+    vertical-align: middle; /* Centers the text vertically */
+}
+
 
 /* Buttons */
 button {

@@ -1,196 +1,269 @@
-let currentRequisitionId = 1001; // Starting ID (modify as needed)
+document.addEventListener('DOMContentLoaded', fetchMedicineRequests);
 
-// Fetch Requisition Data from the server
-async function fetchRequisition() {
-    try {
-        const response = await fetch('/requisition');  // Fixed endpoint path
-        if (!response.ok) throw new Error('Failed to fetch requisitions');
-        const data = await response.json();
-        renderRequisition(data);  // Adjusted to use 'data' directly, since it returns an array
-    } catch (error) {
-        Swal.fire('Error', error.message, 'error');
-    }
-}
-
-// Render requisitions to the table
-function renderRequisition(requisitions) {
-    const requisitionList = document.getElementById('requisition-list');
-    requisitionList.innerHTML = requisitions.map(requisition => `
-        <tr>
-            <td>${requisition.id}</td>
-            <td>${requisition.purpose}</td>
-            <td>${requisition.billing}</td>
-            <td>${requisition.total}</td>
-            <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
-        </tr>
-    `).join('');
+// Fetch and render medicine requests
+function fetchMedicineRequests() {
+    fetch('/medicine-requests') // Adjust the endpoint based on your backend route
+        .then(response => response.json())
+        .then(data => renderMedicineRequests(data))
+        .catch(error => console.error('Error fetching medicine requests:', error));
 }
 
 
-// Save a New Requisition
-async function saveRequisition(event) {
-    event.preventDefault();
-    const form = document.getElementById('requisition-form');
-    const items = getItemsFromForm(form); 
 
-    const requisitionData = {
-        date: form.date.value,
-        purpose: form.purpose.value,
-        billing: form.billing.value,
-        items: items
-    };
+// Approve a medicine request
+function approveRequest(medicineRequestId) {
+    // Show confirmation alert
+    Swal.fire({
+        title: 'Are you certain you want to approve the request?',
+        text: "This action cannot be undone!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Approve it!',
+        cancelButtonText: 'No, Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with the approval if the user confirms
+            const data = {
+                medicine_request_id: medicineRequestId,
+                action: 'accept'
+            };
 
-    try {
-        const response = await fetch('/requisition', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requisitionData)
-        });
+            fetch('/api/care-plan-request/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    const statusCell = document.getElementById(`status-${medicineRequestId}`);
+                    const actionsCell = document.getElementById(`actions-${medicineRequestId}`);
+                    
+                    // Update status to 'Approved'
+                    statusCell.textContent = 'Approved';
+                    statusCell.className = 'status-approved'; // Add class for approved status
 
-        if (!response.ok) throw new Error('Failed to save requisition');
+                    // Store the status in localStorage
+                    localStorage.setItem(`status-${medicineRequestId}`, 'approved');
 
-        // Success alert
-        Swal.fire({
-            title: 'Success!',
-            text: 'Requisition saved successfully!',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            // Refresh the window after closing the success alert
-            window.location.reload(); // Refresh the page
-        });
+                    actionsCell.innerHTML = '<span class="approved-label">No further actions available</span>';
+                    
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    });
 
-        // Optionally, you can also close the modal after saving
-        closeModal(); 
-
-    } catch (error) {
-        // Error alert
-        Swal.fire({
-            title: 'Error!',
-            text: error.message,
-            icon: 'error',
-            confirmButtonText: 'Try Again'
-        });
-    }
-}
-
-
-// Helper function to get items from the form
-function getItemsFromForm(form) {
-    return Array.from(form.querySelectorAll('tbody tr')).map(row => ({
-        name: row.querySelector('input[name="item-name[]"]').value,
-        quantity: parseFloat(row.querySelector('input[name="item-quantity[]"]').value) || 0,
-        price: parseFloat(row.querySelector('input[name="item-price[]"]').value) || 0,
-        total: parseFloat(row.querySelector('.item-total').value) || 0
-    })).filter(item => item.name); // Filter out items with empty names
-}
-
-// Fetch and view requisition details
-function viewDetails(requisitionId) {
-    fetch(`/requisitions/${requisitionId}`)
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch requisition details');
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('details-content').innerHTML = `
-                <p><strong>ID:</strong> ${data.requisition.id}</p>
-                <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
-                <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                <p><strong>Billing:</strong> ${data.requisition.billing}</p>
-                <p><strong>Total:</strong> ₱${data.total}</p>
-                <h3>Items Requested:</h3>
-                <ul>
-                    ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
-                </ul>
-            `;
-            openDetailsModal();
-        })
-        .catch(error => {
-            Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
-        });
-}
-
-
-// Open/close modal functions
-function toggleModal(modalId, display) {
-    const modal = document.getElementById(modalId);
-    modal.style.display = display ? 'block' : 'none';
-}
-
-function openModal() {
-    toggleModal('manage-requisition-modal', true);
-    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
-    document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
-}
-
-function closeModal() {
-    toggleModal('manage-requisition-modal', false);
-}
-
-function openDetailsModal() {
-    document.getElementById('details-modal').style.display = 'block';
-}
-
-function closeDetailsModal() {
-    document.getElementById('details-modal').style.display = 'none';
-}
-
-// Error handling function
-function showError(message) {
-    Swal.fire('Error', message, 'error');
-}
-
-// Success message function
-function showSuccessMessage(message) {
-    Swal.fire('Success', message, 'success');
-}
-
-// Get current date in YYYY-MM-DD format
-function getCurrentDate() {
-    return new Date().toISOString().split('T')[0]; // Returns YYYY-MM-DD
-}
-
-// Add new item row in the table
-function addItem() {
-    const table = document.getElementById('items-table').querySelector('tbody');
-    const newRow = table.insertRow();
-    newRow.innerHTML = `
-        <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
-        <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
-        <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
-        <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
-        <td><button type="button" onclick="removeItem(this)">Remove</button></td>
-    `;
-}
-
-// Remove an item row from the table
-function removeItem(button) {
-    const row = button.closest('tr');
-    row.parentNode.removeChild(row);
-    updateTotalPrice(); // Update the overall total after removing the item
-}
-
-// Calculate total for a specific item row
-function calculateTotal(input) {
-    const row = input.closest('tr');
-    const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-    const price = parseFloat(row.querySelector('.item-price').value) || 0;
-    const total = row.querySelector('.item-total');
-    total.value = (quantity * price).toFixed(2); // Calculates total and fixes to 2 decimal places
-    updateTotalPrice(); // Update the overall total
-}
-
-// Update the overall total price
-function updateTotalPrice() {
-    const totalPrice = Array.from(document.querySelectorAll('.item-total'))
-        .reduce((sum, total) => sum + (parseFloat(total.value) || 0), 0);
-    document.getElementById('total-price').value = totalPrice.toFixed(2);
-}
-
-// Event listeners and search/filter functions
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
-        input.oninput = () => calculateTotal(input);
+                    // Optionally refresh page after success
+                    setTimeout(() => location.reload(), 2000);
+                } else if (data.error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.error,
+                        icon: 'error',
+                        confirmButtonText: 'Try Again',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while approving the request.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again',
+                });
+            });
+        } else {
+            // If the user cancels, show a message or do nothing
+            Swal.fire({
+                title: 'Cancelled',
+                text: 'The approval action was not performed.',
+                icon: 'info',
+                confirmButtonText: 'OK',
+            });
+        }
     });
+}
+
+
+
+// Reject a medicine request
+function rejectRequest(medicineRequestId) {
+    // Show confirmation alert
+    Swal.fire({
+        title: 'Are you sure you want to decline it?',
+        text: "You won't be able to revert this action!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Reject it!',
+        cancelButtonText: 'No, Keep it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with the rejection if the user confirms
+            const data = {
+                medicine_request_id: medicineRequestId,
+                action: 'reject'
+            };
+
+            fetch('/api/care-plan-request/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    const statusCell = document.getElementById(`status-${medicineRequestId}`);
+                    const actionsCell = document.getElementById(`actions-${medicineRequestId}`);
+                    
+                    // Update status to 'Rejected'
+                    statusCell.textContent = 'Rejected';
+                    statusCell.className = 'status-rejected'; // Add class for rejected status
+
+                    // Store the status in localStorage
+                    localStorage.setItem(`status-${medicineRequestId}`, 'rejected');
+
+                    actionsCell.innerHTML = '<span class="approved-label">No further actions available</span>';
+                    
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    });
+
+                    // Optionally refresh page after success
+                    setTimeout(() => location.reload(), 2000);
+                } else if (data.error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.error,
+                        icon: 'error',
+                        confirmButtonText: 'Try Again',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while rejecting the request.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again',
+                });
+            });
+        } else {
+            // If the user cancels, show a message or do nothing
+            Swal.fire({
+                title: 'Cancelled',
+                text: 'The action was not performed.',
+                icon: 'info',
+                confirmButtonText: 'OK',
+            });
+        }
+    });
+}
+
+
+const apiUrl = 'https://logistics-management-v1.onrender.com/medicine_request'; // Your API endpoint
+let lastRequestId = null; // Track the latest request ID
+
+// Function to fetch and render new requests
+async function fetchNewRequests() {
+    try {
+        const response = await fetch(apiUrl);
+        const requests = await response.json();
+
+        if (requests && requests.length > 0) {
+            const latestRequest = requests[requests.length - 1];
+
+            // Check if this request is new
+            if (latestRequest.medicine_request_id !== lastRequestId) {
+                lastRequestId = latestRequest.medicine_request_id; // Update the last request ID
+                notifyNewRequest(latestRequest); // Notify user with sound and alert
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching new requests:', error);
+    }
+}
+
+// Notification function to show alert and play sound
+function notifyNewRequest(request) {
+    console.log('Playing alarm and showing notification.');
+
+    // Play the alarm sound
+    const alarmSound = document.getElementById('alarm-sound');
+    if (alarmSound) {
+        alarmSound.play().catch(error => {
+            console.error('Error playing alarm:', error);
+            alert("Sound failed to play. Please check your browser's settings.");
+        });
+    }
+
+    // Show the SweetAlert notification
+    Swal.fire({
+        title: 'New Medicine Request Received!',
+        text: `Medicine ID: ${request.medicine_name}\nQuantity: ${request.quantity}\nRequest Date: ${request.request_date}`,
+        icon: 'info',
+        confirmButtonText: 'OK',
+    });
+}
+
+// Poll every 5 seconds for new requests
+setInterval(fetchNewRequests, 5000);
+
+// Initial fetch when the page loads
+fetchNewRequests();
+
+notifyNewRequest({
+    medicine_request_id: 123,
+    medicine_name: 'paracetamol',
+    quantity: '30',
+    request_date: '2024-12-03'
 });
+
+
+// Render medicine requests
+function renderMedicineRequests(requests) {
+    const requestList = document.querySelector('#medicine-request-list tbody');
+    requestList.innerHTML = ''; // Clear existing rows
+
+    requests.forEach(request => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${request.medicine_request_id}</td>
+            <td id="status-${request.medicine_request_id}" 
+                class="${request.request_status === 'Approved' ? 'approved-status' : (request.request_status === 'Rejected' ? 'rejected-status' : '')}">
+                ${request.request_status}
+            </td>
+            <td>${request.medicine_name}</td>
+            <td>${request.quantity}</td>
+            <td>${request.request_date}</td>
+            <td>${request.approved_by || 'N/A'}</td>
+            <td>${request.approval_date || 'N/A'}</td>
+            <td id="actions-${request.medicine_request_id}">
+                ${request.request_status === 'Pending' ? `
+                    <button class="accept-button" onclick="approveRequest(${request.medicine_request_id})">
+                        <i class="fas fa-check"></i> Approve Request
+                    </button>
+                    <button class="reject-button" onclick="rejectRequest(${request.medicine_request_id})">
+                        <i class="fas fa-times-circle"></i> Reject
+                    </button>
+                ` : `<span class="approved-label">No further actions available</span>`}
+            </td>
+        `;
+        requestList.appendChild(row);
+    });
+}
+
+// Simulate sending a new request
+setTimeout(() => {
+    sendNewRequest(); // Simulate sending the new request after 3 seconds
+}, 3000);
