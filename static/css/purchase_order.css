@@ -1,11 +1,7 @@
 /* General Container Styling */
 .container {
     max-width: 95%;
-<<<<<<< HEAD
-    margin: 150px auto;
-=======
     margin: 0px auto;
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
     background: white;
     padding: 30px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -125,11 +121,21 @@ table tbody td { border-bottom: 1px solid #ddd; }
 .modal-content {
     background-color: white;
     border-radius: 8px;
-    max-width: 600px;
+    max-width: 30%;
     margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
 }
+
+.modal-evaluate {
+    background-color: white;
+    border-radius: 8px;
+    max-width: 80%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
+}
+
 .close {
     color: #aaa;
     float: right;
@@ -138,6 +144,15 @@ table tbody td { border-bottom: 1px solid #ddd; }
     cursor: pointer;
 }
 .close:hover, .close:focus { color: black; }
+
+.modal-view {
+    background-color: white;
+    border-radius: 8px;
+    max-width: 60%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
+}
 
 /* Form and Input Styling */
 .form-section { margin-bottom: 15px; }
@@ -151,7 +166,7 @@ label { display: block; margin-bottom: 5px; font-size:  16px; }
 
 
 .small-input { width: 150px; }
-.small-select { width: 120px; }
+.small-select { width: 150px; }
 
 /* Clickable Row */
 .clickable-row {
@@ -175,32 +190,87 @@ label { display: block; margin-bottom: 5px; font-size:  16px; }
     font-weight: bold;
 }
 
-<<<<<<< HEAD
-.small-input, .small-select {
-    width: 100%;
-}
-
-.table {
-    width: 100%;
-    margin-top: 20px;
-}
-
-.modal-content {
-    padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    max-width: 800px;
-    margin: 0 auto;
-    margin-top: 150px;
-}
-
-
-input[readonly] {
-    cursor: default; /* Use 'default' or 'not-allowed' to indicate non-editable */
-}
-=======
 .container th:nth-child(4), 
 .container td:nth-child(4) {
     font-weight: bold;
 }
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
+
+
+button#submitEvaluationBtn {
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button#submitEvaluationBtn:hover {
+    background-color: #45a049;
+}
+
+.modal-body-evaluate {
+    gap: 40px;
+}
+
+.form-display {
+    display: flex;
+    gap: 15px;
+    box-shadow: none; 
+    outline: none; 
+}
+
+/* Button styling */
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.viewBtn {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.deleteBtn {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+.evaluateBtn {
+    background-color: #ff9800; /* Orange */
+    color: white;
+}
+
+.skuBtn, .addSkuBtn, .saveSkuRowBtn {
+    background-color: #008CBA; /* Blue */
+    color: white;
+}
+
+#saveSkuBtn {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.deleteRowBtn {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+/*sku*/
+
+.modal-sku {
+    background-color: white;
+    border-radius: 8px;
+    max-width: 50%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
+}
