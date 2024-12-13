@@ -689,6 +689,49 @@ def get_medicine_details(medicine_id):
     except Exception as e:
         print(f"Error retrieving medicine details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+
+@app.route('/medicine/<int:medicine_id>', methods=['GET'])
+def fetch_medicine_details_route(medicine_id):
+    try:
+        conn_lms = get_db_connection()
+        cur_lms = conn_lms.cursor()
+        
+        query = """
+        SELECT evaluated_on, entry_type, po_number, item_no, description, expiration_date, lot_position
+        FROM medicines
+        WHERE id = %s
+        """
+        cur_lms.execute(query, (medicine_id,))
+        rows = cur_lms.fetchall()
+        
+        if rows:
+            details = [
+                {
+                    "evaluated_on": row[0],
+                    "entry_type": row[1],
+                    "po_number": row[2],
+                    "item_no": row[3],
+                    "description": row[4],
+                    "expiration_date": row[5],
+                    "lot_position": row[6],
+                }
+                for row in rows
+            ]
+            return jsonify({'details': details}), 200
+        else:
+            return jsonify({'error': 'Medicine not found'}), 404
+    except Exception as e:
+        return jsonify({'error': 'An error occurred', 'message': str(e)}), 500
+    finally:
+        if 'cur_lms' in locals():
+            cur_lms.close()
+        if 'conn_lms' in locals():
+            conn_lms.close()
+
+
+
+
 
 @app.route('/signatory_view')
 def signatory_view():

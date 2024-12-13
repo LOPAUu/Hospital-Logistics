@@ -50,36 +50,47 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("search-category")
     .addEventListener("input", filterInventory);
 
-  // View item modal functionality
-  window.viewItem = function (medicineId) {
-    // Populate and show the view modal with details for the selected item
-    fetch(`/medicine/${medicineId}`)
-      .then((response) => response.json())
+ // View item modal functionality
+window.viewItem = function (medicineId) {
+  fetch(`/medicine/${medicineId}`)
+      .then((response) => {
+          if (!response.ok) {
+              throw new Error("Failed to fetch medicine details.");
+          }
+          return response.json();
+      })
       .then((data) => {
-        const detailsTableBody = document.getElementById(
-          "view-details-table-body"
-        );
-        detailsTableBody.innerHTML = ""; // Clear existing details
-        data.details.forEach((detail) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-                        <td>${detail.evaluated_on}</td>
-                        <td>${detail.entry_type}</td>
-                        <td>${detail.po_number}</td>
-                        <td>${detail.item_no}</td>
-                        <td>${detail.description}</td>
-                        <td>${detail.expiration_date}</td>
-                        <td>${detail.lot_position}</td>
-                    `;
-          detailsTableBody.appendChild(row);
-        });
-        document.getElementById("view-modal").style.display = "block";
+          if (data.details) {
+              const detailsTableBody = document.getElementById("view-details-table-body");
+              detailsTableBody.innerHTML = ""; // Clear existing details
+              data.details.forEach((detail) => {
+                  const row = document.createElement("tr");
+                  row.innerHTML = `
+                      <td>${detail.evaluated_on}</td>
+                      <td>${detail.entry_type}</td>
+                      <td>${detail.po_number}</td>
+                      <td>${detail.item_no}</td>
+                      <td>${detail.description}</td>
+                      <td>${detail.expiration_date}</td>
+                      <td>${detail.lot_position}</td>
+                  `;
+                  detailsTableBody.appendChild(row);
+              });
+              document.getElementById("itemModal").style.display = "block";
+          } else {
+              alert("Medicine details not found.");
+          }
+      })
+      .catch((error) => {
+          console.error("Error fetching medicine details:", error);
       });
-  };
+};
 
-  window.closeViewModal = function () {
-    document.getElementById("view-modal").style.display = "none";
-  };
+window.closeModal = function () {
+  document.getElementById("itemModal").style.display = "none";
+};
+
+
 
   // Edit item modal functionality
   window.editItem = function (medicineId) {

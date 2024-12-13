@@ -12,13 +12,14 @@
     <div class="top-bar">
         <div class="top-nav">
             <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('user_role_management') }}">User Role Management</a>
             <a href="{{ url_for('medicine_request') }}">Medicine Request</a>
             <a href="{{ url_for('admin_supplier') }}">Supplier</a>
             <a href="{{ url_for('admin_requisition') }}">Requisition</a>
             <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
             <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('signatory_view') }}">Signatory</a>
             <a href="{{ url_for('pos') }}">POS</a>
+            <a href="{{ url_for('user_role_management') }}">User Role Management</a>
         </div>
     </div>
     <body>
@@ -75,9 +76,9 @@
         </div>
 
         <!-- Modal for View Item Details -->
-        <div id="view-modal" class="modal">
+        <div id="itemModal" class="modal" style="display: none;">
             <div class="modal-content">
-                <span class="close" onclick="closeViewModal()">&times;</span>
+                <span class="close" onclick="closeModal()">&times;</span>
                 <h3>Item Details</h3>
                 <table class="details-table">
                     <thead>
@@ -97,6 +98,7 @@
                 </table>
             </div>
         </div>
+
 
         <!-- Modal for Edit Item Details -->
         <div id="edit-modal" class="modal">
