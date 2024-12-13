@@ -29,101 +29,85 @@
                         <li class="tab__item"><a href="#" class="is-activated" data-filter="all">All</a></li>
                         <li class="tab__item"><a href="#" data-filter="ordered">Ordered</a></li>
                         <li class="tab__item"><a href="#" data-filter="partial">Partial</a></li>
-                        <li class="tab__item"><a href="#" data-filter="received">Received</a></li>
+                        <li class="tab__item"><a href="#" data-filter="completed">Completed</a></li>
                     </ul>
                 </nav>
             </div>
-
+    
             <table>
                 <thead>
                     <tr>
                         <th>Purchase Order</th>
                         <th>Supplier</th>
-                        <th>Destination</th>
                         <th>Status</th>
                         <th>Received</th>
                         <th>Total</th>
                         <th>Issue Date</th>
+                        <th>Ordered By</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="purchaseOrdersTable">
                     <tr data-status="received" class="clickable-row" data-po="#PO1">
                         <td>#PO1</td>
                         <td>Supplier1</td>
-                        <td>Warehouse1</td>
                         <td><span class="status-received">Received</span></td>
                         <td>3 of 3</td>
                         <td>₱2550.00</td>
                         <td>2024-9-10</td>
+                        <td>John Doe</td>
+                        <td>
+                            <button class="viewBtn">View</button>
+                            <button class="deleteBtn">Delete</button>
+                            <button class="evaluateBtn">Evaluate</button>
+                            <button class="skuBtn" data-order="#PO1">SKU</button>
+    
+                        </td>
                     </tr>
-                    <tr data-status="ordered" class="clickable-row" data-po="#PO2">
-                        <td>#PO2</td>
-                        <td>Supplier2</td>
-                        <td>Warehouse2</td>
-                        <td><span class="status-ordered">Ordered</span></td>
-                        <td>3 of 3</td>
-                        <td>₱3000.00</td>
-                        <td>2024-9-10</td>
-                    </tr>
-                    <tr data-status="partial" class="clickable-row" data-po="#PO3">
-                        <td>#PO3</td>
-                        <td>Supplier3</td>
-                        <td>Warehouse3</td>
-                        <td><span class="status-partial">Partial</span></td>
-                        <td>2 of 3</td>
-                        <td>₱2500.00</td>
-                        <td>2024-9-10</td>
-                    </tr>
+                    <!-- Additional rows will be populated dynamically -->
                 </tbody>
             </table>
-
+    
             <!-- Create Purchase Order Modal -->
             <div id="purchaseOrderModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
-                    <h3>Purchase Order</h3>
-
+                    <h3>Create Purchase Order</h3>
                     <div class="modal-body">
                         <div class="left-section">
                             <div class="form-section">
                                 <label>From</label>
-                                <input type="text" id="fromDetails" readonly>
+                                <input type="text" id="fromDetails" disabled="disabled">
                             </div>
-
-                            <div class="form-section">
-                                <label>Bill To</label>
-                                <input type="text" id="billToDetails" readonly>
+                            <div class="form-section form-row">
+                                <label>Ordered By</label>
+                                <input type="text" id="orderedBy" disabled="disabled"> 
+                            </div>
+                            <div class="form-section form-row">
+                                <label>Order Status</label>
+                                <input type="text" id="orderStatus" value="Ordered" disabled="disabled">
                             </div>
                         </div>
-
                         <div class="right-section">
                             <div class="form-section form-row">
                                 <label>Order Number</label>
                                 <select id="orderNumberDropdown" class="small-select">
                                     <option value="" disabled selected>Select an Order</option>
-                                    <option value="#PO4">#PO4</option>
-                                    <option value="#PO5">#PO5</option>
-                                    <option value="#PO6">#PO6</option>
-                                    <option value="#PO7">#PO7</option>
-                                    <option value="#PO8">#PO8</option>
-                                    <option value="#PO9">#PO9</option>
+                                    <!-- Populate dynamically -->
+                                    <option value="#PO4">PO4</option>
+                                    <option value="#PO5">PO5</option>
+                                    <option value="#PO6">PO6</option>
+                                    <option value="#PO7">PO7</option>
+                                    <option value="#PO8">PO8</option>
+                                    <option value="#PO9">PO9</option>
                                 </select>
                             </div>
-                            <div class="form-section form-row">
-                                <label>Order Status</label>
-                                <select id="orderStatus" class="small-select">
-                                    <option value="Ordered">Ordered</option>
-                                    <option value="Received">Received</option>
-                                </select>
-                            </div>
-
                             <div class="form-section form-row">
                                 <label>Issue Date</label>
-                                <input type="date" id="issueDate" value="" readonly>
+                                <input type="date" id="issueDate" disabled="disabled">
                             </div>
                         </div>
                     </div>
-
                     <div class="form-section">
                         <table>
                             <thead>
@@ -140,7 +124,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <div class="form-section">
                         <label>Total</label>
                         <input type="text" id="total" disabled>
@@ -148,14 +131,121 @@
                     <button id="confirmOrderBtn">Confirm</button>
                 </div>
             </div>
-
-            <!-- New Modal for Table Row Click -->
-        <div id="orderDetailsModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div class="modal-body"></div>
+            
+            
+                    <!-- View Purchase Order Modal -->
+                    <div id="orderDetailsModal" class="modal">
+                        <div class="modal-view">
+                            <span class="close">&times;</span>
+                            <h3>View Purchase Order</h3>
+                            <div class="modal-body">
+                                <div class="left-section">
+                                    <div class="form-section">
+                                        <label>From</label>
+                                        <input type="text" id="viewFromDetails" readonly>
+                                    </div>
+                                </div>
+                                <div class="right-section">
+                                    <div class="form-section form-row">
+                                        <label>Order Number</label>
+                                        <input type="text" id="viewOrderNumber" readonly>
+                                    </div>
+                                    <div class="form-section form-row">
+                                        <label>Order Status</label>
+                                        <input type="text" id="viewOrderStatus" readonly>
+                                    </div>
+                                    <div class="form-section form-row">
+                                        <label>Issue Date</label>
+                                        <input type="date" id="viewIssueDate" readonly>
+                                    </div>
+                                    <div class="form-section form-row">
+                                        <label>Ordered By</label>
+                                        <input type="text" id="viewOrderedBy" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Quantity</th>
+                                            <th>Unit</th>
+                                            <th>Price</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="viewItemList">
+                                        <!-- Items will be populated automatically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="form-section">
+                                <label>Total</label>
+                                <input type="text" id="viewTotal" disabled>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Evaluate Items Modal -->
+            <div id="evaluateModal" class="modal">
+                <div class="modal-evaluate">
+                    <span class="close">&times;</span>
+                    <h3>Evaluate Received Items</h3>
+                    <div class="modal-evaluate-body">
+                        <div class="form-display">
+                            <label>Order Number</label>
+                            <input type="text" id="evaluateOrderNumber" disabled="disabled">
+                            <label>Created Date</label>
+                            <input type="text" id="createdDate" disabled="disabled">
+                            <label>Updated Date</label>
+                            <input type="text" id="updatedDate" disabled="disabled">
+                        </div>
+                        <div class="form-section">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Ordered Quantity</th>
+                                        <th>Received</th>
+                                        <th>Lost</th>
+                                        <th>Damaged</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="evaluateItemList">
+                                </tbody>
+                            </table>
+                        </div>
+                        <button id="submitEvaluationBtn">Update Evaluation</button>
+                    </div>
+            
+            <!-- SKU Modal --> 
+            <div id="skuModal" class="modal">
+                <div class="modal-sku">
+                    <span class="close">&times;</span>
+                    <h3>SKU Details</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Quantity Ordered</th>
+                                <th>SKU</th>
+                                <th>Quantity</th>
+                                <th>Expiration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="skuTableBody">
+                            <!-- Dynamically populated rows -->
+                        </tbody>
+                    </table>
+                    <button id="saveSkuBtn">Save</button>
+                </div>
             </div>
-        </div>
+    
+    
+    
+        
 
         <script src="{{ url_for('static', filename='js/purchase_order.js') }}"></script>
 </html>
