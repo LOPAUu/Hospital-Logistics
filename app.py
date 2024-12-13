@@ -85,6 +85,89 @@ def close_db_connection(cursor, conn):
     cursor.close()
     conn.close()
 
+@app.route('/user_role_management')
+def user_role_management():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Update query to include the 'status' column
+    cursor.execute('''
+        SELECT users.staff_id, users.username, users.email, users.status, roles.role_name 
+        FROM users 
+        JOIN roles ON users.role_id = roles.id
+    ''')
+    users = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('user_role_management.html', users=users)
+
+
+@app.route('/create_or_edit_user', methods=['GET', 'POST'])
+def create_or_edit_user():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        role_id = request.form['role']
+        staff_id = request.form.get('staff-id')  # Use staff-id as the unique identifier
+
+        # Ensure password is provided only for new users or when it's updated
+        if not staff_id and not password:
+            flash('Password is required for new users!', 'danger')
+            return redirect(request.url)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        if staff_id:  # Edit existing user
+            if password:  # Update password only if provided
+                cursor.execute('UPDATE users SET username = %s, email = %s, password = %s, role_id = %s WHERE staff_id = %s',
+                               (username, email, password, role_id, staff_id))
+            else:
+                cursor.execute('UPDATE users SET username = %s, email = %s, role_id = %s WHERE staff_id = %s',
+                               (username, email, role_id, staff_id))
+        else:  # Create new user
+            cursor.execute('INSERT INTO users (username, email, password, role_id) VALUES (%s, %s, %s, %s)',
+                           (username, email, password, role_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        flash('User saved successfully!', 'success')
+        return redirect(url_for('user_role_management'))
+
+    # Fetch available roles for the dropdown
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, role_name FROM roles')  # Fetch all available roles
+    roles = cursor.fetchall()
+
+    staff_id = request.args.get('staff-id')  # Ensure using staff-id for editing
+    user = None
+    if staff_id:  # Check if we're editing an existing user
+        cursor.execute('SELECT * FROM users WHERE staff_id = %s', (staff_id,))
+        user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    # Pass the user and roles to the template
+    return render_template('user_form.html', user=user, roles=roles)
+
+
+
+# Delete a user
+@app.route('/delete_user/<int:staff_id>', methods=['POST'])
+def delete_user(staff_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM users WHERE staff_id = %s', (staff_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash('User deleted successfully!', 'success')
+    return redirect(url_for('user_role_management'))
+
+
 # Route to fetch all suppliers
 @app.route('/suppliers')
 def admin_supplier():
