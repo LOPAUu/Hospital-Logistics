@@ -94,7 +94,7 @@ function viewDetails(requisitionId) {
         })
         .then(data => {
             document.getElementById('details-content').innerHTML = `
-                <p><strong>ID:</strong> ${data.requisition.id}</p>
+                <p><strong>No.:</strong> ${data.requisition.id}</p>
                 <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
                 <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
                 <p><strong>Billing:</strong> ${data.requisition.billing}</p>
