@@ -279,7 +279,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background-color: #45a049;
+    background-color: #d32f2f;
 }
 
 button.btn-cancel {
