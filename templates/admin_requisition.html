@@ -35,7 +35,7 @@
         <table id="requisition-list">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>No.</th>
                     <th>Date</th>
                     <th>Purpose</th>
                     <th>Billing</th>
@@ -67,67 +67,58 @@
             <span class="close-button" onclick="closeModal()">&times;</span>
             <h2>Manage Requisition</h2>
             <form id="requisition-form" onsubmit="saveRequisition(event)">
-                <!-- Other input fields -->
-                <fieldset>
-                    <legend>Requisition Information</legend>
-                    <div class="form-group">
-                        <label for="requisition-id">Requisition ID:</label>
-                        <span id="requisition-id">Auto-generated ID</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="date">Date:</label>
-                        <input type="text" id="date" name="date" readonly> <!-- Automatically added date -->
-                    </div>
-                    <div class="form-group">
-                        <label for="purpose">Purpose:</label>
-                        <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
-                    </div>
-                </fieldset>
+                <div class="form-group">
+                    <label for="requisition-id">Requisition ID:</label>
+                    <span id="requisition-id">Auto-generated ID</span>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="text" id="date" name="date" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="purpose">Purpose:</label>
+                    <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
+                </div>
 
-                <fieldset>
-                    <legend>Billing</legend>
-                    <div class="form-group">
-                        <label for="billing">Billing Information:</label>
-                        <input type="text" id="billing" name="billing" placeholder="Billing details" required>
-                    </div>
-                </fieldset>
+                <div class="form-group">
+                    <label for="billing">Billing Information:</label>
+                    <input type="text" id="billing" name="billing" placeholder="Billing details" required>
+                </div>
 
-                <fieldset>
-                    <legend>Items and Details</legend>
-                    <div class="form-group">
-                        <label for="attachments">Attachments:</label>
-                        <input type="file" id="attachments" name="attachments" multiple>
-                    </div>
-                    <div class="form-group">
-                        <label>Items Requested:</label>
-                        <table id="items-table">
-                            <thead>
-                                <tr>
-                                    <th>Name of Item</th>
-                                    <th>Quantity</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
-                                    <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
-                                    <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
-                                    <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
-                                    <td><button type="button" onclick="removeItem(this)">Remove</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <button type="button" onclick="addItem()">Add Item</button>
-                    </div>
-                    <div class="form-group">
-                        <label for="total-price">Total Price:</label>
-                        <input type="text" id="total-price" name="total-price" readonly>
-                    </div>
-                </fieldset>
-
+                <div class="form-group">
+                    <label for="attachments">Attachments:</label>
+                    <input type="file" id="attachments" name="attachments" multiple>
+                </div>
+                <div class="form-group">
+                    <label>Items Requested:</label>
+                    <table id="items-table">
+                        <thead>
+                            <tr>
+                                <th>Name of Item</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
+                                <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
+                                <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
+                                <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
+                                <td><button type="button" onclick="removeItem(this)">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="addItem()">Add Item</button>
+                </div>
+    
+                <div class="form-group">
+                    <label for="total-price">Total Price:</label>
+                    <input type="text" id="total-price" name="total-price" readonly>
+                </div>
+    
                 <div class="form-action">
                     <button type="submit" class="btn-submit">Submit Requisition</button>
                 </div>
@@ -145,6 +136,7 @@
             </div>
         </div>
     </div>
+
 
     <script src="{{ url_for('static', filename='js/requisition_admin.js') }}"></script>
 {% endblock %}

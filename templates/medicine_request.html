@@ -67,13 +67,11 @@
                             <i class="fas fa-times-circle"></i> Reject
                         </button>
                         {% endif %}
-                        <button class="view-button" onclick="viewRequest({{ request.medicine_request_id }})">
-                            <i class="fas fa-eye"></i> View
-                        </button>
                         {% if request.request_status != "Pending" %}
                         <span class="approved-label">No further actions available</span>
                         {% endif %}
                     </td>
+                    
                 </tr>
                 {% endfor %}
             </tbody>  
