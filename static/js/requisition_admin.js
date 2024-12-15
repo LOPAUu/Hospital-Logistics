@@ -28,38 +28,67 @@ function renderRequisition(requisitions) {
 
 
 
-// Save a New Requisition
+// Function to handle form submission and send requisition data with attachments to Flask
 async function saveRequisition(event) {
-    event.preventDefault();
+    event.preventDefault();  // Prevent the default form submission behavior
+    
     const form = document.getElementById('requisition-form');
-    const items = getItemsFromForm(form); 
-
+    const requisitionId = document.getElementById('requisition-id').textContent;  // Get requisition ID
+    
+    // Create FormData object for both requisition and attachments
+    var formData = new FormData();
+    formData.append('requisition_id', requisitionId);
+    
+    // Collect requisition data
     const requisitionData = {
         date: form.date.value,
         purpose: form.purpose.value,
-        company_name: form.company_name.value,  // Changed from billing
-        items: items
+        company_name: form.company_name.value,
+        items: getItemsFromForm(form)
     };
 
+    // Append requisition data to FormData (as JSON string)
+    formData.append('requisition_data', JSON.stringify(requisitionData));
+    
+    // Get all files selected for attachment
+    var files = document.getElementById('attachments').files;
+    
+    // Append each file to the FormData object
+    for (var i = 0; i < files.length; i++) {
+        formData.append('attachments', files[i]);
+    }
+    
+    // Send the request using Fetch API
     try {
-        const response = await fetch('/requisition', {
+        const response = await fetch('/upload_attachments', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requisitionData)
+            body: formData
         });
 
-        if (!response.ok) throw new Error('Failed to save requisition');
+        const data = await response.json();
+        if (data.message === "Attachments uploaded successfully!") {
+            // Requisition saved successfully, now save the data (including items)
+            const requisitionResponse = await fetch('/requisition', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requisitionData)
+            });
 
-        Swal.fire({
-            title: 'Success!',
-            text: 'Requisition saved successfully!',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            window.location.reload();
-        });
+            if (!requisitionResponse.ok) throw new Error('Failed to save requisition');
+            
+            Swal.fire({
+                title: 'Success!',
+                text: 'Requisition saved and attachments uploaded successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.reload();
+            });
 
-        closeModal();
+            closeModal();
+        } else {
+            throw new Error("Error uploading attachments: " + data.message);
+        }
     } catch (error) {
         Swal.fire({
             title: 'Error!',

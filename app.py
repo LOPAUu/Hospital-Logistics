@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import psycopg2, requests, json
 from datetime import datetime
+from werkzeug.utils import secure_filename
+import time
+import os
 from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
@@ -14,6 +17,10 @@ app.config['POSTGRES_USER'] = 'lmsdb_user'  # Change to your PostgreSQL username
 app.config['POSTGRES_PASSWORD'] = 'EMgG60UaoPj9vC79jodS3cxfo4dM8Kt3'  # Change to your PostgreSQL password
 app.config['POSTGRES_DB'] = 'lmsdb_ul3w'  # Database name
 app.config['POSTGRES_PORT'] = '5432'  # Database name
+
+# Configure upload folder and allowed file types
+app.config['UPLOAD_FOLDER'] = 'static/requisition_files/uploads/'
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'xlsx'}
 
 def get_db_connection():
     return psycopg2.connect(
@@ -85,6 +92,56 @@ def close_db_connection(cursor, conn):
     cursor.close()
     conn.close()
 
+# Ensure the upload folder exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# Function to check allowed file extensions
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+@app.route('/upload_attachments', methods=['POST'])
+def upload_attachments():
+    try:
+        # Check if the 'attachments' field is in the request
+        if 'attachments' not in request.files:
+            return jsonify({"message": "No attachments found"}), 400
+        
+        files = request.files.getlist('attachments')  # Retrieve all files
+        
+        requisition_id = request.form.get('requisition_id')  # Requisition ID from the form
+        
+        if not requisition_id:
+            return jsonify({"message": "Requisition ID is required"}), 400
+        
+        # Iterate over the files and save each one
+        attachment_paths = []
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = str(int(time.time()))  # Use timestamp for unique filenames
+                file_path = f"{app.config['UPLOAD_FOLDER']}{timestamp}_{filename}"  # Full path including UPLOAD_FOLDER
+                
+                # Save the file (you can change the 'uploads' directory path as needed)
+                file.save(file_path)
+                
+                # Insert attachment data into the database
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute(
+                    "INSERT INTO attachments (requisition_id, file_name, file_path) VALUES (%s, %s, %s)",
+                    (requisition_id, filename, file_path)
+                )
+                conn.commit()
+                cur.close()
+                conn.close()
+                
+                attachment_paths.append(file_path)  # Save the file path for reference
+        
+        return jsonify({"message": "Attachments uploaded successfully!", "attachments": attachment_paths}), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+    
 @app.route('/user_role_management')
 def user_role_management():
     conn = get_db_connection()
