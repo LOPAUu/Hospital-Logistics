@@ -263,6 +263,7 @@ table td button i {
     display: flex;
     justify-content: space-between;
     margin-bottom: -20px;
+    gap: 150px;
 }
 
 .requisition-id-group,
@@ -313,7 +314,7 @@ table td button i {
 .requisition-modal-title {
     font-size: 1.8rem;
     font-weight: 600;
-    color: #333;
+    color: #003366;
     margin-bottom: 15px;
     text-align: center;
 }
@@ -486,4 +487,41 @@ table td button i {
     font-weight: 500;
     color: #555;
     margin-bottom: 5px;
+}
+
+
+/* Modal for displaying requisition details */
+.detail-pair {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.detail-pair p {
+    flex: 1;
+    margin: 0;
+    padding: 0 10px;
+}
+
+.details-group p {
+    font-size: 1rem;
+    color: #003366;
+    margin: 5px 0;
+}
+
+.details-group h3 {
+    font-size: 1.2rem;
+    color: #003366;
+    margin-bottom: 10px;
+}
+
+.details-group ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+.details-group ul li {
+    font-size: 0.9rem;
+    color: #003366;
+    margin: 5px 0;
 }

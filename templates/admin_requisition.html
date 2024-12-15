@@ -72,23 +72,23 @@
     <div class="requisition-details-section">
         <div class="requisition-id-date-row">
             <div class="form-group requisition-id-group">
-                <label for="requisition-id">Requisition ID:</label>
-                <input type="text" id="requisition-id" name="requisition-id" readonly> <!-- Make it a text input -->
+                <strong for="requisition-id">Requisition ID:</strong>
+                <input type="text" id="requisition-id" name="requisition-id" disabled> <!-- Make it a text input -->
             </div>
             <div class="form-group requisition-date-group">
-                <label for="date">Date:</label>
-                <input type="text" id="date" name="date" readonly>
+                <strong for="date">Date:</strong>
+                <input type="text" id="date" name="date" disabled>
             </div>
         </div>
         <div class="form-group requisition-purpose-group">
-            <label for="purpose">Purpose:</label>
+            <strong for="purpose">Purpose:</strong>
             <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
         </div>
     </div>
 
     <div class="requisition-company-attachment-row">
         <div class="form-group requisition-company-group">
-            <label for="company_name">Company Name:</label>
+            <strong for="company_name">Company Name:</strong>
             <select id="company_name" name="company_name" required>
                 <option value="">Select Company</option>
                 {% for supplier in suppliers %}
@@ -97,14 +97,14 @@
             </select>
         </div>
         <div class="form-group requisition-attachments-group">
-            <label for="attachments">Attachments:</label>
+            <strong for="attachments">Attachments:</strong>
             <input type="file" id="attachments" name="attachments" multiple>
         </div>
     </div>
 
                 <!-- Items Requested Section -->
                 <div class="form-group requisition-items-group">
-                    <label>Items Requested:</label>
+                    <strong>Items Requested:</strong>
                     <div class="requisition-items-scrollable">
                         <table id="items-table" class="requisition-items-table">
                             <thead>
@@ -121,7 +121,7 @@
                                     <td><input type="text" name="item-name[]" placeholder="Item Name"></td>
                                     <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
                                     <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
-                                    <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
+                                    <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" disabled></td>
                                     <td><button type="button" class="btn-remove-item" onclick="removeItem(this)">Remove</button></td>
                                 </tr>
                             </tbody>
@@ -132,8 +132,8 @@
 
                 <!-- Total Price Section -->
                 <div class="form-group requisition-total-price-group">
-                    <label for="total-price">Total Price:</label>
-                    <input type="text" id="total-price" name="total-price" class="requisition-total-price" readonly>
+                    <strong for="total-price">Total Price:</strong>
+                    <input type="text" id="total-price" name="total-price" class="requisition-total-price" disabled>
                 </div>
 
                 <!-- Action Buttons Section -->
@@ -146,15 +146,16 @@
 
 
     <!-- Modal for displaying requisition details -->
-    <div id="details-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeDetailsModal()">&times;</span>
-            <h2>Requisition Details</h2>
-            <div id="details-content">
-                <!-- Details will be populated here -->
-            </div>
+<div id="details-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeDetailsModal()">&times;</span>
+        <h2 class="requisition-modal-title">Requisition Details</h2>
+        <div id="details-content">
+            <!-- Details will be populated here -->
         </div>
     </div>
+</div>
+
     
     
 

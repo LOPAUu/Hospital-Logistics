@@ -140,27 +140,43 @@ function getItemsFromForm(form) {
 function viewDetails(requisitionId) {
     fetch(`/requisitions/${requisitionId}`)
         .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch requisition details');
+            if (!response.ok) {
+                console.error('Network response was not ok', response);
+                throw new Error('Failed to fetch requisition details');
+            }
             return response.json();
         })
         .then(data => {
             document.getElementById('details-content').innerHTML = `
-                <p><strong>ID:</strong> ${data.requisition.id}</p>
-                <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
-                <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                <p><strong>Company Name:</strong> ${data.requisition.company_name}</p> <!-- Changed from billing -->
-                <p><strong>Total:</strong> ₱${data.total}</p>
-                <h3>Items Requested:</h3>
-                <ul>
-                    ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
-                </ul>
+                <div class="details-group">
+                    <div class="detail-pair">
+                        <p><strong>ID:</strong> ${data.requisition.id}</p>
+                        <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
+                    </div>
+                    <div class="detail-pair">
+                        <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
+                        <p><strong>Company Name:</strong> ${data.requisition.company_name}</p>
+                    </div>
+                    <p><strong>Total:</strong> ₱${data.total}</p>
+                </div>
+                <div class="details-group">
+                    <h3>Items Requested:</h3>
+                    <ul>
+                        ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
+                    </ul>
+                </div>
             `;
             openDetailsModal();
         })
         .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
             Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
         });
 }
+
+
+
+
 
 
 
@@ -232,7 +248,7 @@ function addItem() {
         <td><input type="number" name="item-quantity[]" placeholder="Quantity" class="item-quantity" oninput="calculateTotal(this)"></td>
         <td><input type="number" name="item-price[]" placeholder="Price per unit" class="item-price" oninput="calculateTotal(this)"></td>
         <td><input type="text" name="item-total[]" placeholder="Total" class="item-total" readonly></td>
-        <td><button type="button" onclick="removeItem(this)">Remove</button></td>
+        <td><button type="button" class="btn-remove-item" onclick="removeItem(this)">Remove</button></td>
     `;
 }
 
