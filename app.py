@@ -448,33 +448,60 @@ def user_requisition():
     purpose = data['purpose']
     company_name = data['company_name']  # Using company_name from dropdown
     items = data['items']  # Items come as a list of dictionaries
+    attachments = data.get('attachments', [])  # Attachments if present in the request
 
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Insert requisition details into the requisitions table
-    cur.execute(
-        "INSERT INTO requisitions (date, purpose, company_name) VALUES (%s, %s, %s) RETURNING id",
-        (date, purpose, company_name)
-    )
-    requisition_id = cur.fetchone()[0]
-
-    # Insert items associated with the requisition into the requisition_items table
-    for item in items:
-        quantity = item['quantity']
-        price = item['price']
-        total = item['total']
-
+    try:
+        # Step 1: Insert requisition details into the requisitions table and get the generated requisition_id
         cur.execute(
-            "INSERT INTO requisition_items (requisition_id, name, quantity, price, total) VALUES (%s, %s, %s, %s, %s)",
-            (requisition_id, item['name'], quantity, price, total)
+            "INSERT INTO requisitions (date, purpose, company_name) VALUES (%s, %s, %s) RETURNING id",
+            (date, purpose, company_name)
         )
+        requisition_id = cur.fetchone()[0]  # Get the generated requisition_id
 
-    conn.commit()
-    cur.close()
-    conn.close()
+        # Commit after inserting the requisition to ensure the requisition_id is in the database
+        conn.commit()
 
-    return jsonify({"message": "Requisition saved successfully!"}), 201
+        # Step 2: Insert items associated with the requisition into the requisition_items table
+        for item in items:
+            quantity = item['quantity']
+            price = item['price']
+            total = item['total']
+
+            cur.execute(
+                "INSERT INTO requisition_items (requisition_id, name, quantity, price, total) VALUES (%s, %s, %s, %s, %s)",
+                (requisition_id, item['name'], quantity, price, total)
+            )
+
+        # Commit after inserting items to ensure everything is saved
+        conn.commit()
+
+        # Step 3: Insert attachments related to the requisition into the attachments table
+        for file in attachments:
+            filename = file['filename']
+            file_path = file['path']
+
+            cur.execute(
+                "INSERT INTO attachments (requisition_id, file_name, file_path) VALUES (%s, %s, %s)",
+                (requisition_id, filename, file_path)
+            )
+
+        # Commit after inserting attachments to finalize the operation
+        conn.commit()
+
+        # Success response
+        return jsonify({"message": "Requisition, items, and attachments saved successfully!", "requisition_id": requisition_id}), 200
+
+    except Exception as e:
+        # Rollback in case of an error
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cur.close()
+        conn.close()
 
 
 
@@ -525,6 +552,31 @@ def get_requisition(id):
     finally:
         cur.close()
         conn.close()
+
+@app.route('/get_current_requisition_id', methods=['GET'])
+def get_current_requisition_id():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        # Query to get the highest current requisition ID
+        cur.execute("""
+            SELECT MAX(id) AS current_id FROM requisitions
+        """)
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        # If no requisitions exist, return 1001 as the starting ID
+        if result['current_id'] is None:
+            next_id = 1001
+        else:
+            next_id = result['current_id'] + 1  # Increment by 1 for the next ID
+
+        return jsonify({'next_requisition_id': next_id}), 200
+
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
 
 
 

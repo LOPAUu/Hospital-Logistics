@@ -96,14 +96,12 @@ CREATE TABLE attachments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create 'attachments' table
-CREATE TABLE attachments (
-    id SERIAL PRIMARY KEY,
-    requisition_id INTEGER NOT NULL REFERENCES requisitions(id) ON DELETE CASCADE,
-    file_name VARCHAR(255) NOT NULL,
-    file_path TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Create 'attachments' tableALTER TABLE attachments
+ALTER TABLE attachments
+ADD CONSTRAINT fk_requisition_id
+FOREIGN KEY (requisition_id)
+REFERENCES requisitions(id);
+
 
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (

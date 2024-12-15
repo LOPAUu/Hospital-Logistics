@@ -33,13 +33,13 @@ async function saveRequisition(event) {
     event.preventDefault();  // Prevent the default form submission behavior
     
     const form = document.getElementById('requisition-form');
-    const requisitionId = document.getElementById('requisition-id').textContent;  // Get requisition ID
+    const requisitionId = document.getElementById('requisition-id').value;  // Get requisition ID
     
     // Create FormData object for both requisition and attachments
-    var formData = new FormData();
-    formData.append('requisition_id', requisitionId);
+    let formData = new FormData();
+    formData.append('requisition_id', requisitionId);  // Append requisition ID to FormData
     
-    // Collect requisition data
+    // Collect requisition data from form fields
     const requisitionData = {
         date: form.date.value,
         purpose: form.purpose.value,
@@ -51,44 +51,47 @@ async function saveRequisition(event) {
     formData.append('requisition_data', JSON.stringify(requisitionData));
     
     // Get all files selected for attachment
-    var files = document.getElementById('attachments').files;
+    const files = document.getElementById('attachments').files;
     
     // Append each file to the FormData object
-    for (var i = 0; i < files.length; i++) {
+    for (let i = 0; i < files.length; i++) {
         formData.append('attachments', files[i]);
     }
     
-    // Send the request using Fetch API
+    // Step 1: First save the requisition and items in the backend
     try {
-        const response = await fetch('/upload_attachments', {
+        const requisitionResponse = await fetch('/requisition', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requisitionData)
         });
 
-        const data = await response.json();
-        if (data.message === "Attachments uploaded successfully!") {
-            // Requisition saved successfully, now save the data (including items)
-            const requisitionResponse = await fetch('/requisition', {
+        const requisitionDataResponse = await requisitionResponse.json();
+
+        if (requisitionResponse.ok && requisitionDataResponse.requisition_id) {
+            // Step 2: Save attachments only after requisition is saved
+            const attachmentResponse = await fetch('/upload_attachments', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requisitionData)
+                body: formData
             });
 
-            if (!requisitionResponse.ok) throw new Error('Failed to save requisition');
-            
-            Swal.fire({
-                title: 'Success!',
-                text: 'Requisition saved and attachments uploaded successfully!',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                window.location.reload();
-            });
-
-            closeModal();
+            const attachmentData = await attachmentResponse.json();
+            if (attachmentData.message === "Attachments uploaded successfully!") {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Requisition and attachments uploaded successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                throw new Error('Error uploading attachments');
+            }
         } else {
-            throw new Error("Error uploading attachments: " + data.message);
+            throw new Error('Failed to save requisition');
         }
+
     } catch (error) {
         Swal.fire({
             title: 'Error!',
@@ -98,6 +101,28 @@ async function saveRequisition(event) {
         });
     }
 }
+
+
+
+// Helper function to extract item data from the form
+function getItemsFromForm(form) {
+    const itemNames = form.querySelectorAll('[name="item-name[]"]');
+    const itemQuantities = form.querySelectorAll('[name="item-quantity[]"]');
+    const itemPrices = form.querySelectorAll('[name="item-price[]"]');
+    const items = [];
+
+    for (let i = 0; i < itemNames.length; i++) {
+        items.push({
+            name: itemNames[i].value,
+            quantity: itemQuantities[i].value,
+            price: itemPrices[i].value,
+            total: itemQuantities[i].value * itemPrices[i].value
+        });
+    }
+
+    return items;
+}
+
 
 
 
@@ -145,11 +170,31 @@ function toggleModal(modalId, display) {
     modal.style.display = display ? 'block' : 'none';
 }
 
-function openModal() {
-    toggleModal('manage-requisition-modal', true);
-    document.getElementById('requisition-id').textContent = currentRequisitionId; // Display the ID
-    document.getElementById('date').value = getCurrentDate(); // Set the date in the modal
+// Function to fetch the next requisition ID from the backend
+async function getCurrentRequisitionID() {
+    try {
+        const response = await fetch('/get_current_requisition_id'); // Fetch current requisition ID from the backend
+        const data = await response.json();
+        return data.next_requisition_id;  // Return the next requisition ID
+    } catch (error) {
+        console.error('Error fetching requisition ID:', error);
+        return 1001; // Fallback to 1001 if there is an error
+    }
 }
+
+// Function to open the modal and set the requisition ID
+async function openModal() {
+    toggleModal('manage-requisition-modal', true);
+
+    // Fetch and set the current requisition ID dynamically
+    const requisitionID = await getCurrentRequisitionID();
+    document.getElementById('requisition-id').value = requisitionID;  // Display the ID
+
+    // Set the current date in the date field
+    document.getElementById('date').value = getCurrentDate();
+}
+
+
 
 function closeModal() {
     toggleModal('manage-requisition-modal', false);
