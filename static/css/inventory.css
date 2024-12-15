@@ -190,17 +190,11 @@ h2 {
 /* Inventory Container */
 .inventory-container {
     max-width: 95%;
-<<<<<<< HEAD
-    margin: 150px auto;
-=======
     margin: 0px auto;
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
     background: white;
     padding: 30px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     border-radius: 15px;
-<<<<<<< HEAD
-=======
 }
 
 /* Make the Quantity column bold (3rd column) */
@@ -231,5 +225,4 @@ h2 {
 #view-modal .details-table th:nth-child(6), 
 #view-modal .details-table td:nth-child(6) {
     font-weight: bold;
->>>>>>> d177f90300f1b12f91728b542fdaa266ef2e30cf
 }
