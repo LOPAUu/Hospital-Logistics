@@ -371,18 +371,25 @@ def delete_supplier_item(item_name):
 def admin_requisition():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    # Fetch requisitions and suppliers
     cur.execute("SELECT * FROM requisitions")
     requisitions = cur.fetchall()
+
+    # Fetch suppliers for company_name dropdown
+    cur.execute("SELECT company_name FROM suppliers")
+    suppliers = cur.fetchall()
+
     cur.close()
     conn.close()
-    return render_template('admin_requisition.html', requisitions=requisitions)
+    
+    return render_template('admin_requisition.html', requisitions=requisitions, suppliers=suppliers)
 
 @app.route('/requisition', methods=['POST'])
 def user_requisition():
     data = request.get_json()  # Get JSON data from the request
     date = data['date']
     purpose = data['purpose']
-    billing = data['billing']
+    company_name = data['company_name']  # Using company_name from dropdown
     items = data['items']  # Items come as a list of dictionaries
 
     conn = get_db_connection()
@@ -390,8 +397,8 @@ def user_requisition():
 
     # Insert requisition details into the requisitions table
     cur.execute(
-        "INSERT INTO requisitions (date, purpose, billing) VALUES (%s, %s, %s) RETURNING id",
-        (date, purpose, billing)
+        "INSERT INTO requisitions (date, purpose, company_name) VALUES (%s, %s, %s) RETURNING id",
+        (date, purpose, company_name)
     )
     requisition_id = cur.fetchone()[0]
 
@@ -410,20 +417,24 @@ def user_requisition():
     cur.close()
     conn.close()
 
-    # Return a success response
     return jsonify({"message": "Requisition saved successfully!"}), 201
+
 
 
 @app.route('/requisition', methods=['GET'])
 def get_requisitions():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM requisitions")
+    cur.execute("""
+        SELECT r.id, r.date, r.purpose, r.company_name 
+        FROM requisitions r
+    """)
     requisitions = cur.fetchall()
     cur.close()
     conn.close()
 
     return jsonify(requisitions)  # Return the requisition data as JSON
+
 
 @app.route('/requisitions/<int:id>', methods=['GET'])
 def get_requisition(id):
@@ -455,9 +466,11 @@ def get_requisition(id):
     except Exception as e:
         return jsonify({"message": str(e)}), 500
     finally:
-        # Ensure the connection is closed properly
         cur.close()
         conn.close()
+
+
+
 
 @app.route('/inventory')
 def inventory():

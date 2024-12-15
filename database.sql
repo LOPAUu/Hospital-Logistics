@@ -70,13 +70,12 @@ CREATE TABLE requisitions (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     purpose VARCHAR(255) NOT NULL,
-    billing VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL, -- Replacing billing with company_name if applicable
     signatory1_approved BOOLEAN DEFAULT FALSE,
     signatory2_approved BOOLEAN DEFAULT FALSE,
     signatory3_approved BOOLEAN DEFAULT FALSE
 );
 
--- Table for requisition items with PostgreSQL equivalent to MySQL's ON DELETE CASCADE
 CREATE TABLE requisition_items (
     id SERIAL PRIMARY KEY,
     requisition_id INT NOT NULL REFERENCES requisitions(id) ON DELETE CASCADE,
@@ -85,6 +84,12 @@ CREATE TABLE requisition_items (
     price NUMERIC(10, 2) NOT NULL,  -- NUMERIC is used instead of DECIMAL
     total NUMERIC(10, 2) NOT NULL
 );
+
+ALTER TABLE requisitions
+ADD COLUMN supplier_id INT REFERENCES suppliers(id);
+
+
+
 
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (

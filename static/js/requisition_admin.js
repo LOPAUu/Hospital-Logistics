@@ -19,12 +19,13 @@ function renderRequisition(requisitions) {
         <tr>
             <td>${requisition.id}</td>
             <td>${requisition.purpose}</td>
-            <td>${requisition.billing}</td>
+            <td>${requisition.company_name}</td> <!-- Changed from billing -->
             <td>${requisition.total}</td>
             <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
         </tr>
     `).join('');
 }
+
 
 
 // Save a New Requisition
@@ -36,7 +37,7 @@ async function saveRequisition(event) {
     const requisitionData = {
         date: form.date.value,
         purpose: form.purpose.value,
-        billing: form.billing.value,
+        company_name: form.company_name.value,  // Changed from billing
         items: items
     };
 
@@ -49,22 +50,17 @@ async function saveRequisition(event) {
 
         if (!response.ok) throw new Error('Failed to save requisition');
 
-        // Success alert
         Swal.fire({
             title: 'Success!',
             text: 'Requisition saved successfully!',
             icon: 'success',
             confirmButtonText: 'OK'
         }).then(() => {
-            // Refresh the window after closing the success alert
-            window.location.reload(); // Refresh the page
+            window.location.reload();
         });
 
-        // Optionally, you can also close the modal after saving
-        closeModal(); 
-
+        closeModal();
     } catch (error) {
-        // Error alert
         Swal.fire({
             title: 'Error!',
             text: error.message,
@@ -73,6 +69,7 @@ async function saveRequisition(event) {
         });
     }
 }
+
 
 
 // Helper function to get items from the form
@@ -97,7 +94,7 @@ function viewDetails(requisitionId) {
                 <p><strong>ID:</strong> ${data.requisition.id}</p>
                 <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
                 <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                <p><strong>Billing:</strong> ${data.requisition.billing}</p>
+                <p><strong>Company Name:</strong> ${data.requisition.company_name}</p> <!-- Changed from billing -->
                 <p><strong>Total:</strong> ₱${data.total}</p>
                 <h3>Items Requested:</h3>
                 <ul>
@@ -110,6 +107,7 @@ function viewDetails(requisitionId) {
             Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
         });
 }
+
 
 
 // Open/close modal functions
