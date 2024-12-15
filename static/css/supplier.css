@@ -112,13 +112,13 @@ button:hover {
 }
 
 button[onclick="addsupplierItem()"] {
-    margin-left: 300px;
+    margin-left: 295px;
     background-color: #0d4e84;
     color: white;
 }
 
 button[onclick="addEditedSupplierItem()"] {
-    margin-left: 300px;
+    margin-left: 295px;
     background-color: #0d4e84;
     color: white;
 }
@@ -310,4 +310,12 @@ textarea:focus {
 .swal2-backdrop-show {
     background-color: rgba(0, 0, 0, 0.4); /* Adjust transparency as needed */
     z-index: 1999 !important; /* Just below the SweetAlert popup */
+}
+
+#search-bar {
+    width: 30%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
