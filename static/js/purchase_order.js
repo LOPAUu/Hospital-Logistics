@@ -581,28 +581,23 @@ function addItemRow(itemName, itemQuantity) {
         <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
         <td><input type="date" class="expiration-input" /></td>
         <td>
-            <button class="deleteRowBtn">Delete</button>
             <button class="addSkuBtn">Add SKU</button>
         </td>
     `;
     document.getElementById('skuTableBody').appendChild(row);
 
-    // Add event listener for the delete button
-    row.querySelector('.deleteRowBtn').addEventListener('click', () => {
-        row.remove();
-    });
-
-    // Add event listener for the add SKU button
+    // Add event listener for the "Add SKU" button
     row.querySelector('.addSkuBtn').addEventListener('click', () => {
         addSkuRow(row);
     });
 }
 
+
 // Function to add a new SKU row below an existing item row
 function addSkuRow(itemRow) {
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td></td>
+        <td></td> <!-- Empty cell for alignment -->
         <td></td>
         <td><input type="text" class="sku-input" placeholder="Enter SKU" /></td>
         <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
@@ -611,11 +606,12 @@ function addSkuRow(itemRow) {
     `;
     itemRow.insertAdjacentElement('afterend', row);
 
-    // Add event listener for the delete button
+    // Add event listener for the "Delete" button
     row.querySelector('.deleteRowBtn').addEventListener('click', () => {
         row.remove();
     });
 }
+
 
 // Attach event listener to the SKU button
 document.querySelectorAll('.skuBtn').forEach(button => {

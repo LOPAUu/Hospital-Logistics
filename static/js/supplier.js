@@ -386,6 +386,37 @@ function removeEditableItem(button) {
 }
 
 
+// Functionality for searching suppliers in the search bar
+function searchSuppliers() {
+    const searchInput = document.getElementById('search-bar').value.toLowerCase();
+    const rows = document.querySelectorAll('#supplier-list tbody tr');
+
+    rows.forEach(row => {
+        const cells = row.getElementsByTagName('td');
+        let rowContainsSearchTerm = false;
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().includes(searchInput)) {
+                rowContainsSearchTerm = true;
+                break;
+            }
+        }
+        row.style.display = rowContainsSearchTerm ? '' : 'none';
+    });
+}
+
+
+function validatePhoneNumber(input) {
+    const phoneError = document.getElementById(input.id === 'phone' ? 'phone-error' : 'edit-phone-error');
+    
+    // Check if the value contains exactly 11 digits
+    if (/^\d{11}$/.test(input.value)) {
+        phoneError.style.display = 'none'; // Hide error if valid
+        input.setCustomValidity('');      // Clear any previous validation message
+    } else {
+        phoneError.style.display = 'block'; // Show error if invalid
+        input.setCustomValidity('Invalid phone number. It must be exactly 11 digits.');
+    }
+}
 
 
 // Function to remove a specific row when the "Remove" button is clicked

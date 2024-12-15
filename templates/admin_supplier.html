@@ -26,6 +26,10 @@
     </div>
     
     <div class="container">
+        <div class="search-container">
+        <input type="text" id="search-bar" placeholder="Search suppliers..." onkeyup="searchSuppliers()">
+        </div>
+
         <table id="supplier-list">
             <thead>
                 <tr>
@@ -85,7 +89,8 @@
                     </div>
                     <div class="form-group">
                         <label for="phone">Phone:</label>
-                        <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required oninput="validatePhoneNumber(this)">
+                        <span id="phone-error" style="color: red; display: none;">Phone number must be exactly 11 digits.</span>
                     </div>
                     <div class="form-group">
                         <label for="address">Address:</label>
@@ -148,7 +153,8 @@
                         </div>
                         <div class="form-group">
                             <label for="edit-phone">Phone:</label>
-                            <input type="tel" id="edit-phone" name="edit-phone" required>
+                            <input type="tel" id="edit-phone" name="edit-phone"  required oninput="validatePhoneNumber(this)">
+                            <span id="phone-error" style="color: red; display: none;">Phone number must be exactly 11 digits.</span>
                         </div>
                         <div class="form-group">
                             <label for="edit-address">Address:</label>
