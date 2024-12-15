@@ -280,7 +280,14 @@ textarea:focus {
     z-index: 1999 !important; /* Just below the SweetAlert popup */
 }
 
-.supplier-items-column, .supplier-items-information-column {
+.supplier-items-column {
+    max-height: 620px; /* Set the maximum height as needed */
+    overflow-y: auto; /* Add vertical scrolling */
+    border: 1px solid #ccc; /* Optional: Add a border for clarity */
+    padding: 10px;
+}
+
+.supplier-items-information-column {
     max-height: 620px; /* Set the maximum height as needed */
     overflow-y: auto; /* Add vertical scrolling */
     border: 1px solid #ccc; /* Optional: Add a border for clarity */
