@@ -88,7 +88,13 @@ CREATE TABLE requisition_items (
 ALTER TABLE requisitions
 ADD COLUMN supplier_id INT REFERENCES suppliers(id);
 
-
+CREATE TABLE attachments (
+    id SERIAL PRIMARY KEY,
+    requisition_id INTEGER NOT NULL REFERENCES requisitions(id) ON DELETE CASCADE,
+    file_name VARCHAR(255) NOT NULL,
+    file_path TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 
 -- Create the medicine_requests table (if not already created)

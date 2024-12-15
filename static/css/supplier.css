@@ -196,6 +196,14 @@ button[onclick="removeItem(this)"]:hover {
     box-sizing: border-box;
 }
 
+.supplier-items-column, 
+.supplier-items-information-column {
+    max-height: 620px; 
+    overflow-y: auto; 
+    border: 1px solid #ccc; 
+    padding: 10px;
+}
+
 /* Modal Header */
 #add-supplier-modal h2, 
 #edit-supplier-modal h2 {
