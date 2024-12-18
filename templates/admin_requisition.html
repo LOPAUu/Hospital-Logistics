@@ -60,53 +60,54 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            
         </table>
         <!-- Modal structure (should be in your HTML) -->
     </div>
     
-                <!-- Modal for managing requisitions -->
-                <div id="manage-requisition-modal" class="modal requisition-modal">
-                    <div class="requisition-modal-content">
-                        <span class="close-button requisition-close-button" onclick="closeModal()">&times;</span>
-                        <h2 class="requisition-modal-title">Manage Requisition</h2>
-                        <form id="requisition-form" onsubmit="saveRequisition(event)">
+    <!-- Modal for managing requisitions -->
+    <div id="manage-requisition-modal" class="modal requisition-modal">
+        <div class="requisition-modal-content">
+            <span class="close-button requisition-close-button" onclick="closeModal()">&times;</span>
+            <h2 class="requisition-modal-title">Manage Requisition</h2>
+            <form id="requisition-form" onsubmit="saveRequisition(event)">
 
-                <div class="requisition-details-section">
-                    <div class="requisition-id-date-row">
-                        <div class="form-group requisition-id-group">
-                            <strong for="requisition-id">Requisition ID:</strong>
-                            <input type="text" id="requisition-id" name="requisition-id" disabled> <!-- Make it a text input -->
-                        </div>
-                        <div class="form-group requisition-date-group">
-                            <strong for="date">Date:</strong>
-                            <input type="text" id="date" name="date" disabled>
-                        </div>
-                    </div>
-                    <div class="form-group requisition-purpose-group">
-                        <strong for="purpose">Purpose:</strong>
-                        <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
-                    </div>
-                </div>
+    <div class="requisition-details-section">
+        <div class="requisition-id-date-row">
+            <div class="form-group requisition-id-group">
+                <strong for="requisition-id">Requisition ID:</strong>
+                <input type="text" id="requisition-id" name="requisition-id" disabled> <!-- Make it a text input -->
+            </div>
+            <div class="form-group requisition-date-group">
+                <strong for="date">Date:</strong>
+                <input type="text" id="date" name="date" disabled>
+            </div>
+        </div>
+        <div class="form-group requisition-purpose-group">
+            <strong for="purpose">Purpose:</strong>
+            <input type="text" id="purpose" name="purpose" placeholder="Reason for the requisition" required>
+        </div>
+    </div>
 
-                <div class="requisition-company-attachment-row">
-                    <div class="form-group requisition-company-group">
-                        <strong for="company_name">Company Name:</strong>
-                        <select id="company_name" name="company_name" required>
-                            <option value="">Select Company</option>
-                            {% for supplier in suppliers %}
-                                <option value="{{ supplier.company_name }}">{{ supplier.company_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group requisition-requested-by-group">
-                        <strong for="requested_by">Requested By:</strong>
-                        <input type="text" id="requested_by" name="requested_by" placeholder="Requester Name" required>
-                    </div>
-                    <div class="form-group requisition-attachments-group">
-                        <strong for="attachments">Attachments:</strong>
-                        <input type="file" id="attachments" name="attachments" multiple>
-                    </div>
-                </div>
+    <div class="requisition-company-attachment-row">
+        <div class="form-group requisition-company-group">
+            <strong for="company_name">Company Name:</strong>
+            <select id="company_name" name="company_name" required>
+                <option value="">Select Company</option>
+                {% for supplier in suppliers %}
+                    <option value="{{ supplier.company_name }}">{{ supplier.company_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group requisition-requested-by-group">
+            <strong for="requested_by">Requested By:</strong>
+            <input type="text" id="requested_by" name="requested_by" placeholder="Requester Name" required>
+        </div>
+        <div class="form-group requisition-attachments-group">
+            <strong for="attachments">Attachments:</strong>
+            <input type="file" id="attachments" name="attachments" multiple>
+        </div>
+    </div>
 
                 <!-- Items Requested Section -->
                 <div class="form-group requisition-items-group">

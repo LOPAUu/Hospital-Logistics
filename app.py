@@ -512,15 +512,23 @@ def get_requisitions():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by 
+        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.total
         FROM requisitions r
     """)
     requisitions = cur.fetchall()
+
+    # Format the total as currency in the backend before rendering the template
+    for requisition in requisitions:
+        requisition['total'] = format_currency(requisition['total'])
+
+    # Close the database connection and cursor
     cur.close()
     conn.close()
 
-    return jsonify(requisitions)  # Return the requisition data as JSON
+    return render_template('requisition_list.html', requisitions=requisitions)
 
+def format_currency(amount):
+    return f"₱{amount:,.2f}"  # Format the total with two decimal places and currency symbol
 
 
 @app.route('/requisitions/<int:id>', methods=['GET'])
