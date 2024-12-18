@@ -527,25 +527,25 @@ def get_requisitions():
 def get_requisition(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     try:
         # Fetch the requisition
         cur.execute("SELECT * FROM requisitions WHERE id = %s", (id,))
         requisition = cur.fetchone()
-        
+
         if requisition:
             # Fetch associated items
             cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (id,))
             items = cur.fetchall()
-            
+
             # Calculate total price from the items
             total = sum(item['quantity'] * item['price'] for item in items)
-            
+
             # Include items and total in the response
             response = {
                 "requisition": requisition,
                 "items": items,
-                "total": total  
+                "total": total
             }
             return jsonify(response), 200
         else:
@@ -555,6 +555,7 @@ def get_requisition(id):
     finally:
         cur.close()
         conn.close()
+
 
 @app.route('/get_current_requisition_id', methods=['GET'])
 def get_current_requisition_id():
