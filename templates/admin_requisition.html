@@ -106,6 +106,7 @@
                 <div class="form-group requisition-items-group">
                     <strong>Items Requested:</strong>
                     <div class="requisition-items-scrollable">
+                        <button type="button" class="btn-add-item" onclick="addItem()">Add Item</button>
                         <table id="items-table" class="requisition-items-table">
                             <thead>
                                 <tr>
@@ -127,19 +128,19 @@
                             </tbody>
                         </table>
                     </div>
-                    <button type="button" class="btn-add-item" onclick="addItem()">Add Item</button>
                 </div>
 
                 <!-- Total Price Section -->
+                <div class="form-action requisition-action-buttons">
+                    <button type="submit" class="btn-submit requisition-submit-button">Submit Requisition</button>
+                </div>
+                
                 <div class="form-group requisition-total-price-group">
                     <strong for="total-price">Total Price:</strong>
                     <input type="text" id="total-price" name="total-price" class="requisition-total-price" disabled>
                 </div>
 
                 <!-- Action Buttons Section -->
-                <div class="form-action requisition-action-buttons">
-                    <button type="submit" class="btn-submit requisition-submit-button">Submit Requisition</button>
-                </div>
             </form>
         </div>
     </div>
