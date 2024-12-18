@@ -447,6 +447,7 @@ def user_requisition():
     date = data['date']
     purpose = data['purpose']
     company_name = data['company_name']  # Using company_name from dropdown
+    requested_by = data['requested_by']  # New field for who requested
     items = data['items']  # Items come as a list of dictionaries
     attachments = data.get('attachments', [])  # Attachments if present in the request
 
@@ -456,8 +457,8 @@ def user_requisition():
     try:
         # Step 1: Insert requisition details into the requisitions table and get the generated requisition_id
         cur.execute(
-            "INSERT INTO requisitions (date, purpose, company_name) VALUES (%s, %s, %s) RETURNING id",
-            (date, purpose, company_name)
+            "INSERT INTO requisitions (date, purpose, company_name, requested_by) VALUES (%s, %s, %s, %s) RETURNING id",
+            (date, purpose, company_name, requested_by)
         )
         requisition_id = cur.fetchone()[0]  # Get the generated requisition_id
 
@@ -505,12 +506,13 @@ def user_requisition():
 
 
 
+
 @app.route('/requisition', methods=['GET'])
 def get_requisitions():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-        SELECT r.id, r.date, r.purpose, r.company_name 
+        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by 
         FROM requisitions r
     """)
     requisitions = cur.fetchall()
@@ -518,6 +520,7 @@ def get_requisitions():
     conn.close()
 
     return jsonify(requisitions)  # Return the requisition data as JSON
+
 
 
 @app.route('/requisitions/<int:id>', methods=['GET'])

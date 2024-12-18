@@ -1,12 +1,11 @@
-let currentRequisitionId = 1001; // Starting ID (modify as needed)
 
-// Fetch Requisition Data from the server
+// Fetch requisition data from the server
 async function fetchRequisition() {
     try {
-        const response = await fetch('/requisition');  // Fixed endpoint path
+        const response = await fetch('/requisitions');
         if (!response.ok) throw new Error('Failed to fetch requisitions');
         const data = await response.json();
-        renderRequisition(data);  // Adjusted to use 'data' directly, since it returns an array
+        renderRequisition(data);
     } catch (error) {
         Swal.fire('Error', error.message, 'error');
     }
@@ -18,9 +17,12 @@ function renderRequisition(requisitions) {
     requisitionList.innerHTML = requisitions.map(requisition => `
         <tr>
             <td>${requisition.id}</td>
+            <td>${requisition.date}</td>
             <td>${requisition.purpose}</td>
-            <td>${requisition.company_name}</td> <!-- Changed from billing -->
+            <td>${requisition.company_name}</td>
+            <td>${requisition.requested_by}</td>
             <td>${requisition.total}</td>
+            <td>${requisition.status}</td>
             <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
         </tr>
     `).join('');
@@ -28,37 +30,33 @@ function renderRequisition(requisitions) {
 
 
 
-// Function to handle form submission and send requisition data with attachments to Flask
+
 async function saveRequisition(event) {
     event.preventDefault();  // Prevent the default form submission behavior
     
     const form = document.getElementById('requisition-form');
     const requisitionId = document.getElementById('requisition-id').value;  // Get requisition ID
     
-    // Create FormData object for both requisition and attachments
-    let formData = new FormData();
-    formData.append('requisition_id', requisitionId);  // Append requisition ID to FormData
-    
     // Collect requisition data from form fields
     const requisitionData = {
         date: form.date.value,
         purpose: form.purpose.value,
         company_name: form.company_name.value,
+        requested_by: form.requested_by.value, // Include requested_by field
         items: getItemsFromForm(form)
     };
 
-    // Append requisition data to FormData (as JSON string)
-    formData.append('requisition_data', JSON.stringify(requisitionData));
-    
-    // Get all files selected for attachment
+    // Create FormData object for attachments
+    let formData = new FormData();
+    formData.append('requisition_id', requisitionId);  // Append requisition ID
+    formData.append('requisition_data', JSON.stringify(requisitionData)); // Append requisition data
+
     const files = document.getElementById('attachments').files;
-    
-    // Append each file to the FormData object
     for (let i = 0; i < files.length; i++) {
         formData.append('attachments', files[i]);
     }
-    
-    // Step 1: First save the requisition and items in the backend
+
+    // Perform the API requests as described in your code
     try {
         const requisitionResponse = await fetch('/requisition', {
             method: 'POST',
@@ -69,7 +67,6 @@ async function saveRequisition(event) {
         const requisitionDataResponse = await requisitionResponse.json();
 
         if (requisitionResponse.ok && requisitionDataResponse.requisition_id) {
-            // Step 2: Save attachments only after requisition is saved
             const attachmentResponse = await fetch('/upload_attachments', {
                 method: 'POST',
                 body: formData
@@ -91,7 +88,6 @@ async function saveRequisition(event) {
         } else {
             throw new Error('Failed to save requisition');
         }
-
     } catch (error) {
         Swal.fire({
             title: 'Error!',
@@ -101,6 +97,7 @@ async function saveRequisition(event) {
         });
     }
 }
+
 
 
 
@@ -136,12 +133,10 @@ function getItemsFromForm(form) {
     })).filter(item => item.name); // Filter out items with empty names
 }
 
-// Fetch and view requisition details
 function viewDetails(requisitionId) {
     fetch(`/requisitions/${requisitionId}`)
         .then(response => {
             if (!response.ok) {
-                console.error('Network response was not ok', response);
                 throw new Error('Failed to fetch requisition details');
             }
             return response.json();
@@ -157,6 +152,7 @@ function viewDetails(requisitionId) {
                         <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
                         <p><strong>Company Name:</strong> ${data.requisition.company_name}</p>
                     </div>
+                    <p><strong>Requested By:</strong> ${data.requisition.requested_by}</p>
                     <p><strong>Total:</strong> ₱${data.total}</p>
                 </div>
                 <div class="details-group">
@@ -169,13 +165,9 @@ function viewDetails(requisitionId) {
             openDetailsModal();
         })
         .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
             Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
         });
 }
-
-
-
 
 
 
