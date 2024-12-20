@@ -432,7 +432,8 @@ def admin_requisition():
     # Fetch requisitions with their associated total from requisition_items
     cur.execute("""
         SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by,
-               COALESCE(SUM(ri.total), 0) AS total
+               COALESCE(SUM(ri.total), 0) AS total,
+               r.status
         FROM requisitions r
         LEFT JOIN requisition_items ri ON r.id = ri.requisition_id
         GROUP BY r.id
@@ -514,7 +515,6 @@ def user_requisition():
 
 
 
-
 @app.route('/requisition', methods=['GET'])
 def get_requisitions():
     conn = get_db_connection()
@@ -535,11 +535,14 @@ def get_requisitions():
 
     return render_template('requisition_list.html', requisitions=requisitions)
 
+
+
 def format_currency(amount):
     return f"₱{amount:,.2f}"  # Format the total with two decimal places and currency symbol
 
 
-@app.route('/requisitions/<int:id>', methods=['GET'])
+# to show view details
+@app.route('/requisitions_view_details/<int:id>', methods=['GET'])
 def get_requisition(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -605,6 +608,72 @@ def get_current_requisition_id():
         return jsonify({"message": str(e)}), 500
 
 
+# to show requisition from signatory
+@app.route('/get_requisitions', methods=['GET'])
+def get_signatory_requisitions():
+    status = request.args.get('status', 'all')  # Default to 'all' if no status is passed
+    
+    # Construct the query based on the status
+    query = """
+        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.status, 
+               ri.name, ri.quantity, ri.price, ri.total, a.file_name, a.file_path
+        FROM requisitions r
+        LEFT JOIN requisition_items ri ON r.id = ri.requisition_id
+        LEFT JOIN attachments a ON r.id = a.requisition_id
+    """
+    
+    if status != 'all':
+        query += f" WHERE r.status = %s"
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    if status == 'all':
+        cur.execute(query)
+    else:
+        cur.execute(query, (status,))
+    
+    requisitions = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    requisition_dict = {}
+    
+    # Iterate over the result set and group by requisition ID
+    for req in requisitions:
+        req_id = req[0]  # Requisition ID
+        if req_id not in requisition_dict:
+            requisition_dict[req_id] = {
+                "id": req_id,
+                "date": req[1],
+                "purpose": req[2],
+                "company_name": req[3],
+                "requested_by": req[4],
+                "status": req[5],
+                "items": [],
+                "attachments": []
+            }
+        
+        # Add item to the items list if available
+        if req[6]:  # Check if there is an item (name is not None)
+            requisition_dict[req_id]["items"].append({
+                "name": req[6],
+                "quantity": req[7],
+                "price": req[8],
+                "total": req[9]
+            })
+        
+        # Add attachment to the attachments list if available
+        if req[10]:  # Check if there is an attachment (file_name is not None)
+            requisition_dict[req_id]["attachments"].append({
+                "file_name": req[10],
+                "file_path": req[11]
+            })
+    
+    # Convert the dictionary to a list for JSON response
+    requisition_list = list(requisition_dict.values())
+    
+    return jsonify(requisition_list)
 
 
 @app.route('/inventory')

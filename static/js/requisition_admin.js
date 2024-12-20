@@ -135,7 +135,7 @@ function getItemsFromForm(form) {
 }
 
 function viewDetails(requisitionId) {
-    fetch(`/requisitions/${requisitionId}`)
+    fetch(`/requisitions_view_details/${requisitionId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch requisition details');
