@@ -66,15 +66,18 @@ CREATE TABLE supplier_items (
 );
 
 -- Table for requisitions
-CREATE TABLE requisitions (
+CREATE TABLE requisitions ( 
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     purpose VARCHAR(255) NOT NULL,
-    company_name VARCHAR(255) NOT NULL, -- Replacing billing with company_name if applicable
+    company_name VARCHAR(255) NOT NULL,
+    requested_by VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'Pending',
     signatory1_approved BOOLEAN DEFAULT FALSE,
     signatory2_approved BOOLEAN DEFAULT FALSE,
     signatory3_approved BOOLEAN DEFAULT FALSE
 );
+
 
 CREATE TABLE requisition_items (
     id SERIAL PRIMARY KEY,
@@ -107,12 +110,13 @@ REFERENCES requisitions(id);
 CREATE TABLE medicine_requests (
     medicine_request_id SERIAL PRIMARY KEY,
     request_status VARCHAR(50) NOT NULL,
-    medicine_id INT NOT NULL,
+    medicine_name INT NOT NULL,
     quantity INT NOT NULL,
     request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     approved_by VARCHAR(100),
     approval_date TIMESTAMP
 );
+
 
 -- Insert sample data
 INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
@@ -124,7 +128,6 @@ VALUES
 
 
 --
-select * from medicines
 CREATE TABLE medicines (
     medicine_id SERIAL PRIMARY KEY,         -- Unique ID for each medicine
     sku VARCHAR(50) UNIQUE NOT NULL,        -- Stock Keeping Unit for tracking
@@ -142,6 +145,8 @@ CREATE TABLE medicines (
     expiration_date DATE,                   -- Expiry date
     lot_position VARCHAR(50)                -- Shelf or storage location (e.g., A1, B2)
 );
+
+select * from medicines
 
 -- Trigger function to automatically update date 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -206,7 +211,5 @@ CREATE TABLE medicine_bought (
     FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id) ON DELETE CASCADE
 );
 
-select * from pharmacy_customers;
+select * from pharmacy_c    ustomers;
 select * from medicine_bought;
-drop table pharmacy_customers;
-drop table medicine_bought;

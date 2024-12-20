@@ -74,6 +74,7 @@ async function saveRequisition(event) {
 
             const attachmentData = await attachmentResponse.json();
             if (attachmentData.message === "Attachments uploaded successfully!") {
+                closeModal();
                 Swal.fire({
                     title: 'Success!',
                     text: 'Requisition and attachments uploaded successfully!',
@@ -156,6 +157,17 @@ function viewDetails(requisitionId) {
                     <p><strong>Total:</strong> ₱${data.total}</p>
                 </div>
                 <div class="details-group">
+                    <h3>Attachments:</h3>
+                    ${data.attachments.length > 0 ? 
+                        `<ul>
+                            ${data.attachments.map(attachment => 
+                                `<li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>`
+                            ).join('')}
+                        </ul>`
+                        : '<p>No attachments found.</p>'
+                    }
+                </div>
+                <div class="details-group">
                     <h3>Items Requested:</h3>
                     <ul>
                         ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
@@ -168,6 +180,7 @@ function viewDetails(requisitionId) {
             Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
         });
 }
+
 
 
 

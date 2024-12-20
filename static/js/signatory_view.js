@@ -196,68 +196,77 @@ function rejectRequisition(reqId) {
     }
 }
 
-// Function to view requisition details
-function viewDetails(reqId) {
-    const req = requisitions.find(r => r.id === reqId);
-    if (req) {
-        // Create items table HTML
-        const itemsTable = `
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Item Name</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Quantity</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Price (₱)</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Total (₱)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${req.items.map(item => `
+function viewDetails(requisitionId) {
+    // Fetch requisition details from the server
+    fetch(`/requisitions/${requisitionId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch requisition details');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Create items table HTML
+            const itemsTable = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
                         <tr>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.name}</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.quantity}</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.price.toFixed(2)}</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.total.toFixed(2)}</td>
+                            <th style="border: 1px solid #ccc; padding: 8px;">Item Name</th>
+                            <th style="border: 1px solid #ccc; padding: 8px;">Quantity</th>
+                            <th style="border: 1px solid #ccc; padding: 8px;">Price (₱)</th>
+                            <th style="border: 1px solid #ccc; padding: 8px;">Total (₱)</th>
                         </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+                    </thead>
+                    <tbody>
+                        ${data.items.map(item => `
+                            <tr>
+                                <td style="border: 1px solid #ccc; padding: 8px;">${item.name}</td>
+                                <td style="border: 1px solid #ccc; padding: 8px;">${item.quantity}</td>
+                                <td style="border: 1px solid #ccc; padding: 8px;">${item.price.toFixed(2)}</td>
+                                <td style="border: 1px solid #ccc; padding: 8px;">${item.total.toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
 
-        // Create attachments list HTML
-        const attachmentsList = `
-            <ul>
-                ${req.attachments.map(att => `<li><a id="attachment-link" href="#">${att}</a></li>`).join('')}
-            </ul>
-        `;
+            // Create attachments list HTML
+            const attachmentsList = data.attachments.length > 0
+                ? `<ul>
+                        ${data.attachments.map(attachment => `
+                            <li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>
+                        `).join('')}
+                   </ul>`
+                : '<p>No attachments found.</p>';
 
-        // Structure the requisition details as per the required format
-        const detailsContent = document.getElementById('details-content');
-        detailsContent.innerHTML = `
-            <div style="display: flex; justify-content: space-between;">
-                <div>
-                    <h3>Requisition ID: ${req.id}</h3>
-                    <p><strong>Name:</strong> ${req.requester.name}</p>
-                    <p><strong>Number:</strong> ${req.requester.number}</p>
+            // Populate requisition details in the modal
+            document.getElementById('details-content').innerHTML = `
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <h3>Requisition No.: ${data.requisition.id}</h3>
+                        <p><strong>Name:</strong> ${data.requisition.requested_by}</p>
+                        <p><strong>Date Requested:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                        <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
+                        <p><strong>Company Name:</strong> ${data.requisition.company_name}</p>
+                        <p><strong>Total (₱):</strong> ${data.total.toFixed(2)}</p>
+                    </div>
                 </div>
-                <div>
-                    <p><strong>Role:</strong> ${req.requester.role}</p>
-                    <p><strong>Date Requested:</strong> ${req.date}</p>
-                    <p><strong>Email:</strong> ${req.requester.email}</p>
-                </div>
-            </div>
-            <hr>
-            <h4>Items:</h4>
-            ${itemsTable}
-            <p><strong>Total (₱):</strong> ${req.total.toFixed(2)}</p>
-            <h4>Billing:</h4>
-            <p>${req.billing}</p>
-            <h4>Attachments:</h4>
-            ${attachmentsList}
-        `;
-        document.getElementById('details-modal').style.display = 'block';
-    }
+                <hr>
+                <h4>Items:</h4>
+                ${itemsTable}
+                <h4>Attachments:</h4>
+                ${attachmentsList}
+            `;
+            // Display the modal
+            document.getElementById('details-modal').style.display = 'block';
+        })
+        .catch(error => {
+            Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
+        });
 }
+
 
 
 // Function to close details modal

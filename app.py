@@ -428,8 +428,15 @@ def delete_supplier_item(item_name):
 def admin_requisition():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    # Fetch requisitions and suppliers
-    cur.execute("SELECT * FROM requisitions")
+    
+    # Fetch requisitions with their associated total from requisition_items
+    cur.execute("""
+        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by,
+               COALESCE(SUM(ri.total), 0) AS total
+        FROM requisitions r
+        LEFT JOIN requisition_items ri ON r.id = ri.requisition_id
+        GROUP BY r.id
+    """)
     requisitions = cur.fetchall()
 
     # Fetch suppliers for company_name dropdown
@@ -440,6 +447,7 @@ def admin_requisition():
     conn.close()
     
     return render_template('admin_requisition.html', requisitions=requisitions, suppliers=suppliers)
+
 
 @app.route('/requisition', methods=['POST'])
 def user_requisition():
@@ -516,7 +524,7 @@ def get_requisitions():
         FROM requisitions r
     """)
     requisitions = cur.fetchall()
-
+    
     # Format the total as currency in the backend before rendering the template
     for requisition in requisitions:
         requisition['total'] = format_currency(requisition['total'])
@@ -546,14 +554,19 @@ def get_requisition(id):
             cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (id,))
             items = cur.fetchall()
 
+            # Fetch associated attachments
+            cur.execute("SELECT file_name, file_path FROM attachments WHERE requisition_id = %s", (id,))
+            attachments = cur.fetchall()
+
             # Calculate total price from the items
             total = sum(item['quantity'] * item['price'] for item in items)
 
-            # Include items and total in the response
+            # Include items, total, and attachments in the response
             response = {
                 "requisition": requisition,
                 "items": items,
-                "total": total
+                "total": total,
+                "attachments": attachments  # Add the attachments here
             }
             return jsonify(response), 200
         else:
@@ -563,6 +576,7 @@ def get_requisition(id):
     finally:
         cur.close()
         conn.close()
+
 
 
 @app.route('/get_current_requisition_id', methods=['GET'])
