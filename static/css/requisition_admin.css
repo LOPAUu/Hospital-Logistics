@@ -247,6 +247,7 @@ table td button i {
     position: relative;
     max-height: 834px; /* Set max height for the modal */
     overflow: hidden; /* Prevent scrolling for the modal overall */
+    z-index: 100;
 }
 
 /* Scrollable Items Section */
