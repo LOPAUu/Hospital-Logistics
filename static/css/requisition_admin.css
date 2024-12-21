@@ -99,7 +99,8 @@ table td button i {
 
 .btn-submit {
     background-color: #4CAF50;
-    width: 100%;
+    width: 30%;
+    margin-right: 70%;
 }
 
 .btn-submit:hover {
@@ -343,6 +344,14 @@ table td button i {
     transition: border-color 0.2s;
 }
 
+.requisition-total-price-group {
+    width: 28%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-left: 570px;
+}
+
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
@@ -388,7 +397,7 @@ table td button i {
 }
 
 /* Buttons */
-.btn-add-item,
+
 .btn-remove-item,
 .requisition-submit-button {
     background-color: #007bff;
@@ -400,6 +409,19 @@ table td button i {
     font-size: 0.9rem;
     transition: background-color 0.3s ease;
 }
+
+.btn-add-item {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-left: 670px;
+}
+
 
 .btn-add-item:hover,
 .btn-remove-item:hover,
@@ -427,6 +449,7 @@ table td button i {
 .requisition-action-buttons {
     text-align: right;
     margin-top: 20px;
+    margin-bottom: -80px;
 }
 
 .requisition-action-buttons .btn-submit {

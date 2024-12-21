@@ -130,7 +130,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
 .modal-evaluate {
     background-color: white;
     border-radius: 8px;
-    max-width: 80%;
+    max-width: 50%;
     margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
@@ -164,6 +164,11 @@ label { display: block; margin-bottom: 5px; font-size:  16px; }
     margin-bottom: 5px;
 }
 
+input[type=text],
+input[type=date],
+input[type=number] {
+    font-size: 11pt;
+}
 
 .small-input { width: 150px; }
 .small-select { width: 150px; }

@@ -581,16 +581,11 @@ function addItemRow(itemName, itemQuantity) {
         <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
         <td><input type="date" class="expiration-input" /></td>
         <td>
-            <button class="deleteRowBtn">Delete</button>
             <button class="addSkuBtn">Add SKU</button>
         </td>
     `;
     document.getElementById('skuTableBody').appendChild(row);
 
-    // Add event listener for the delete button
-    row.querySelector('.deleteRowBtn').addEventListener('click', () => {
-        row.remove();
-    });
 
     // Add event listener for the add SKU button
     row.querySelector('.addSkuBtn').addEventListener('click', () => {

@@ -2,3 +2,90 @@
     background-color: #f3c300; 
     color: #003366; 
 }
+
+.container-dashboard {
+    max-width: 95%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 30px;
+    gap: 20px;
+    margin-top: 130px;
+}
+
+.card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+    margin-top: 0;
+    font-size: 1.25em;
+    margin-bottom: 20px;
+}
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.overview-grid .overview-item {
+    text-align: center;
+    padding: 10px;
+    background-color: #f1f3f5;
+    border-radius: 8px;
+}
+
+.overview-grid .overview-item span:first-child {
+    display: block;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+
+.top-selling h3, .low-quantity h3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0;
+    font-size: 1.25em;
+}
+
+.top-selling table, .low-quantity ul {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table, th, td {
+    border: 1px solid #dee2e6;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+
+
+.low-quantity ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.low-quantity li {
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.low-quantity li span {
+    margin-left: 10px;
+}
+
+.low-quantity li span.low {
+    color: #dc3545;
+    font-weight: bold;
+}
