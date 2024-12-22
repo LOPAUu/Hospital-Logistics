@@ -12,6 +12,12 @@ function filterByStatus(status) {
             const requisitionCards = document.getElementById('requisition-cards');
             requisitionCards.innerHTML = '';  // Clear current cards
             
+            // Check if requisitions are returned
+            if (data.length === 0) {
+                requisitionCards.innerHTML = '<p>No requisitions found for this status.</p>';
+                return;
+            }
+            
             // Display requisition cards
             data.forEach(requisition => {
                 const card = document.createElement('div');
@@ -23,48 +29,114 @@ function filterByStatus(status) {
                     <p><strong>Requested By:</strong> ${requisition.requested_by}</p>
                     <p><strong>Status:</strong> ${requisition.status}</p>
                     <button onclick="viewDetails(${requisition.id})">View Details</button>
+                    <button onclick="openActionModal(${requisition.id})">Take Action</button>
                 `;
                 requisitionCards.appendChild(card);
             });
         })
-        .catch(error => console.error('Error fetching requisitions:', error));
+        .catch(error => {
+            console.error('Error fetching requisitions:', error);
+            alert('An error occurred while fetching requisitions.');
+        });
 }
 
-// Function to display requisition details in a modal
+
 function viewDetails(requisitionId) {
-    fetch(`/get_requisition_details?id=${requisitionId}`)
+    console.log(`viewDetails called with ID: ${requisitionId}`);
+    
+    // Show the modal
+    document.getElementById('view-details-modal').style.display = 'block';
+    
+    // Fetch requisition details from the Flask route
+    fetch(`/get_requisition_details_modal?id=${requisitionId}`)
         .then(response => response.json())
         .then(data => {
-            const modalContent = document.getElementById('details-content');
+            console.log('Data received:', data);
+            if (data.error) {
+                console.error('Error:', data.error);
+                alert('An error occurred while fetching requisition details.');
+                return;
+            }
+
+            // Get the modal content element
+            const modalContent = document.getElementById('view-details-content'); 
+
+            // Update the modal content with the fetched requisition details
             modalContent.innerHTML = `
-                <h3>Requisition #${data.id}</h3>
-                <p><strong>Date:</strong> ${data.date}</p>
-                <p><strong>Purpose:</strong> ${data.purpose}</p>
-                <p><strong>Company:</strong> ${data.company_name}</p>
-                <p><strong>Requested By:</strong> ${data.requested_by}</p>
-                <p><strong>Status:</strong> ${data.status}</p>
+                <h3>Requisition #${data.id || 'N/A'}</h3>
+                <p><strong>Date:</strong> ${data.date ? new Date(data.date).toLocaleDateString() : 'N/A'}</p>
+                <p><strong>Purpose:</strong> ${data.purpose || 'N/A'}</p>
+                <p><strong>Company:</strong> ${data.company_name || 'N/A'}</p>
+                <p><strong>Requested By:</strong> ${data.requested_by || 'N/A'}</p>
+                <p><strong>Status:</strong> ${data.status || 'N/A'}</p>
                 <h4>Items</h4>
                 <ul>
-                    ${data.items.map(item => `
-                        <li>${item.name} - ${item.quantity} x ${item.price} = ${item.total}</li>
-                    `).join('')}
+                    ${data.items && data.items.length > 0 ? 
+                        data.items.map(item => `
+                            <li>${item.name} - ${item.quantity} x ${item.price} = ${item.total}</li>
+                        `).join('') : '<li>No items found</li>'
+                    }
                 </ul>
                 <h4>Attachments</h4>
                 <ul>
-                    ${data.attachments.map(attachment => `
-                        <li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>
-                    `).join('')}
+                    ${data.attachments && data.attachments.length > 0 ? 
+                        data.attachments.map(attachment => `
+                            <li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>
+                        `).join('') : '<li>No attachments found</li>'
+                    }
                 </ul>
             `;
-            document.getElementById('details-modal').style.display = 'block';
         })
-        .catch(error => console.error('Error fetching requisition details:', error));
+        .catch(error => {
+            console.error('Error fetching requisition details:', error);
+            alert('An error occurred whil.');
+        });
 }
 
-// Function to close the modal
-function closeDetailsModal() {
-    document.getElementById('details-modal').style.display = 'none';
+
+
+
+
+function closeViewDetailsModal() {
+    document.getElementById('view-details-modal').style.display = 'none';
 }
 
 // Initial load of all requisitions
 filterByStatus('all');
+
+// Function to open the action modal
+function openActionModal(requisitionId) {
+    const actionContent = document.getElementById('action-content');
+    actionContent.innerHTML = `
+        <p>Perform actions for Requisition #${requisitionId}</p>
+        <button onclick="approveRequisition(${requisitionId})">Approve</button>
+        <button onclick="rejectRequisition(${requisitionId})">Reject</button>
+    `;
+    document.getElementById('action-modal').style.display = 'flex';
+}
+
+// Function to close the action modal
+function closeActionModal() {
+    document.getElementById('action-modal').style.display = 'none';
+}
+
+// Example functions for Approve and Reject actions
+function approveRequisition(requisitionId) {
+    fetch(`/approve_requisition?id=${requisitionId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // Display success or error message
+            closeActionModal(); // Close modal after action
+        })
+        .catch(error => console.error('Error approving requisition:', error));
+}
+
+function rejectRequisition(requisitionId) {
+    fetch(`/reject_requisition?id=${requisitionId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // Display success or error message
+            closeActionModal(); // Close modal after action
+        })
+        .catch(error => console.error('Error rejecting requisition:', error));
+}

@@ -50,16 +50,33 @@
             <!-- Requisition cards will be populated here -->
         </div>
 
-        <!-- Modal for displaying requisition details -->
-        <div id="details-modal" class="modal">
+
+
+        <!-- Modal for displaying additional details (new modal for View Details button) -->
+        <div id="view-details-modal" class="modal">
             <div class="modal-content">
-                <span class="close-button" onclick="closeDetailsModal()">&times;</span>
-                <h2>Requisition Details</h2>
-                <div id="details-content">
-                    <!-- Details will be populated here -->
+                <span class="close-button" onclick="closeViewDetailsModal()">&times;</span>
+                <h2>View Requisition Details</h2>
+                <div id="view-details-content">
+                    <!-- The content will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for additional actions -->
+        <div id="action-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeActionModal()">&times;</span>
+                <h2>Perform an Action</h2>
+                <div id="action-content">
+                    <!-- The content will be populated dynamically -->
+                    <p>Would you like to approve or reject this requisition?</p>
+                    <button onclick="approveRequisition()">Approve</button>
+                    <button onclick="rejectRequisition()">Reject</button>
                 </div>
             </div>
         </div>
     </div>
+    
     <script src="{{ url_for('static', filename='js/signatory_view.js') }}"></script>
 {% endblock %}

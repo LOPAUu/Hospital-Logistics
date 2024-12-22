@@ -676,6 +676,73 @@ def get_signatory_requisitions():
     return jsonify(requisition_list)
 
 
+
+@app.route('/get_requisition_details_modal', methods=['GET'])
+def get_requisition_details():
+    requisition_id = request.args.get('id')  # Get requisition ID from query parameters
+    
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        # Query to get the requisition details
+        cursor.execute("""
+            SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.status
+            FROM requisitions r
+            WHERE r.id = %s
+        """, (requisition_id,))
+        
+        requisition = cursor.fetchone()
+
+        if not requisition:
+            return jsonify({'error': 'Requisition not found'}), 404
+        
+        # Query to get items associated with the requisition
+        cursor.execute("""
+            SELECT name, quantity, price, total
+            FROM requisition_items
+            WHERE requisition_id = %s
+        """, (requisition_id,))
+        
+        items = cursor.fetchall()
+
+        # Query to get attachments associated with the requisition
+        cursor.execute("""
+            SELECT file_name, file_path
+            FROM attachments
+            WHERE requisition_id = %s
+        """, (requisition_id,))
+        
+        attachments = cursor.fetchall()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        # Prepare the response data
+        response_data = {
+            'id': requisition['id'],
+            'date': requisition['date'],
+            'purpose': requisition['purpose'],
+            'company_name': requisition['company_name'],
+            'requested_by': requisition['requested_by'],
+            'status': requisition['status'],
+            'items': items,
+            'attachments': attachments
+        }
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"Error occurred: {e}")  # Print the error to the Flask console
+        return jsonify({'error': 'An error occurred while fetching requisition details.'}), 500
+
+    
+
+
 @app.route('/inventory')
 def inventory():
     connection = get_db_connection()
