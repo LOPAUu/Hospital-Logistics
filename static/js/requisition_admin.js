@@ -23,10 +23,15 @@ function renderRequisition(requisitions) {
             <td>${requisition.requested_by}</td>
             <td>${requisition.total}</td>
             <td>${requisition.status}</td>
-            <td><button onclick="viewDetails(${requisition.id})">View Details</button></td>
+            <td>
+                <button onclick="viewDetails(${requisition.id})">View Details</button>
+                <button onclick="approveRequisition(${requisition.id})">Approve</button>
+                <button onclick="rejectRequisition(${requisition.id})">Reject</button>
+            </td>
         </tr>
     `).join('');
 }
+
 
 
 

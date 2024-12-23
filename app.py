@@ -676,7 +676,7 @@ def get_signatory_requisitions():
     return jsonify(requisition_list)
 
 
-
+# to show the details from signatory
 @app.route('/get_requisition_details_modal', methods=['GET'])
 def get_requisition_details():
     requisition_id = request.args.get('id')  # Get requisition ID from query parameters
@@ -741,6 +741,57 @@ def get_requisition_details():
         return jsonify({'error': 'An error occurred while fetching requisition details.'}), 500
 
     
+@app.route('/approve_requisition', methods=['POST'])
+def approve_requisition():
+    requisition_id = request.args.get('id')
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update requisition status to 'Approved'
+        cur.execute("""
+            UPDATE requisitions
+            SET status = 'Approved'
+            WHERE id = %s
+        """, (requisition_id,))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'message': f'Requisition #{requisition_id} approved successfully!'})
+    except Exception as e:
+        print(f"Error approving requisition: {e}")
+        return jsonify({'error': 'An error occurred while approving the requisition.'}), 500
+
+
+@app.route('/reject_requisition', methods=['POST'])
+def reject_requisition():
+    requisition_id = request.args.get('id')
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update requisition status to 'Rejected'
+        cur.execute("""
+            UPDATE requisitions
+            SET status = 'Rejected'
+            WHERE id = %s
+        """, (requisition_id,))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'message': f'Requisition #{requisition_id} rejected successfully!'})
+    except Exception as e:
+        print(f"Error rejecting requisition: {e}")
+        return jsonify({'error': 'An error occurred while rejecting the requisition.'}), 500
+
 
 
 @app.route('/inventory')
