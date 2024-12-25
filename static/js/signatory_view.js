@@ -101,8 +101,64 @@ function closeViewDetailsModal() {
     document.getElementById('view-details-modal').style.display = 'none';
 }
 
+// Function to filter requisitions by status
+function filterByStatus(status) {
+    // Highlight the active tab
+    const tabs = document.querySelectorAll('.tab__item a');
+    tabs.forEach(tab => tab.classList.remove('is-activated'));
+    const activeTab = document.querySelector(`a[href="#${status}"]`);
+    if (activeTab) {
+        activeTab.classList.add('is-activated');
+    }
+
+    // Fetch requisition data based on status
+    const requisitions = getRequisitionsByStatus(status);  // Simulate fetching data based on status
+
+    const requisitionCards = document.getElementById('requisition-cards');
+    requisitionCards.innerHTML = '';  // Clear current cards
+
+    // Check if requisitions are returned
+    if (requisitions.length === 0) {
+        requisitionCards.innerHTML = '<p>No requisitions found for this status.</p>';
+        return;
+    }
+
+    // Display requisition cards
+    requisitions.forEach(requisition => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.innerHTML = `
+            <h3>Requisition #${requisition.id}</h3>
+            <p><strong>Date:</strong> ${requisition.date}</p>
+            <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+            <p><strong>Requested By:</strong> ${requisition.requested_by}</p>
+            <p><strong>Status:</strong> ${requisition.status}</p>
+            <button onclick="viewDetails(${requisition.id})">View Details</button>
+            <button onclick="openActionModal(${requisition.id})">Take Action</button>
+        `;
+        requisitionCards.appendChild(card);
+    });
+}
+
+// Sample function to simulate fetching requisitions based on status
+function getRequisitionsByStatus(status) {
+    const allRequisitions = [
+        { id: 1, date: '2024-12-01', purpose: 'Office Supplies', requested_by: 'John Doe', status: 'pending' },
+        { id: 2, date: '2024-12-05', purpose: 'Medical Equipment', requested_by: 'Jane Smith', status: 'approved' },
+        { id: 3, date: '2024-12-07', purpose: 'Stationery', requested_by: 'Alice Brown', status: 'rejected' },
+        { id: 4, date: '2024-12-08', purpose: 'Computers', requested_by: 'Bob White', status: 'approved' },
+    ];
+
+    if (status === 'all') {
+        return allRequisitions;
+    } else {
+        return allRequisitions.filter(requisition => requisition.status === status);
+    }
+}
+
 // Initial load of all requisitions
 filterByStatus('all');
+
 
 // Function to open the action modal
 function openActionModal(requisitionId) {

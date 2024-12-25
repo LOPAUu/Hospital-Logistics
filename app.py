@@ -630,6 +630,7 @@ def get_signatory_requisitions():
     
     if status == 'all':
         cur.execute(query)
+        
     else:
         cur.execute(query, (status,))
     
