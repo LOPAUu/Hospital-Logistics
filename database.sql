@@ -16,6 +16,31 @@ VALUES ('pharmacy', 'pharmacy', 'Pharmacy');
 INSERT INTO users (username, password, user_type)
 VALUES ('admin', 'admin', 'Admin');
 
+
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,  -- Unique identifier for each role
+    role_name VARCHAR(50) NOT NULL UNIQUE  -- Role name (Admin, Manager, etc.)
+);
+
+INSERT INTO roles (role_name) VALUES
+('Admin'),
+('Pharmacy Manager'),
+('Inventory Clerk'),
+('Delivery Personnel');
+
+CREATE TABLE users (
+    staff_id SERIAL PRIMARY KEY,  -- Unique identifier for each user
+    username VARCHAR(50) NOT NULL,  -- Username for identification
+    role VARCHAR(50) NOT NULL,  -- User's role (Admin, etc.)
+    status VARCHAR(20) NOT NULL,  -- Active or Inactive status
+    email VARCHAR(100) NOT NULL,  -- Email address for communication
+    password VARCHAR(255) NOT NULL,  -- Hashed password (never store plain text passwords)
+    phone VARCHAR(15),  -- Optional: phone number for contact
+    emergency_contact VARCHAR(100),  -- Optional: emergency contact number
+    date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Record creation timestamp
+    FOREIGN KEY (role) REFERENCES roles(role_name)  -- Assuming you have a roles table
+);
+
 -- Table for suppliers with PostgreSQL timestamp handling
 CREATE TABLE suppliers (
     id SERIAL PRIMARY KEY,
@@ -55,11 +80,28 @@ CREATE TABLE requisition_items (
     total NUMERIC(10, 2) NOT NULL
 );
 
+ALTER TABLE requisitions
+ADD COLUMN supplier_id INT REFERENCES suppliers(id);
+
+CREATE TABLE attachments (
+    id SERIAL PRIMARY KEY,
+    requisition_id INTEGER NOT NULL REFERENCES requisitions(id) ON DELETE CASCADE,
+    file_name VARCHAR(255) NOT NULL,
+    file_path TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create 'attachments' tableALTER TABLE attachments
+ALTER TABLE attachments
+ADD CONSTRAINT fk_requisition_id
+FOREIGN KEY (requisition_id)
+REFERENCES requisitions(id);
+
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (
     medicine_request_id SERIAL PRIMARY KEY,
     request_status VARCHAR(50) NOT NULL,
-    medicine_id INT NOT NULL,
+    medicine_name INT NOT NULL,
     quantity INT NOT NULL,
     request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     approved_by VARCHAR(100),
@@ -67,7 +109,7 @@ CREATE TABLE medicine_requests (
 );
 
 -- Insert sample data
-INSERT INTO medicine_requests (request_status, medicine_id, quantity, request_date, approved_by, approval_date)
+INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
 VALUES 
     ('Pending', 101, 5, '2024-12-01 10:00:00', NULL, NULL),
     ('Approved', 102, 10, '2024-11-30 09:00:00', 'Dr. Smith', '2024-11-30 11:00:00'),
@@ -160,5 +202,3 @@ CREATE TABLE medicine_bought (
 
 select * from pharmacy_customers;
 select * from medicine_bought;
-drop table pharmacy_customers;
-drop table medicine_bought;
