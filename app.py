@@ -148,14 +148,14 @@ def user_role_management():
     cursor = conn.cursor()
     # Update query to include the 'status' column
     cursor.execute('''
-        SELECT staff.staff_id, users.username, users.email, users.status, roles.role_name 
+        SELECT staff.staff_id, staff.username, staff.email, staff.status, roles.role_name 
         FROM staff 
-        JOIN roles ON users.role_id = roles.id
+        JOIN roles ON staff.role_id = roles.id
     ''')
-    users = cursor.fetchall()
+    staff = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template('user_role_management.html', users=users)
+    return render_template('user_role_management.html', staff=staff)
 
 
 @app.route('/create_or_edit_user', methods=['GET', 'POST'])
