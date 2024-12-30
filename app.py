@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import psycopg2, requests, json
+from datetime import datetime
+from werkzeug.utils import secure_filename
+import time
+import os
 from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
@@ -13,6 +17,10 @@ app.config['POSTGRES_USER'] = 'lmsdb_user'  # Change to your PostgreSQL username
 app.config['POSTGRES_PASSWORD'] = '3LvON9SVyQNiM4YZ1ZwZTFi5sqxHjja7'  # Change to your PostgreSQL password
 app.config['POSTGRES_DB'] = 'lmsdb_ul3w_cy3t'  # Database name
 app.config['POSTGRES_PORT'] = '5432'  # Database name
+
+# Configure upload folder and allowed file types
+app.config['UPLOAD_FOLDER'] = 'static/requisition_files/uploads/'
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'xlsx'}
 
 def get_db_connection():
     return psycopg2.connect(
@@ -84,6 +92,56 @@ def close_db_connection(cursor, conn):
     cursor.close()
     conn.close()
 
+# Ensure the upload folder exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# Function to check allowed file extensions
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+@app.route('/upload_attachments', methods=['POST'])
+def upload_attachments():
+    try:
+        # Check if the 'attachments' field is in the request
+        if 'attachments' not in request.files:
+            return jsonify({"message": "No attachments found"}), 400
+        
+        files = request.files.getlist('attachments')  # Retrieve all files
+        
+        requisition_id = request.form.get('requisition_id')  # Requisition ID from the form
+        
+        if not requisition_id:
+            return jsonify({"message": "Requisition ID is required"}), 400
+        
+        # Iterate over the files and save each one
+        attachment_paths = []
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = str(int(time.time()))  # Use timestamp for unique filenames
+                file_path = f"{app.config['UPLOAD_FOLDER']}{timestamp}_{filename}"  # Full path including UPLOAD_FOLDER
+                
+                # Save the file (you can change the 'uploads' directory path as needed)
+                file.save(file_path)
+                
+                # Insert attachment data into the database
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute(
+                    "INSERT INTO attachments (requisition_id, file_name, file_path) VALUES (%s, %s, %s)",
+                    (requisition_id, filename, file_path)
+                )
+                conn.commit()
+                cur.close()
+                conn.close()
+                
+                attachment_paths.append(file_path)  # Save the file path for reference
+        
+        return jsonify({"message": "Attachments uploaded successfully!", "attachments": attachment_paths}), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+    
 @app.route('/user_role_management')
 def user_role_management():
     conn = get_db_connection()
@@ -153,7 +211,6 @@ def create_or_edit_user():
     return render_template('user_form.html', user=user, roles=roles)
 
 
-
 # Delete a user
 @app.route('/delete_user/<int:staff_id>', methods=['POST'])
 def delete_user(staff_id):
@@ -165,6 +222,7 @@ def delete_user(staff_id):
     conn.close()
     flash('User deleted successfully!', 'success')
     return redirect(url_for('user_role_management'))
+
 
 # Route to fetch all suppliers
 @app.route('/suppliers')
@@ -369,93 +427,148 @@ def delete_supplier_item(item_name):
 def admin_requisition():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM requisitions")
+    
+    # Fetch requisitions with their associated total from requisition_items
+    cur.execute("""
+        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by,
+               COALESCE(SUM(ri.total), 0) AS total,
+               r.status
+        FROM requisitions r
+        LEFT JOIN requisition_items ri ON r.id = ri.requisition_id
+        GROUP BY r.id
+    """)
     requisitions = cur.fetchall()
+
+    # Fetch suppliers for company_name dropdown
+    cur.execute("SELECT company_name FROM suppliers")
+    suppliers = cur.fetchall()
+
     cur.close()
     conn.close()
-    return render_template('admin_requisition.html', requisitions=requisitions)
     
-@app.route('/requisition', methods=['GET', 'POST'])
+    return render_template('admin_requisition.html', requisitions=requisitions, suppliers=suppliers)
+
+
+@app.route('/requisition', methods=['POST'])
 def user_requisition():
-    if request.method == 'POST':
-        date = request.form['date']
-        purpose = request.form['purpose']
-        billing = request.form['billing']
-        item_names = request.form.getlist('item-name[]')
-        item_quantities = request.form.getlist('item-quantity[]')
-        item_prices = request.form.getlist('item-price[]')
-        
-        conn = get_db_connection()
-        cur = conn.cursor()
+    data = request.get_json()  # Get JSON data from the request
+    date = data['date']
+    purpose = data['purpose']
+    company_name = data['company_name']  # Using company_name from dropdown
+    requested_by = data['requested_by']  # New field for who requested
+    items = data['items']  # Items come as a list of dictionaries
+    attachments = data.get('attachments', [])  # Attachments if present in the request
 
-        # Insert the requisition details
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Insert requisition details into the requisitions table and get the generated requisition_id
         cur.execute(
-            "INSERT INTO requisitions (date, purpose, billing) VALUES (%s, %s, %s) RETURNING id",
-            (date, purpose, billing)
+            "INSERT INTO requisitions (date, purpose, company_name, requested_by) VALUES (%s, %s, %s, %s) RETURNING id",
+            (date, purpose, company_name, requested_by)
         )
-        requisition_id = cur.fetchone()[0]  # Get the id of the newly inserted requisition
+        requisition_id = cur.fetchone()[0]  # Get the generated requisition_id
 
-        # Initialize total sum for the requisition
-        requisition_total = 0
+        # Commit after inserting the requisition to ensure the requisition_id is in the database
+        conn.commit()
 
-        # Insert the items associated with the requisition and calculate total for the requisition
-        for i in range(len(item_names)):
-            quantity = int(item_quantities[i])  # Convert quantity to int
-            price = float(item_prices[i])  # Convert price to float
-            total = quantity * price  # Calculate total for this item
+        # Step 2: Insert items associated with the requisition into the requisition_items table
+        for item in items:
+            quantity = item['quantity']
+            price = item['price']
+            total = item['total']
 
-            # Add item total to requisition total
-            requisition_total += total
-
-            # Insert the item into requisition_items table
             cur.execute(
-                "INSERT INTO requisition_items (requisition_id, name, quantity, price, total, status) VALUES (%s, %s, %s, %s, %s, %s)",
-                (requisition_id, item_names[i], quantity, price, total, 'pending')  # Assuming status is 'pending'
+                "INSERT INTO requisition_items (requisition_id, name, quantity, price, total) VALUES (%s, %s, %s, %s, %s)",
+                (requisition_id, item['name'], quantity, price, total)
             )
 
-        # Update the total for the requisition in requisitions table
-        cur.execute(
-            "UPDATE requisitions SET total = %s WHERE id = %s",
-            (requisition_total, requisition_id)
-        )
-
+        # Commit after inserting items to ensure everything is saved
         conn.commit()
+
+        # Step 3: Insert attachments related to the requisition into the attachments table
+        for file in attachments:
+            filename = file['filename']
+            file_path = file['path']
+
+            cur.execute(
+                "INSERT INTO attachments (requisition_id, file_name, file_path) VALUES (%s, %s, %s)",
+                (requisition_id, filename, file_path)
+            )
+
+        # Commit after inserting attachments to finalize the operation
+        conn.commit()
+
+        # Success response
+        return jsonify({"message": "Requisition, items, and attachments saved successfully!", "requisition_id": requisition_id}), 200
+
+    except Exception as e:
+        # Rollback in case of an error
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
         cur.close()
         conn.close()
-        return jsonify({"message": "Requisition saved successfully!"}), 201
 
-    # Handle the GET request for fetching all requisitions
+
+
+@app.route('/requisition', methods=['GET'])
+def get_requisitions():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM requisitions")
+    cur.execute("""
+        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.total
+        FROM requisitions r
+    """)
     requisitions = cur.fetchall()
+    
+    # Format the total as currency in the backend before rendering the template
+    for requisition in requisitions:
+        requisition['total'] = format_currency(requisition['total'])
+
+    # Close the database connection and cursor
     cur.close()
     conn.close()
-    return render_template('admin_requisition.html', requisitions=requisitions)
 
-@app.route('/requisitions/<int:id>', methods=['GET'])
+    return render_template('requisition_list.html', requisitions=requisitions)
+
+
+
+def format_currency(amount):
+    return f"₱{amount:,.2f}"  # Format the total with two decimal places and currency symbol
+
+
+# to show view details
+@app.route('/requisitions_view_details/<int:id>', methods=['GET'])
 def get_requisition(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     try:
         # Fetch the requisition
         cur.execute("SELECT * FROM requisitions WHERE id = %s", (id,))
         requisition = cur.fetchone()
-        
+
         if requisition:
             # Fetch associated items
             cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (id,))
             items = cur.fetchall()
-            
+
+            # Fetch associated attachments
+            cur.execute("SELECT file_name, file_path FROM attachments WHERE requisition_id = %s", (id,))
+            attachments = cur.fetchall()
+
             # Calculate total price from the items
             total = sum(item['quantity'] * item['price'] for item in items)
-            
-            # Include items and total in the response
+
+            # Include items, total, and attachments in the response
             response = {
                 "requisition": requisition,
                 "items": items,
-                "total": total  
+                "total": total,
+                "attachments": attachments  # Add the attachments here
             }
             return jsonify(response), 200
         else:
@@ -463,32 +576,222 @@ def get_requisition(id):
     except Exception as e:
         return jsonify({"message": str(e)}), 500
     finally:
-        # Ensure the connection is closed properly
         cur.close()
         conn.close()
-        
-@app.route('/save_total/<int:requisition_id>', methods=['POST'])
-def save_total(requisition_id):
+
+
+
+@app.route('/get_current_requisition_id', methods=['GET'])
+def get_current_requisition_id():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        # Query to get the highest current requisition ID
+        cur.execute("""
+            SELECT MAX(id) AS current_id FROM requisitions
+        """)
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        # If no requisitions exist, return 1001 as the starting ID
+        if result['current_id'] is None:
+            next_id = 1001
+        else:
+            next_id = result['current_id'] + 1  # Increment by 1 for the next ID
+
+        return jsonify({'next_requisition_id': next_id}), 200
+
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+
+# to show requisition from signatory
+@app.route('/get_requisitions', methods=['GET'])
+def get_signatory_requisitions():
+    status = request.args.get('status', 'all')  # Default to 'all' if no status is passed
+    
+    # Construct the query based on the status
+    query = """
+        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.status, 
+               ri.name, ri.quantity, ri.price, ri.total, a.file_name, a.file_path
+        FROM requisitions r
+        LEFT JOIN requisition_items ri ON r.id = ri.requisition_id
+        LEFT JOIN attachments a ON r.id = a.requisition_id
+    """
+    
+    if status != 'all':
+        query += f" WHERE r.status = %s"
+    
     conn = get_db_connection()
     cur = conn.cursor()
-
-    # Calculate the total for the given requisition ID by summing the item totals
-    cur.execute("SELECT requisition_items FROM requisition_items WHERE requisition_id = %s", (requisition_id,))
-    requisition_total = cur.fetchone()[0] or 0  # Default to 0 if no items found
-
-    # Insert or update the total in the 'total' table
-    cur.execute("""
-        INSERT INTO total (requisition_id, total_amount)
-        VALUES (%s, %s)
-        ON CONFLICT (requisition_id) DO UPDATE
-        SET total_amount = EXCLUDED.total_amount
-    """, (requisition_id, requisition_total))
-
-    conn.commit()
+    
+    if status == 'all':
+        cur.execute(query)
+        
+    else:
+        cur.execute(query, (status,))
+    
+    requisitions = cur.fetchall()
     cur.close()
     conn.close()
 
-    return jsonify({"message": "Total saved successfully!", "requisition_id": requisition_id, "total": requisition_total}), 200
+    requisition_dict = {}
+    
+    # Iterate over the result set and group by requisition ID
+    for req in requisitions:
+        req_id = req[0]  # Requisition ID
+        if req_id not in requisition_dict:
+            requisition_dict[req_id] = {
+                "id": req_id,
+                "date": req[1],
+                "purpose": req[2],
+                "company_name": req[3],
+                "requested_by": req[4],
+                "status": req[5],
+                "items": [],
+                "attachments": []
+            }
+        
+        # Add item to the items list if available
+        if req[6]:  # Check if there is an item (name is not None)
+            requisition_dict[req_id]["items"].append({
+                "name": req[6],
+                "quantity": req[7],
+                "price": req[8],
+                "total": req[9]
+            })
+        
+        # Add attachment to the attachments list if available
+        if req[10]:  # Check if there is an attachment (file_name is not None)
+            requisition_dict[req_id]["attachments"].append({
+                "file_name": req[10],
+                "file_path": req[11]
+            })
+    
+    # Convert the dictionary to a list for JSON response
+    requisition_list = list(requisition_dict.values())
+    
+    return jsonify(requisition_list)
+
+
+# to show the details from signatory
+@app.route('/get_requisition_details_modal', methods=['GET'])
+def get_requisition_details():
+    requisition_id = request.args.get('id')  # Get requisition ID from query parameters
+    
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        # Query to get the requisition details
+        cursor.execute("""
+            SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.status
+            FROM requisitions r
+            WHERE r.id = %s
+        """, (requisition_id,))
+        
+        requisition = cursor.fetchone()
+
+        if not requisition:
+            return jsonify({'error': 'Requisition not found'}), 404
+        
+        # Query to get items associated with the requisition
+        cursor.execute("""
+            SELECT name, quantity, price, total
+            FROM requisition_items
+            WHERE requisition_id = %s
+        """, (requisition_id,))
+        
+        items = cursor.fetchall()
+
+        # Query to get attachments associated with the requisition
+        cursor.execute("""
+            SELECT file_name, file_path
+            FROM attachments
+            WHERE requisition_id = %s
+        """, (requisition_id,))
+        
+        attachments = cursor.fetchall()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        # Prepare the response data
+        response_data = {
+            'id': requisition['id'],
+            'date': requisition['date'],
+            'purpose': requisition['purpose'],
+            'company_name': requisition['company_name'],
+            'requested_by': requisition['requested_by'],
+            'status': requisition['status'],
+            'items': items,
+            'attachments': attachments
+        }
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"Error occurred: {e}")  # Print the error to the Flask console
+        return jsonify({'error': 'An error occurred while fetching requisition details.'}), 500
+
+    
+@app.route('/approve_requisition', methods=['POST'])
+def approve_requisition():
+    requisition_id = request.args.get('id')
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update requisition status to 'Approved'
+        cur.execute("""
+            UPDATE requisitions
+            SET status = 'Approved'
+            WHERE id = %s
+        """, (requisition_id,))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'message': f'Requisition #{requisition_id} approved successfully!'})
+    except Exception as e:
+        print(f"Error approving requisition: {e}")
+        return jsonify({'error': 'An error occurred while approving the requisition.'}), 500
+
+
+@app.route('/reject_requisition', methods=['POST'])
+def reject_requisition():
+    requisition_id = request.args.get('id')
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update requisition status to 'Rejected'
+        cur.execute("""
+            UPDATE requisitions
+            SET status = 'Rejected'
+            WHERE id = %s
+        """, (requisition_id,))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'message': f'Requisition #{requisition_id} rejected successfully!'})
+    except Exception as e:
+        print(f"Error rejecting requisition: {e}")
+        return jsonify({'error': 'An error occurred while rejecting the requisition.'}), 500
+
 
 @app.route('/signatory_view')
 def signatory_view():

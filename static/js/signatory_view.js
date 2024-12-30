@@ -1,291 +1,198 @@
-// Sample data representing requisitions
-const requisitions = [
-    {
-        id: 1001,
-        date: "2024-09-23",
-        purpose: "Order More Vaccines",
-        total: 2775.00,
-        status: "Pending",
-        signatories: {
-            signatory1: { approved: null, name: "Maverick Ko" },
-            signatory2: { approved: null, name: "Rene Letegio" },
-            signatory3: { approved: null, name: "Paulo Sangreo" }
-        },
-        items: [
-            { name: "Vaccine A", quantity: 50, price: 25.50, total: 1275.00 },
-            { name: "Vaccine B", quantity: 100, price: 15.00, total: 1500.00 }
-        ],
-        billing: "Mercury Drugs collab",
-        attachments: ["vaccine-order.pdf", "invoice-1001.pdf"],
-        requester: {
-            name: "Maverick Ko",
-            number: "+639123456789",
-            email: "maverick@gmail.com",
-            role: "Nurse"
-        }
-    },
-    {
-        id: 1002,
-        date: "2024-09-25",
-        purpose: "Request for Surgical Supplies",
-        total: 3500.00,
-        status: "Approved",
-        signatories: {
-            signatory1: { approved: true, name: "Rene Letegio" },
-            signatory2: { approved: null, name: "Maverick Ko" },
-            signatory3: { approved: true, name: "Paulo Sangreo" }
-        },
-        items: [
-            { name: "Scalpel", quantity: 20, price: 50.00, total: 1000.00 },
-            { name: "Surgical Mask", quantity: 200, price: 5.00, total: 1000.00 },
-            { name: "Gauze", quantity: 100, price: 3.00, total: 300.00 },
-            { name: "Surgical Gloves", quantity: 100, price: 10.00, total: 1000.00 },
-        ],
-        billing: "Surgical Supply Co.",
-        attachments: ["surgical-supplies-order.pdf"],
-        requester: {
-            name: "Rene Letegio",
-            number: "+639987654321",
-            email: "rene@gmail.com",
-            role: "Nurse"
-        }
-    },
-    {
-        id: 1003,
-        date: "2024-09-27",
-        purpose: "Request for IV Fluids",
-        total: 1500.00,
-        status: "Rejected",
-        signatories: {
-            signatory1: { approved: false, name: "Maverick Ko" },
-            signatory2: { approved: false, name: "Rene Letegio" },
-            signatory3: { approved: null, name: "Paulo Sangreo" }
-        },
-        items: [
-            { name: "Normal Saline", quantity: 50, price: 10.00, total: 500.00 },
-            { name: "Lactated Ringer's Solution", quantity: 50, price: 20.00, total: 1000.00 }
-        ],
-        billing: "Hospital Supplies Inc.",
-        attachments: ["iv-fluids-order.pdf"],
-        requester: {
-            name: "Paulo Sangreo",
-            number: "+639852147963",
-            email: "paulo@gmail.com",
-            role: "Pharmacist"
-        }
-    },
-    {
-        id: 1004,
-        date: "2024-09-30",
-        purpose: "Order Additional Bandages",
-        total: 800.00,
-        status: "Pending",
-        signatories: {
-            signatory1: { approved: null, name: "Maverick Ko" },
-            signatory2: { approved: null, name: "Rene Letegio" },
-            signatory3: { approved: null, name: "Paulo Sangreo" }
-        },
-        items: [
-            { name: "Adhesive Bandages", quantity: 100, price: 2.00, total: 200.00 },
-            { name: "Gauze Bandages", quantity: 300, price: 1.50, total: 450.00 },
-            { name: "Elastic Bandages", quantity: 20, price: 15.00, total: 300.00 }
-        ],
-        billing: "Medical Supplies Warehouse",
-        attachments: ["bandage-order.pdf"],
-        requester: {
-            name: "Maverick Ko",
-            number: "+639123456789",
-            email: "maverick@gmail.com",
-            role: "Nurse"
-        }
-    }
-    // You can continue to add more requisition objects as needed
-];
+// Function to fetch requisition data based on status
+function filterByStatus(status) {
+    // Highlight the active tab
+    const tabs = document.querySelectorAll('.tab__item a');
+    tabs.forEach(tab => tab.classList.remove('is-activated'));
+    document.querySelector(`a[href="#${status}"]`).classList.add('is-activated');
+    
+    // Fetch requisition data from the backend
+    fetch(`/get_requisitions?status=${status}`)
+        .then(response => response.json())
+        .then(data => {
+            const requisitionCards = document.getElementById('requisition-cards');
+            requisitionCards.innerHTML = '';  // Clear current cards
+            
+            // Check if requisitions are returned
+            if (data.length === 0) {
+                requisitionCards.innerHTML = '<p>No requisitions found for this status.</p>';
+                return;
+            }
+            
+            // Display requisition cards
+            data.forEach(requisition => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `
+                    <h3>Requisition #${requisition.id}</h3>
+                    <p><strong>Date:</strong> ${requisition.date}</p>
+                    <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+                    <p><strong>Requested By:</strong> ${requisition.requested_by}</p>
+                    <p><strong>Status:</strong> ${requisition.status}</p>
+                    <button onclick="viewDetails(${requisition.id})">View Details</button>
+                    <button onclick="openActionModal(${requisition.id})">Take Action</button>
+                `;
+                requisitionCards.appendChild(card);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching requisitions:', error);
+            alert('An error occurred while fetching requisitions.');
+        });
+}
 
 
-// Global variable to store filtered requisitions
-let filteredRequisitions = requisitions;
+function viewDetails(requisitionId) {
+    console.log(`viewDetails called with ID: ${requisitionId}`);
+    
+    // Show the modal
+    document.getElementById('view-details-modal').style.display = 'block';
+    
+    // Fetch requisition details from the Flask route
+    fetch(`/get_requisition_details_modal?id=${requisitionId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Data received:', data);
+            if (data.error) {
+                console.error('Error:', data.error);
+                alert('An error occurred while fetching requisition details.');
+                return;
+            }
 
-// Initial population of requisition list
-document.addEventListener("DOMContentLoaded", () => {
-    populateRequisitionList(filteredRequisitions);
-    document.getElementById('signatoryName').innerText = "Maverick Ko"; // Example signatory name
-});
+            // Get the modal content element
+            const modalContent = document.getElementById('view-details-content'); 
 
-// Function to populate requisition cards
-function populateRequisitionList(requisitionsToDisplay) {
-    const cardsContainer = document.getElementById('requisition-cards');
-    cardsContainer.innerHTML = ""; // Clear existing cards
-
-    requisitionsToDisplay.forEach(req => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.onclick = () => viewDetails(req.id); // Open details on card click
-
-        // Set button visibility based on status
-        let approveButtonHTML = '';
-        let rejectButtonHTML = '';
-
-        if (req.status === 'Pending') {
-            approveButtonHTML = `<button class="approve" onclick="approveRequisition(${req.id}); event.stopPropagation();">Approve</button>`;
-            rejectButtonHTML = `<button class="reject" onclick="rejectRequisition(${req.id}); event.stopPropagation();">Reject</button>`;
-        } else if (req.status === 'Approved') {
-            approveButtonHTML = `<button class="approve" disabled>Approved</button>`;
-        } else if (req.status === 'Rejected') {
-            rejectButtonHTML = `<button class="reject" disabled>Rejected</button>`;
-        }
-
-        // Apply specific colors based on role, but uniform box size
-        let roleColor = '';
-        if (req.requester.role === 'Nurse') {
-            roleColor = 'background-color: #e7f3ff; color: #007bff; border: 2px solid #007bff;'; // Blue for Nurse
-        } else if (req.requester.role === 'Pharmacist') {
-            roleColor = 'background-color: #e6ffe6; color: #28a745; border: 2px solid #28a745;'; // Green for Pharmacist
-        }
-
-        // Uniform box size and styling, with dynamic color for each role
-        const roleStyle = `style="${roleColor} font-weight: bold; padding: 12px 20px; border-radius: 8px; font-size: 14px;"`;
-
-        card.innerHTML = `
-            <div class="card-row">
-                <p><strong>ID:</strong> ${req.id}</p>
-                <p><span class="role" ${roleStyle}>${req.requester.role}</span></p> <!-- Uniform size for role box -->
-            </div>
-            <hr>
-            <div class="card-row">
-                <div>
-                    <p><strong>Name:</strong> ${req.requester.name}</p>
-                    <p><strong>Number:</strong> ${req.requester.number}</p>
-                </div>
-                <div>
-                    <p><strong>Date Requested:</strong> ${req.date}</p>
-                    <p><strong>Email:</strong> ${req.requester.email}</p>
-                </div>
-            </div>
-            <hr>
-            <p><strong>Purpose:</strong> ${req.purpose}</p>
-            <p><strong>Total (₱):</strong> ${req.total.toFixed(2)}</p>
-            <hr>
-            <div class="button-group">
-                ${approveButtonHTML}
-                ${rejectButtonHTML}
-            </div>
-        `;
-        cardsContainer.appendChild(card);
-    });
+            // Update the modal content with the fetched requisition details
+            modalContent.innerHTML = `
+                <h3>Requisition #${data.id || 'N/A'}</h3>
+                <p><strong>Date:</strong> ${data.date ? new Date(data.date).toLocaleDateString() : 'N/A'}</p>
+                <p><strong>Purpose:</strong> ${data.purpose || 'N/A'}</p>
+                <p><strong>Company:</strong> ${data.company_name || 'N/A'}</p>
+                <p><strong>Requested By:</strong> ${data.requested_by || 'N/A'}</p>
+                <p><strong>Status:</strong> ${data.status || 'N/A'}</p>
+                <h4>Items</h4>
+                <ul>
+                    ${data.items && data.items.length > 0 ? 
+                        data.items.map(item => `
+                            <li>${item.name} - ${item.quantity} x ${item.price} = ${item.total}</li>
+                        `).join('') : '<li>No items found</li>'
+                    }
+                </ul>
+                <h4>Attachments</h4>
+                <ul>
+                    ${data.attachments && data.attachments.length > 0 ? 
+                        data.attachments.map(attachment => `
+                            <li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>
+                        `).join('') : '<li>No attachments found</li>'
+                    }
+                </ul>
+            `;
+        })
+        .catch(error => {
+            console.error('Error fetching requisition details:', error);
+            alert('An error occurred whil.');
+        });
 }
 
 
 
 
-// Function to approve a requisition
-function approveRequisition(reqId) {
-    const req = requisitions.find(r => r.id === reqId);
-    if (req) {
-        req.status = 'Approved';
-        populateRequisitionList(filteredRequisitions); // Refresh list
-    }
-}
 
-// Function to reject a requisition
-function rejectRequisition(reqId) {
-    const req = requisitions.find(r => r.id === reqId);
-    if (req) {
-        req.status = 'Rejected';
-        populateRequisitionList(filteredRequisitions); // Refresh list
-    }
-}
-
-// Function to view requisition details
-function viewDetails(reqId) {
-    const req = requisitions.find(r => r.id === reqId);
-    if (req) {
-        // Create items table HTML
-        const itemsTable = `
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Item Name</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Quantity</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Price (₱)</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Total (₱)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${req.items.map(item => `
-                        <tr>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.name}</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.quantity}</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.price.toFixed(2)}</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">${item.total.toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-
-        // Create attachments list HTML
-        const attachmentsList = `
-            <ul>
-                ${req.attachments.map(att => `<li><a id="attachment-link" href="#">${att}</a></li>`).join('')}
-            </ul>
-        `;
-
-        // Structure the requisition details as per the required format
-        const detailsContent = document.getElementById('details-content');
-        detailsContent.innerHTML = `
-            <div style="display: flex; justify-content: space-between;">
-                <div>
-                    <h3>Requisition ID: ${req.id}</h3>
-                    <p><strong>Name:</strong> ${req.requester.name}</p>
-                    <p><strong>Number:</strong> ${req.requester.number}</p>
-                </div>
-                <div>
-                    <p><strong>Role:</strong> ${req.requester.role}</p>
-                    <p><strong>Date Requested:</strong> ${req.date}</p>
-                    <p><strong>Email:</strong> ${req.requester.email}</p>
-                </div>
-            </div>
-            <hr>
-            <h4>Items:</h4>
-            ${itemsTable}
-            <p><strong>Total (₱):</strong> ${req.total.toFixed(2)}</p>
-            <h4>Billing:</h4>
-            <p>${req.billing}</p>
-            <h4>Attachments:</h4>
-            ${attachmentsList}
-        `;
-        document.getElementById('details-modal').style.display = 'block';
-    }
-}
-
-
-// Function to close details modal
-function closeDetailsModal() {
-    document.getElementById('details-modal').style.display = 'none';
+function closeViewDetailsModal() {
+    document.getElementById('view-details-modal').style.display = 'none';
 }
 
 // Function to filter requisitions by status
 function filterByStatus(status) {
-    // Get all tab links
-    const tabLinks = document.querySelectorAll('.tab__item a');
-
-    // Remove the 'is-activated' class from all links
-    tabLinks.forEach(link => link.classList.remove('is-activated'));
-
-    // Add 'is-activated' class to the clicked link
-    const activeLink = document.querySelector(`a[href="#${status}"]`);
-    if (activeLink) {
-        activeLink.classList.add('is-activated');
+    // Highlight the active tab
+    const tabs = document.querySelectorAll('.tab__item a');
+    tabs.forEach(tab => tab.classList.remove('is-activated'));
+    const activeTab = document.querySelector(`a[href="#${status}"]`);
+    if (activeTab) {
+        activeTab.classList.add('is-activated');
     }
 
-    // Filter requisitions based on the selected status
+    // Fetch requisition data based on status
+    const requisitions = getRequisitionsByStatus(status);  // Simulate fetching data based on status
+
+    const requisitionCards = document.getElementById('requisition-cards');
+    requisitionCards.innerHTML = '';  // Clear current cards
+
+    // Check if requisitions are returned
+    if (requisitions.length === 0) {
+        requisitionCards.innerHTML = '<p>No requisitions found for this status.</p>';
+        return;
+    }
+
+    // Display requisition cards
+    requisitions.forEach(requisition => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.innerHTML = `
+            <h3>Requisition #${requisition.id}</h3>
+            <p><strong>Date:</strong> ${requisition.date}</p>
+            <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+            <p><strong>Requested By:</strong> ${requisition.requested_by}</p>
+            <p><strong>Status:</strong> ${requisition.status}</p>
+            <button onclick="viewDetails(${requisition.id})">View Details</button>
+            <button onclick="openActionModal(${requisition.id})">Take Action</button>
+        `;
+        requisitionCards.appendChild(card);
+    });
+}
+
+// Sample function to simulate fetching requisitions based on status
+function getRequisitionsByStatus(status) {
+    const allRequisitions = [
+        { id: 1, date: '2024-12-01', purpose: 'Office Supplies', requested_by: 'John Doe', status: 'pending' },
+        { id: 2, date: '2024-12-05', purpose: 'Medical Equipment', requested_by: 'Jane Smith', status: 'approved' },
+        { id: 3, date: '2024-12-07', purpose: 'Stationery', requested_by: 'Alice Brown', status: 'rejected' },
+        { id: 4, date: '2024-12-08', purpose: 'Computers', requested_by: 'Bob White', status: 'approved' },
+    ];
+
     if (status === 'all') {
-        filteredRequisitions = requisitions;
+        return allRequisitions;
     } else {
-        filteredRequisitions = requisitions.filter(req => req.status.toLowerCase() === status.toLowerCase());
+        return allRequisitions.filter(requisition => requisition.status === status);
     }
+}
 
-    populateRequisitionList(filteredRequisitions); // Refresh list
+// Initial load of all requisitions
+filterByStatus('all');
+
+
+// Function to open the action modal
+function openActionModal(requisitionId) {
+    const actionContent = document.getElementById('action-content');
+    actionContent.innerHTML = `
+        <p>Perform actions for Requisition #${requisitionId}</p>
+        <button onclick="approveRequisition(${requisitionId})">Approve</button>
+        <button onclick="rejectRequisition(${requisitionId})">Reject</button>
+    `;
+    document.getElementById('action-modal').style.display = 'flex';
+}
+
+// Function to close the action modal
+function closeActionModal() {
+    document.getElementById('action-modal').style.display = 'none';
+}
+
+function approveRequisition(requisitionId) {
+    fetch(`/approve_requisition?id=${requisitionId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // Display success or error message
+            filterByStatus('all'); // Refresh the requisition list
+        })
+        .catch(error => console.error('Error approving requisition:', error));
+}
+
+function rejectRequisition(requisitionId) {
+    fetch(`/reject_requisition?id=${requisitionId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // Display success or error message
+            filterByStatus('all'); // Refresh the requisition list
+        })
+        .catch(error => console.error('Error rejecting requisition:', error));
 }
 

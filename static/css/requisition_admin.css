@@ -99,7 +99,8 @@ table td button i {
 
 .btn-submit {
     background-color: #4CAF50;
-    width: 100%;
+    width: 30%;
+    margin-right: 70%;
 }
 
 .btn-submit:hover {
@@ -136,7 +137,7 @@ table td button i {
     margin: 9% auto;
     padding: 13px;
     border: 1px solid #888;
-    width: 50%;
+    width: 30%;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
@@ -229,4 +230,322 @@ table td button i {
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #f9f9f9;
+}
+
+/* MODAL REQUISITION */
+
+/* Modal Content */
+.requisition-modal-content {
+    background-color: #fff;
+    margin: 2% auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 80%;
+    max-width: 800px;
+    animation: fadeIn 0.3s ease-in-out;
+    position: relative;
+    max-height: 834px; /* Set max height for the modal */
+    overflow: hidden; /* Prevent scrolling for the modal overall */
+    z-index: 100;
+}
+
+/* Scrollable Items Section */
+.requisition-items-scrollable {
+    max-height: 300px; /* Set the height for the scrollable section */
+    overflow-y: auto; /* Add vertical scrolling if needed */
+    border: 1px solid #ddd; /* Optional: Add a border for clarity */
+    border-radius: 4px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+
+.requisition-id-date-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: -20px;
+    gap: 150px;
+}
+
+.requisition-id-group,
+.requisition-date-group {
+    flex: 1; /* Allows fields to adjust evenly if needed */
+}
+
+.requisition-id-group label,
+.requisition-date-group label {
+    font-weight: 500;
+    color: #555;
+}
+
+.requisition-id-group span,
+.requisition-date-group input {
+    display: block;
+    width: 25%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+}
+
+.requisition-date-group input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Close Button */
+.requisition-close-button {
+    font-size: 1.5rem;
+    color: #555;
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.requisition-close-button:hover {
+    color: #f00;
+}
+
+/* Modal Title */
+.requisition-modal-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #003366;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 85%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    transition: border-color 0.2s;
+}
+
+.requisition-total-price-group {
+    width: 28%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-left: 570px;
+}
+
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Items Table */
+.requisition-items-table-container {
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.requisition-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.requisition-items-table th,
+.requisition-items-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.requisition-items-table th {
+    background-color: #f7f7f7;
+    font-weight: bold;
+}
+
+.requisition-items-table td input {
+    width: 95%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Buttons */
+
+.btn-remove-item,
+.requisition-submit-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add-item {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-left: 670px;
+}
+
+
+.btn-add-item:hover,
+.btn-remove-item:hover,
+.requisition-submit-button:hover {
+    background-color: #0056b3;
+}
+
+.btn-remove-item {
+    background-color: #dc3545;
+}
+
+.btn-remove-item:hover {
+    background-color: #b02a37;
+}
+
+/* Total Price */
+.requisition-total-price-group {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-top: 20px;
+}
+
+/* Form Action */
+.requisition-action-buttons {
+    text-align: right;
+    margin-top: 20px;
+    margin-bottom: -80px;
+}
+
+.requisition-action-buttons .btn-submit {
+    font-size: 1rem;
+    padding: 10px 20px;
+}
+
+/* Keyframes for Fade-In Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ATTACHMENT COMPANY NAME*/
+/* Flex container for Company Name and Attachments */
+.requisition-company-attachment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px; /* Optional: Add spacing between the fields */
+    margin-bottom: 15px;
+}
+
+.requisition-company-group,
+.requisition-attachments-group {
+    flex: 1; /* Adjusts the fields' width dynamically */
+}
+
+/* Input and Select Styling */
+.requisition-company-group select,
+.requisition-attachments-group input[type="file"] {
+    width: 95%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.requisition-company-group select:focus,
+.requisition-attachments-group input[type="file"]:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.requisition-company-group label,
+.requisition-attachments-group label {
+    display: block;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+
+/* Modal for displaying requisition details */
+.detail-pair {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.detail-pair p {
+    flex: 1;
+    margin: 0;
+    padding: 0 10px;
+}
+
+.details-group p {
+    font-size: 1rem;
+    color: #003366;
+    margin: 5px 0;
+}
+
+.details-group h3 {
+    font-size: 1.2rem;
+    color: #003366;
+    margin-bottom: 10px;
+}
+
+.details-group ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+.details-group ul li {
+    font-size: 0.9rem;
+    color: #003366;
+    margin: 5px 0;
 }
