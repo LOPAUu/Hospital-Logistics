@@ -148,8 +148,8 @@ def user_role_management():
     cursor = conn.cursor()
     # Update query to include the 'status' column
     cursor.execute('''
-        SELECT users.staff_id, users.username, users.email, users.status, roles.role_name 
-        FROM users 
+        SELECT staff.staff_id, users.username, users.email, users.status, roles.role_name 
+        FROM staff 
         JOIN roles ON users.role_id = roles.id
     ''')
     users = cursor.fetchall()
@@ -177,13 +177,13 @@ def create_or_edit_user():
 
         if staff_id:  # Edit existing user
             if password:  # Update password only if provided
-                cursor.execute('UPDATE users SET username = %s, email = %s, password = %s, role_id = %s WHERE staff_id = %s',
+                cursor.execute('UPDATE staff SET username = %s, email = %s, password = %s, role_id = %s WHERE staff_id = %s',
                                (username, email, password, role_id, staff_id))
             else:
-                cursor.execute('UPDATE users SET username = %s, email = %s, role_id = %s WHERE staff_id = %s',
+                cursor.execute('UPDATE staff SET username = %s, email = %s, role_id = %s WHERE staff_id = %s',
                                (username, email, role_id, staff_id))
         else:  # Create new user
-            cursor.execute('INSERT INTO users (username, email, password, role_id) VALUES (%s, %s, %s, %s)',
+            cursor.execute('INSERT INTO staff (username, email, password, role_id) VALUES (%s, %s, %s, %s)',
                            (username, email, password, role_id))
 
         conn.commit()
@@ -201,7 +201,7 @@ def create_or_edit_user():
     staff_id = request.args.get('staff-id')  # Ensure using staff-id for editing
     user = None
     if staff_id:  # Check if we're editing an existing user
-        cursor.execute('SELECT * FROM users WHERE staff_id = %s', (staff_id,))
+        cursor.execute('SELECT * FROM staff WHERE staff_id = %s', (staff_id,))
         user = cursor.fetchone()
 
     cursor.close()
@@ -216,7 +216,7 @@ def create_or_edit_user():
 def delete_user(staff_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM users WHERE staff_id = %s', (staff_id,))
+    cursor.execute('DELETE FROM staff WHERE staff_id = %s', (staff_id,))
     conn.commit()
     cursor.close()
     conn.close()
