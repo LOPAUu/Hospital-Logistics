@@ -1,50 +1,26 @@
--- Table for users with PostgreSQL equivalent to MySQL AUTO_INCREMENT
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,  -- SERIAL is PostgreSQL's auto-incrementing integer
-    username VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    user_type VARCHAR(20) CHECK (user_type IN ('Signatory', 'Pharmacy', 'Admin')) NOT NULL  -- Use CHECK for ENUM-like behavior
-);
-
--- Insert sample users with specified user types
-INSERT INTO users (username, password, user_type)
-VALUES ('signatory', 'signatory', 'Signatory');
-
-INSERT INTO users (username, password, user_type)
-VALUES ('pharmacy', 'pharmacy', 'Pharmacy');
-
-INSERT INTO users (username, password, user_type)
-VALUES ('admin', 'admin', 'Admin');
-
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE
-);
-
+-- Create the 'roles' table first
 CREATE TABLE roles (
     id SERIAL PRIMARY KEY,  -- Unique identifier for each role
     role_name VARCHAR(50) NOT NULL UNIQUE  -- Role name (Admin, Manager, etc.)
 );
 
+-- Insert values into the 'roles' table
 INSERT INTO roles (role_name) VALUES
 ('Admin'),
-('Warehouse Manager'),
-('Inventory Clerk'),
-('Delivery Personnel');
+('Pharmacy Manager'),
+('Signatory');
 
+-- Create the 'users' table with the foreign key referencing 'roles'
 CREATE TABLE users (
-    staff_id SERIAL PRIMARY KEY,  -- Unique identifier for each user
-    username VARCHAR(50) NOT NULL,  -- Username for identification
-    role VARCHAR(50) NOT NULL,  -- User's role (Admin, etc.)
-    status VARCHAR(20) NOT NULL,  -- Active or Inactive status
-    email VARCHAR(100) NOT NULL,  -- Email address for communication
-    password VARCHAR(255) NOT NULL,  -- Hashed password (never store plain text passwords)
-    phone VARCHAR(15),  -- Optional: phone number for contact
-    emergency_contact VARCHAR(100),  -- Optional: emergency contact number
-    date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Record creation timestamp
-    FOREIGN KEY (role) REFERENCES roles(role_name)  -- Assuming you have a roles table
+    user_id SERIAL PRIMARY KEY,
+    full_name VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email_address VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(15),
+    role_id INT,  -- Define the role_id column
+    date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES roles(id)  -- Add foreign key constraint
 );
-
 
 
 -- Table for suppliers with PostgreSQL timestamp handling
@@ -66,19 +42,17 @@ CREATE TABLE supplier_items (
 );
 
 -- Table for requisitions
-CREATE TABLE requisitions ( 
+CREATE TABLE requisitions (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     purpose VARCHAR(255) NOT NULL,
-    company_name VARCHAR(255) NOT NULL,
-    requested_by VARCHAR(255) NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    billing VARCHAR(255) NOT NULL,
     signatory1_approved BOOLEAN DEFAULT FALSE,
     signatory2_approved BOOLEAN DEFAULT FALSE,
     signatory3_approved BOOLEAN DEFAULT FALSE
 );
 
-
+-- Table for requisition items with PostgreSQL equivalent to MySQL's ON DELETE CASCADE
 CREATE TABLE requisition_items (
     id SERIAL PRIMARY KEY,
     requisition_id INT NOT NULL REFERENCES requisitions(id) ON DELETE CASCADE,
@@ -105,7 +79,6 @@ ADD CONSTRAINT fk_requisition_id
 FOREIGN KEY (requisition_id)
 REFERENCES requisitions(id);
 
-
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (
     medicine_request_id SERIAL PRIMARY KEY,
@@ -117,7 +90,6 @@ CREATE TABLE medicine_requests (
     approval_date TIMESTAMP
 );
 
-
 -- Insert sample data
 INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
 VALUES 
@@ -128,6 +100,7 @@ VALUES
 
 
 --
+select * from medicines
 CREATE TABLE medicines (
     medicine_id SERIAL PRIMARY KEY,         -- Unique ID for each medicine
     sku VARCHAR(50) UNIQUE NOT NULL,        -- Stock Keeping Unit for tracking
@@ -145,8 +118,6 @@ CREATE TABLE medicines (
     expiration_date DATE,                   -- Expiry date
     lot_position VARCHAR(50)                -- Shelf or storage location (e.g., A1, B2)
 );
-
-select * from medicines
 
 -- Trigger function to automatically update date 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -211,5 +182,5 @@ CREATE TABLE medicine_bought (
     FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id) ON DELETE CASCADE
 );
 
-select * from pharmacy_c    ustomers;
+select * from pharmacy_customers;
 select * from medicine_bought;

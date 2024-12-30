@@ -142,87 +142,111 @@ def upload_attachments():
     except Exception as e:
         return jsonify({"message": str(e)}), 500
     
+    
 @app.route('/user_role_management')
 def user_role_management():
     conn = get_db_connection()
     cursor = conn.cursor()
-    # Update query to include the 'status' column
+
+    # Fetch users and their roles (corrected to reference 'users' table)
     cursor.execute('''
-        SELECT users.staff_id, users.username, users.email, users.status, roles.role_name 
-        FROM users 
-        JOIN roles ON users.role_id = roles.id
+        SELECT users.user_id, users.full_name, users.username, 
+               users.email_address, users.phone_number, roles.role_name 
+        FROM users
+        LEFT JOIN roles ON users.role_id = roles.id
     ''')
     users = cursor.fetchall()
+
+    # Fetch roles for the dropdown
+    cursor.execute('SELECT id, role_name FROM roles')
+    roles = cursor.fetchall()
+
     cursor.close()
     conn.close()
-    return render_template('user_role_management.html', users=users)
+
+    return render_template('user_role_management.html', users=users, roles=roles)
 
 
-@app.route('/create_or_edit_user', methods=['GET', 'POST'])
+@app.route('/create_or_edit_user', methods=['POST'])
 def create_or_edit_user():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        role_id = request.form['role']
-        staff_id = request.form.get('staff-id')  # Use staff-id as the unique identifier
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-        # Ensure password is provided only for new users or when it's updated
-        if not staff_id and not password:
-            flash('Password is required for new users!', 'danger')
-            return redirect(request.url)
+    # Fetch the form data
+    full_name = request.form['full-name']
+    username = request.form['username']
+    email_address = request.form['email']
+    phone_number = request.form.get('phone', '')
+    role_id = request.form['role']
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    # Check if an existing user is being edited
+    employee_id = request.form.get('employee-id')
 
-        if staff_id:  # Edit existing user
-            if password:  # Update password only if provided
-                cursor.execute('UPDATE users SET username = %s, email = %s, password = %s, role_id = %s WHERE staff_id = %s',
-                               (username, email, password, role_id, staff_id))
-            else:
-                cursor.execute('UPDATE users SET username = %s, email = %s, role_id = %s WHERE staff_id = %s',
-                               (username, email, role_id, staff_id))
-        else:  # Create new user
-            cursor.execute('INSERT INTO users (username, email, password, role_id) VALUES (%s, %s, %s, %s)',
-                           (username, email, password, role_id))
-
+    if employee_id:  # Update existing user
+        cursor.execute('''
+            UPDATE users 
+            SET full_name = %s, username = %s, email_address = %s, 
+                phone_number = %s, role_id = %s 
+            WHERE user_id = %s
+        ''', (full_name, username, email_address, phone_number, role_id, employee_id))
         conn.commit()
         cursor.close()
         conn.close()
-        flash('User saved successfully!', 'success')
-        return redirect(url_for('user_role_management'))
+        return jsonify({'success': True})
 
-    # Fetch available roles for the dropdown
+    else:  # Create new user
+        cursor.execute('''
+            INSERT INTO users (full_name, username, email_address, 
+                               phone_number, role_id)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (full_name, username, email_address, phone_number, role_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({'success': True})
+
+@app.route('/get_user_data', methods=['GET'])
+def get_user_data():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT id, role_name FROM roles')  # Fetch all available roles
-    roles = cursor.fetchall()
 
-    staff_id = request.args.get('staff-id')  # Ensure using staff-id for editing
-    user = None
-    if staff_id:  # Check if we're editing an existing user
-        cursor.execute('SELECT * FROM users WHERE staff_id = %s', (staff_id,))
-        user = cursor.fetchone()
-
+    # Fetch user data and join with the roles table
+    cursor.execute('''
+        SELECT users.user_id, users.full_name, users.username, 
+               users.email_address, users.phone_number, roles.role_name 
+        FROM users
+        LEFT JOIN roles ON users.role_id = roles.id
+    ''')
+    
+    users = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    # Pass the user and roles to the template
-    return render_template('user_form.html', user=user, roles=roles)
+    # Prepare the data to return as JSON
+    users_data = [{
+        'user_id': user[0],
+        'full_name': user[1],
+        'username': user[2],
+        'email_address': user[3],
+        'phone_number': user[4],
+        'role_name': user[5],
+    } for user in users]
 
+    return jsonify({'success': True, 'users': users_data})
 
 
 # Delete a user
-@app.route('/delete_user/<int:staff_id>', methods=['POST'])
-def delete_user(staff_id):
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM users WHERE staff_id = %s', (staff_id,))
+    cursor.execute('DELETE FROM users WHERE user_id = %s', (user_id,))
     conn.commit()
     cursor.close()
     conn.close()
     flash('User deleted successfully!', 'success')
     return redirect(url_for('user_role_management'))
+
 
 
 # Route to fetch all suppliers
