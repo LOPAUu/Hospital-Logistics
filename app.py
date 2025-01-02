@@ -61,9 +61,15 @@ def auth_callback():
 
             flash('Login successful!', 'success')
 
-            # Only one role: LMS Admin
-            if session['role'].strip().lower() == 'lms admin':
+            # Check for roles and redirect accordingly
+            role = session['role'].strip().lower()
+
+            if role == 'lms admin':
                 return redirect(url_for('admin_dashboard'))
+            elif role == 'lms signatory':
+                return redirect(url_for('signatory_dashboard'))  # Replace with your actual route for signatory
+            elif role == 'lms pharmacy':
+                return redirect(url_for('pharmacy_dashboard'))  # Replace with your actual route for pharmacy
             else:
                 flash('Role not authorized.', 'danger')
                 return redirect(url_for('login'))
