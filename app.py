@@ -7,7 +7,6 @@ import os
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 
-
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 
@@ -195,54 +194,117 @@ def create_or_edit_user():
                 password = COALESCE(%s, password)  -- Update password only if provided
             WHERE user_id = %s
         ''', (full_name, username, email_address, phone_number, role_id, hashed_password, employee_id))
-
-        # Prepare payload for the authentication service
-        auth_payload = {
-            'user_id': employee_id,
-            'full_name': full_name,
-            'username': username,
-            'email': email_address,
-            'phone': phone_number,
-            'role': role_id,
-            'password': password  # Send plain text; ensure encryption at the service
-        }
-        auth_url = f"{AUTH_SERVICE_URL}/update-user"
     else:  # Create new user
         cursor.execute('''
             INSERT INTO users (full_name, username, email_address, 
                                phone_number, role_id, password)
             VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING user_id
         ''', (full_name, username, email_address, phone_number, role_id, hashed_password))
-        
-        new_user_id = cursor.fetchone()[0]
 
-        # Prepare payload for the authentication service
-        auth_payload = {
-            'user_id': new_user_id,
-            'full_name': full_name,
-            'username': username,
-            'email': email_address,
-            'phone': phone_number,
-            'role': role_id,
-            'password': password  # Send plain text; ensure encryption at the service
-        }
-        auth_url = f"{AUTH_SERVICE_URL}/add-user"
-
-    # Commit database changes
     conn.commit()
     cursor.close()
     conn.close()
 
-    # Synchronize with the authentication service
-    try:
-        response = requests.post(auth_url, json=auth_payload)
-        if response.status_code != 200:
-            return jsonify({'success': False, 'error': 'Failed to synchronize with authentication service.'})
-    except requests.exceptions.RequestException as e:
-        return jsonify({'success': False, 'error': str(e)})
+    # Send user data to the authentication service
+    sync_with_auth_service(username, password, role_id)
 
     return jsonify({'success': True})
+
+def sync_with_auth_service(username, password, role_id):
+    # Fetch role name
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT role_name FROM roles WHERE id = %s', (role_id,))
+    role = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if role:
+        role_name = role[0]
+
+        # Prepare data
+        user_data = {
+            'username': username,
+            'password': password,
+            'role': role_name
+        }
+        print(f"Syncing user data: {user_data}")  # Debugging log
+
+        # Send to auth service
+        response = requests.post(f'{AUTH_SERVICE_URL}/sync-user', json=user_data)
+        print(f"Auth service response: {response.status_code} - {response.text}")
+
+        if response.status_code == 200:
+            print("User synced successfully with auth service")
+        else:
+            print(f"Failed to sync user with auth service: {response.text}")
+
+
+@app.route('/sync-user', methods=['POST'])
+def sync_user():
+    user_data = request.json
+
+    username = user_data['username']
+    password = user_data['password']
+    role = user_data['role']
+
+    # Hash the password before storing
+    hashed_password = generate_password_hash(password)
+
+    # Store user in the database (insert or update logic)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if user already exists
+    cursor.execute('SELECT id FROM users WHERE username = %s', (username,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        # Update existing user
+        cursor.execute('''
+            UPDATE users
+            SET password = %s, role = %s
+            WHERE username = %s
+        ''', (hashed_password, role, username))
+    else:
+        # Insert new user
+        cursor.execute('''
+            INSERT INTO users (username, password, role)
+            VALUES (%s, %s, %s)
+        ''', (username, hashed_password, role))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({'success': True})
+
+@app.route('/verify-token', methods=['POST'])
+def verify_token():
+    token = request.headers.get('Authorization').split(" ")[1]
+    
+    # Decode the token and fetch the user details
+    user = decode_token(token)  # Assume decode_token is a helper to validate tokens
+    
+    if user:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Fetch user details from the database
+        cursor.execute('SELECT username, role FROM users WHERE username = %s', (user['username'],))
+        user_data = cursor.fetchone()
+
+        if user_data:
+            return jsonify({
+                'username': user_data[0],
+                'role': user_data[1]
+            }), 200
+
+        cursor.close()
+        conn.close()
+
+    return jsonify({'error': 'Invalid token'}), 401
+
 
 @app.route('/get_user_data', methods=['GET'])
 def get_user_data():
