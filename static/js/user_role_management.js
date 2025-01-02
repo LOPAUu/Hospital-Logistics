@@ -83,9 +83,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-// Function to handle form submission for creating a new user
 function submitNewUserForm(event) {
     event.preventDefault();  // Prevent the default form submission
+
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirm-password").value;
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
 
     // Gather the form data
     const formData = new FormData(document.querySelector("#userFormModal form"));
@@ -95,20 +102,21 @@ function submitNewUserForm(event) {
         method: 'POST',
         body: formData,
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('New user added successfully!');
-            window.location.reload();  // Refresh the page to show the new user in the table
-        } else {
-            alert('Error adding new user: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error adding new user. Please try again.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User saved successfully!');
+                window.location.reload();  // Refresh the page to show updates
+            } else {
+                alert('Error saving user: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error saving user. Please try again.');
+        });
 }
+
 
 // Attach the submit event listener to the form
 document.addEventListener("DOMContentLoaded", function() {

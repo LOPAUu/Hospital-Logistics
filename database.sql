@@ -18,9 +18,11 @@ CREATE TABLE users (
     email_address VARCHAR(255) NOT NULL,
     phone_number VARCHAR(15),
     role_id INT,  -- Define the role_id column
+    password VARCHAR(255) NOT NULL,  -- Add the password column
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES roles(id)  -- Add foreign key constraint
 );
+
 
 
 -- Table for suppliers with PostgreSQL timestamp handling

@@ -5,6 +5,8 @@ from werkzeug.utils import secure_filename
 import time
 import os
 from psycopg2.extras import RealDictCursor
+from werkzeug.security import generate_password_hash
+
 
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
@@ -178,6 +180,9 @@ def create_or_edit_user():
     email_address = request.form['email']
     phone_number = request.form.get('phone', '')
     role_id = request.form['role']
+    password = request.form.get('password')  # Fetch the password from the form
+
+    hashed_password = generate_password_hash(password) if password else None
 
     # Check if an existing user is being edited
     employee_id = request.form.get('employee-id')
@@ -186,24 +191,58 @@ def create_or_edit_user():
         cursor.execute('''
             UPDATE users 
             SET full_name = %s, username = %s, email_address = %s, 
-                phone_number = %s, role_id = %s 
+                phone_number = %s, role_id = %s, 
+                password = COALESCE(%s, password)  -- Update password only if provided
             WHERE user_id = %s
-        ''', (full_name, username, email_address, phone_number, role_id, employee_id))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return jsonify({'success': True})
+        ''', (full_name, username, email_address, phone_number, role_id, hashed_password, employee_id))
 
+        # Prepare payload for the authentication service
+        auth_payload = {
+            'user_id': employee_id,
+            'full_name': full_name,
+            'username': username,
+            'email': email_address,
+            'phone': phone_number,
+            'role': role_id,
+            'password': password  # Send plain text; ensure encryption at the service
+        }
+        auth_url = f"{AUTH_SERVICE_URL}/update-user"
     else:  # Create new user
         cursor.execute('''
             INSERT INTO users (full_name, username, email_address, 
-                               phone_number, role_id)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', (full_name, username, email_address, phone_number, role_id))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return jsonify({'success': True})
+                               phone_number, role_id, password)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING user_id
+        ''', (full_name, username, email_address, phone_number, role_id, hashed_password))
+        
+        new_user_id = cursor.fetchone()[0]
+
+        # Prepare payload for the authentication service
+        auth_payload = {
+            'user_id': new_user_id,
+            'full_name': full_name,
+            'username': username,
+            'email': email_address,
+            'phone': phone_number,
+            'role': role_id,
+            'password': password  # Send plain text; ensure encryption at the service
+        }
+        auth_url = f"{AUTH_SERVICE_URL}/add-user"
+
+    # Commit database changes
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    # Synchronize with the authentication service
+    try:
+        response = requests.post(auth_url, json=auth_payload)
+        if response.status_code != 200:
+            return jsonify({'success': False, 'error': 'Failed to synchronize with authentication service.'})
+    except requests.exceptions.RequestException as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+    return jsonify({'success': True})
 
 @app.route('/get_user_data', methods=['GET'])
 def get_user_data():
