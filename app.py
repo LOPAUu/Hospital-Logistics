@@ -8,10 +8,11 @@ app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 AUTH_SERVICE_URL = "https://authentication-microservice-1-ux4a.onrender.com"
 
 # PostgreSQL configurations
-app.config['POSTGRES_HOST'] = 'localhost'
-app.config['POSTGRES_USER'] = 'postgres'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = 'fms-group3'  # Change to your PostgreSQL password
-app.config['POSTGRES_DB'] = 'LogisticsDB'  # Database name
+app.config['POSTGRES_HOST'] = 'dpg-ctig2pogph6c7386aab0-a.oregon-postgres.render.com'
+app.config['POSTGRES_USER'] = 'lmsdb_user'  
+app.config['POSTGRES_PASSWORD'] = '3LvON9SVyQNiM4YZ1ZwZTFi5sqxHjja7' 
+app.config['POSTGRES_DB'] = 'lmsdb_ul3w_cy3t' 
+app.config['POSTGRES_PORT'] = '5432' 
 
 def get_db_connection():
     return psycopg2.connect(
