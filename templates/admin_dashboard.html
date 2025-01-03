@@ -4,6 +4,7 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/requisition_admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -19,7 +20,121 @@
             <a href="{{ url_for('signatory_view') }}">Signatory</a>
             <a href="{{ url_for('pos') }}">POS</a>
             <a href="{{ url_for('user_role_management') }}">User Role Management</a>
-            
         </div>
     </div>
+
+    <!-- Dashboard Content -->
+    <div class="container-dashboard">
+        <div class="card sales-overview">
+            <h3>Sales Overview</h3>
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <span>₱ 1000</span>
+                    <span>Sales</span>
+                </div>
+                <div class="overview-item">
+                    <span>₱ 20,300</span>
+                    <span>Revenue</span>
+                </div>
+                <div class="overview-item">
+                    <span>₱ 1055</span>
+                    <span>Profit</span>
+                </div>
+                <div class="overview-item">
+                    <span>₱ 20,729</span>
+                    <span>Cost</span>
+                </div>
+            </div>
+        </div>
+        <div class="card purchase-overview">
+            <h3>Purchase Overview</h3>
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <span>102</span>
+                    <span>Purchase</span>
+                </div>
+                <div class="overview-item">
+                    <span>₱ 15,273</span>
+                    <span>Cost</span>
+                </div>
+                <div class="overview-item">
+                    <span>6</span>
+                    <span>Cancel</span>
+                </div>
+                <div class="overview-item">
+                    <span>₱ 20,928</span>
+                    <span>Return</span>
+                </div>
+            </div>
+        </div>
+        <div class="card inventory-summary">
+            <h3>Inventory Summary</h3>
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <span>1503</span>
+                    <span>Quantity in Hand</span>
+                </div>
+                <div class="overview-item">
+                    <span>187</span>
+                    <span>To be received</span>
+                </div>
+            </div>
+        </div>
+        <div class="card product-summary">
+            <h3>Product Summary</h3>
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <span>30</span>
+                    <span>Number of Suppliers</span>
+                </div>
+                <div class="overview-item">
+                    <span>15</span>
+                    <span>Number of Categories</span>
+                </div>
+            </div>
+        </div>
+        <div class="card top-selling">
+            <h3>Top Selling Stock <a href="#">See All</a></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Sold Quantity</th>
+                        <th>Remaining Quantity</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Biogesic</td>
+                        <td>200</td>
+                        <td>15</td>
+                        <td>₱ 10</td>
+                    </tr>
+                    <tr>
+                        <td>Citirizine</td>
+                        <td>210</td>
+                        <td>15</td>
+                        <td>₱ 15</td>
+                    </tr>
+                    <tr>
+                        <td>Robust</td>
+                        <td>56</td>
+                        <td>8</td>
+                        <td>₱ 105</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card low-quantity">
+            <h3>Low Quantity Stock <a href="#">See All</a></h3>
+            <ul>
+                <li>Paracetamol - <span>10 Pieces</span> <span class="low">Low</span></li>
+                <li>Biogesic - <span>15 Pieces</span> <span class="low">Low</span></li>
+                <li>Bioflu - <span>15 Pieces</span> <span class="low">Low</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
