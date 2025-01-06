@@ -919,6 +919,129 @@ def reject_requisition():
         return jsonify({'error': 'An error occurred while rejecting the requisition.'}), 500
 
 
+@app.route('/get_approved_requisitions', methods=['GET'])
+def get_approved_requisitions():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        # Query to fetch all approved requisitions
+        cursor.execute("""
+            SELECT id, company_name, requested_by, date
+            FROM requisitions
+            WHERE status = 'Approved'
+        """)
+        
+        approved_requisitions = cursor.fetchall()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        return jsonify(approved_requisitions)
+
+    except Exception as e:
+        print(f"Error fetching approved requisitions: {e}")  # Print the error for debugging
+        return jsonify({'error': 'An error occurred while fetching approved requisitions.'}), 500
+
+@app.route('/get_requisition_items', methods=['GET'])
+def get_requisition_items():
+    requisition_id = request.args.get('id')
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        # Query to fetch items for the given requisition ID
+        cursor.execute("""
+            SELECT name, quantity, price, (quantity * price) AS total
+            FROM requisition_items
+            WHERE requisition_id = %s
+        """, (requisition_id,))
+
+        items = cursor.fetchall()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        return jsonify(items)
+
+    except Exception as e:
+        print(f"Error fetching requisition items: {e}")  # Print the error for debugging
+        return jsonify({'error': 'An error occurred while fetching requisition items.'}), 500
+
+
+@app.route('/submit_purchase_order', methods=['POST'])
+def submit_purchase_order():
+    data = request.json
+
+    # Extract data from the request
+    order_number = data.get('orderNumber')
+    supplier_name = data.get('supplierName')
+    requested_by = data.get('requestedBy')
+    order_status = data.get('orderStatus')
+    issue_date = data.get('issueDate')
+    total_amount = data.get('totalAmount')
+    items = data.get('items', [])
+
+    # Validate required fields and collect missing fields
+    missing_fields = []
+    if not order_number:
+        missing_fields.append('orderNumber')
+    if not supplier_name:
+        missing_fields.append('supplierName')
+    if not requested_by:
+        missing_fields.append('requestedBy')
+    if not order_status:
+        missing_fields.append('orderStatus')
+    if not issue_date:
+        missing_fields.append('issueDate')
+    if total_amount is None:
+        missing_fields.append('totalAmount')
+    if not items:
+        missing_fields.append('items')
+
+    # If there are any missing fields, return a detailed error message
+    if missing_fields:
+        return jsonify({'error': f'Missing required fields: {", ".join(missing_fields)}'}), 400
+
+    try:
+        # Connect to the database
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # Insert the purchase order into the database
+        cursor.execute("""
+            INSERT INTO purchase_orders (requisition_id, supplier, status, total_amount, issue_date, ordered_by)
+            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+        """, (order_number, supplier_name, order_status, total_amount, issue_date, requested_by))
+
+        # Get the generated purchase_order_id
+        purchase_order_id = cursor.fetchone()[0]
+
+        # Insert the order items into the order_items table
+        for item in items:
+            cursor.execute("""
+                INSERT INTO order_items (purchase_order_id, name, quantity, price, total)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (purchase_order_id, item['name'], item['quantity'], item['price'], item['total']))
+
+        # Commit the changes and close the connection
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return jsonify({'message': 'Purchase order and items submitted successfully'}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': 'An error occurred while submitting the purchase order.'}), 500
+
+
+
 
 @app.route('/inventory')
 def inventory():

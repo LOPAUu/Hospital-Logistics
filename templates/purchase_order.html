@@ -24,54 +24,34 @@
         <h2>Purchase Orders
             <button id="createOrderBtn">Create Purchase Order</button>
         </h2>
-                <!-- Create Purchase Order Modal -->
-                <div class="container">
-                    <div class="tabs--secondary">
-                        <nav class="tab__nav">
-                            <ul>
-                                <li class="tab__item"><a href="#" class="is-activated" data-filter="all">All</a></li>
-                                <li class="tab__item"><a href="#" data-filter="ordered">Ordered</a></li>
-                                <li class="tab__item"><a href="#" data-filter="partial">Partial</a></li>
-                                <li class="tab__item"><a href="#" data-filter="completed">Completed</a></li>
-                            </ul>
-                        </nav>
-                    </div>
-            
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Purchase Order</th>
-                                <th>Supplier</th>
-                                <th>Status</th>
-                                <th>Received</th>
-                                <th>Total</th>
-                                <th>Issue Date</th>
-                                <th>Ordered By</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="purchaseOrdersTable">
-                            <tr data-status="received" class="clickable-row" data-po="#PO1">
-                                <td>#PO1</td>
-                                <td>Supplier1</td>
-                                <td><span class="status-received">Received</span></td>
-                                <td>3 of 3</td>
-                                <td>₱2550.00</td>
-                                <td>2024-9-10</td>
-                                <td>John Doe</td>
-                                <td>
-                                    <button class="viewBtn">View</button>
-                                    <button class="deleteBtn">Delete</button>
-                                    <button class="evaluateBtn">Evaluate</button>
-                                    <button class="skuBtn" data-order="#PO1">SKU</button>
-            
-                                </td>
-                            </tr>
-                            <!-- Additional rows will be populated dynamically -->
-                        </tbody>
-                    </table>
-            
-                    <!-- Create Purchase Order Modal -->
+        <div class="container">
+            <div class="tabs--secondary">
+                <nav class="tab__nav">
+                    <ul>
+                        <li class="tab__item"><a href="#" class="is-activated" data-filter="all">All</a></li>
+                        <li class="tab__item"><a href="#" data-filter="ordered">Ordered</a></li>
+                        <li class="tab__item"><a href="#" data-filter="partial">Partial</a></li>
+                        <li class="tab__item"><a href="#" data-filter="completed">Completed</a></li>
+                    </ul>
+                </nav>
+            </div>
+    
+            <table>
+                <thead>
+                    <tr>
+                        <th>Purchase Order</th>
+                        <th>Supplier</th>
+                        <th>Status</th>
+                        <th>Received</th>
+                        <th>Total</th>
+                        <th>Issue Date</th>
+                        <th>Ordered By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+            </table>
+    
+            <!-- Create Purchase Order Modal -->
             <div id="purchaseOrderModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
@@ -79,57 +59,54 @@
                     <div class="modal-body">
                         <div class="left-section">
                             <div class="form-section">
-                                <strong>From</strong>
-                                <input type="text" id="fromDetails" disabled="disabled">
+                                <label>Supplier</label>
+                                <span id="companyName">N/A</span>
                             </div>
                             <div class="form-section form-row">
-                                <strong>Ordered By</strong>
-                                <input type="text" id="orderedBy" disabled="disabled"> 
+                                <label>Ordered By</label>
+                                <span id="requestedBy">N/A</span></p>
                             </div>
                             <div class="form-section form-row">
-                                <strong>Order Status</strong>
-                                <input type="text" id="orderStatus" value="Ordered" disabled="disabled">
+                                <label>Order Status</label>
+                                <span id="status">N/A</span></p>
                             </div>
                         </div>
                         <div class="right-section">
                             <div class="form-section form-row">
-                                <strong>Order Number</strong>
-                                <select id="orderNumberDropdown" class="small-select">
-                                    <option value="" disabled selected>Select an Order</option>
-                                    <!-- Populate dynamically -->
-                                    <option value="#PO4">PO4</option>
-                                    <option value="#PO5">PO5</option>
-                                    <option value="#PO6">PO6</option>
-                                    <option value="#PO7">PO7</option>
-                                    <option value="#PO8">PO8</option>
-                                    <option value="#PO9">PO9</option>
+                                <label for="approvedRequisitionsDropdown">Order Number</label>
+                                <select id="approvedRequisitionsDropdown" class="small-select">
+                                    <option value="">Loading...</option>
+                                    <!-- Populate dynamically here each approved requisition -->
+
+                                    
                                 </select>
+                                
                             </div>
                             <div class="form-section form-row">
-                                <strong>Issue Date</strong>
-                                <input type="date" id="issueDate" disabled="disabled">
+                                <label>Issue Date</label>
+                                <span id="date">N/A</span></p>
                             </div>
                         </div>
                     </div>
-                    <div class="form-section">
+                    <div class="form-section">               
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Item</th>
+                                    <th>Item Name</th>
                                     <th>Quantity</th>
-                                    <th>Unit</th>
                                     <th>Price</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody id="itemList">
-                                <!-- Items will be populated automatically -->
+                                <!-- Items will be dynamically populated here -->
                             </tbody>
-                        </table>
+                        </table>                        
                     </div>
                     <div class="form-section">
-                        <strong>Total</strong>
-                        <input type="text" id="total" disabled>
+                        <h3>Total Requisition Amount:</h3>
+                        <!-- Corrected syntax for displaying total amount -->
+                        <p id="totalAmount">Total: N/A</p>
                     </div>
                     <button id="confirmOrderBtn">Confirm</button>
                 </div>
@@ -222,7 +199,7 @@
                         <button id="submitEvaluationBtn">Update Evaluation</button>
                     </div>
             
-               <!-- SKU Modal --> 
+            <!-- SKU Modal --> 
             <div id="skuModal" class="modal">
                 <div class="modal-sku">
                     <span class="close">&times;</span>
@@ -245,9 +222,10 @@
                     <button id="saveSkuBtn">Save</button>
                 </div>
             </div>
-            
-            
-
+    
+    
+    
+        
 
         <script src="{{ url_for('static', filename='js/purchase_order.js') }}"></script>
 </html>
