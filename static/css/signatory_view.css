@@ -1,50 +1,29 @@
-body {
-    font-family: 'Lato', Arial, sans-serif; 
-    background-color: #E5E9F0;
-    margin: 0;
-    color: #003366;
-}
-
 .container {
-    max-width: 100%;
-    margin: 120px auto;
+    max-width: 95%;
+    margin: 0px auto;
     background: white;
-    padding: 40px;
+    padding: 30px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 15px;
 }
 
-.header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #003366;
-    color: #ffffff;
-    padding: 10px 20px;
-    box-sizing: border-box;
-    height: 80px;
-    z-index: 1001;
-} 
-
-.header .menu-logo img {
-    max-width: 190px;
-    height: auto;
-    padding-left: 25px;
+h1 {
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 155px;
 }
+
 
 .tabs--secondary {
-    margin-top: 20px;
+    margin-top: 0px;
+    border-bottom: 1px solid #ccc;
 }
 
 .tab__nav ul {
     display: flex;
-    list-style-type: none;
     padding: 0;
-    margin: 0;
-    border-bottom: 2px solid #ccc;
+    margin: 0 0 13px;
+    list-style-type: none;
 }
 
 .tab__item {
@@ -52,20 +31,24 @@ body {
 }
 
 .tab__item a {
-    display: inline-block;
-    padding: 10px 20px;
-    color: #0056b3;
     text-decoration: none;
-    border-bottom: 2px solid transparent;
+    padding: 10px 20px;
+    color: #333;
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
 
 .tab__item a.is-activated {
-    border-bottom-color: #0056b3;
-    font-weight: bold;
+    background-color: #53649c;
+    color: white;
 }
 
-.tab__item a:hover {
-    border-bottom-color: #002244;
+.tab__item a:hover:not(.is-disabled) {
+    background-color: #e7e7e7;
+}
+.tab__item a.is-disabled {
+    color: #999;
+    cursor: not-allowed;
 }
 
 /* Style for the container that holds the requisition cards */
@@ -88,6 +71,8 @@ body {
 
 /* Card row styling to ensure consistent layout */
 .card-row {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 10px;
 }
 
@@ -216,25 +201,7 @@ body {
     background-color: #d0d0d0;
 }
 
-/* Button styles */
-.approve {
-    background-color: green; /* Green for approve */
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 10px; /* Space between buttons */
-}
 
-.reject {
-    background-color: red; /* Red for reject */
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-}
 table {
     width: 100%;
     border-collapse: collapse;
@@ -260,3 +227,55 @@ table tr:hover {
     background-color: #f1f1f1;
 }
 
+/* General Button Styles */
+.button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #ccc;
+}
+
+/* View Details Button */
+.button-view-details {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.button-view-details:hover {
+    background-color: #45a049;
+}
+
+/* Take Action Button */
+.button-take-action {
+    background-color: #2196F3; /* Blue */
+    color: white;
+}
+
+.button-take-action:hover {
+    background-color: #0b7dda;
+}
+
+/* Approve Button */
+.approve {
+    background-color: green; /* Green */
+    color: white;
+}
+
+.approve:hover {
+    background-color: darkgreen;
+}
+
+/* Reject Button */
+.reject {
+    background-color: red; /* Red */
+    color: white;
+}
+
+.reject:hover {
+    background-color: darkred;
+}
