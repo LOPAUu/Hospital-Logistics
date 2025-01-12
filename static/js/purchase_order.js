@@ -259,8 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-
 document.addEventListener("DOMContentLoaded", () => {
     const table = document.querySelector("table");
 
@@ -268,6 +266,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const fetchPurchaseOrders = async () => {
         try {
             const response = await fetch('/purchase-orders');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
             const data = await response.json();
             renderPurchaseOrders(data);
         } catch (error) {
@@ -286,13 +287,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${order.id}</td>
                 <td>${order.supplier}</td>
                 <td>${order.status}</td>
-                <td>${order.received}</td>
+                <td>${order.received ? "Yes" : "No"}</td>
                 <td>${order.total_amount.toFixed(2)}</td>
                 <td>${order.issue_date}</td>
                 <td>${order.ordered_by}</td>
                 <td>
                     <button class="view-btn" data-id="${order.id}">View</button>
                     <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
+                    <button class="delete-btn" data-id="${order.id}">Delete</button>
+                    <button class="sku-btn" data-id="${order.id}">SKU</button>
                 </td>
             `;
 
@@ -308,21 +311,75 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize fetch on page load
     fetchPurchaseOrders();
 
-    // Example: Add event listeners for buttons
+    // Handle button clicks (View, Evaluate, Delete, SKU)
     table.addEventListener("click", (e) => {
-        if (e.target.classList.contains("view-btn")) {
-            const orderId = e.target.dataset.id;
-            console.log(`View order: ${orderId}`);
-            // Add logic to open and populate the View Modal
-        } else if (e.target.classList.contains("evaluate-btn")) {
-            const orderId = e.target.dataset.id;
+        const button = e.target;
+        const orderId = button.dataset.id;
+
+        if (button.classList.contains("view-btn")) {
+            openViewModal(orderId);  // Open View Modal and populate it
+        } else if (button.classList.contains("evaluate-btn")) {
             console.log(`Evaluate order: ${orderId}`);
-            // Add logic to open and populate the Evaluate Modal
+            // Add logic for Evaluate Modal
+        } else if (button.classList.contains("delete-btn")) {
+            console.log(`Delete order: ${orderId}`);
+            // Add logic for Delete functionality
+        } else if (button.classList.contains("sku-btn")) {
+            console.log(`Manage SKU for order: ${orderId}`);
+            // Add logic for SKU management
         }
     });
+
+    const openViewModal = (orderId) => {
+        const viewModal = document.getElementById("viewModal");
+        const closeModal = viewModal.querySelector(".close-btn");
+    
+        // Show the modal
+        viewModal.style.display = "block";
+    
+        fetch(`/order-details/${orderId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Populate the modal with order details
+                document.getElementById("viewFromDetails").textContent = data.supplier;
+                document.getElementById("viewOrderNumber").textContent = data.id;
+                document.getElementById("viewOrderStatus").textContent = data.status;
+                document.getElementById("viewIssueDate").textContent = data.issue_date;
+                document.getElementById("viewOrderedBy").textContent = data.ordered_by;
+                document.getElementById("viewTotal").textContent = data.total_amount.toFixed(2);
+    
+                // Fetch and populate the items
+                fetch(`/order-items/${orderId}`)
+                    .then(response => response.json())
+                    .then(items => {
+                        const itemList = document.getElementById("viewItemList");
+                        itemList.innerHTML = "";  // Clear existing items
+                        items.forEach(item => {
+                            itemList.innerHTML += `
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${item.price}</td>
+                                    <td>${item.total}</td>
+                                </tr>
+                            `;
+                        });
+                    })
+                    .catch(error => console.error("Error fetching items:", error));
+            })
+            .catch(error => console.error("Error fetching order details:", error));
+    
+        // Close modal logic
+        closeModal.addEventListener("click", () => {
+            viewModal.style.display = "none";
+        });
+    
+        // Close modal if clicked outside
+        window.addEventListener("click", (e) => {
+            if (e.target === viewModal) {
+                viewModal.style.display = "none";
+            }
+        });
+    };
+        
 });
-
-
-
-
-

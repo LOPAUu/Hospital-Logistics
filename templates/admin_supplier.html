@@ -37,6 +37,7 @@
         <table id="supplier-list">
             <thead>
                 <tr>
+                    <th>No.</th>
                     <th>Company Name</th>
                     <th>Contact Person</th>
                     <th>Email</th>
@@ -48,6 +49,7 @@
             <tbody>
                 {% for supplier in suppliers %}
                 <tr>
+                    <td>{{ loop.index }}</td>
                     <td>{{ supplier.company_name }}</td>
                     <td>{{ supplier.contact_person }}</td>
                     <td>{{ supplier.email }}</td>
