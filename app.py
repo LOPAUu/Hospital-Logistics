@@ -944,6 +944,7 @@ def get_approved_requisitions():
         print(f"Error fetching approved requisitions: {e}")  # Print the error for debugging
         return jsonify({'error': 'An error occurred while fetching approved requisitions.'}), 500
 
+# to get the details show in the create dropdown
 @app.route('/get_requisition_items', methods=['GET'])
 def get_requisition_items():
     requisition_id = request.args.get('id')
@@ -973,7 +974,7 @@ def get_requisition_items():
         print(f"Error fetching requisition items: {e}")  # Print the error for debugging
         return jsonify({'error': 'An error occurred while fetching requisition items.'}), 500
 
-
+# route for submit button
 @app.route('/submit_purchase_order', methods=['POST'])
 def submit_purchase_order():
     data = request.json
@@ -1035,6 +1036,7 @@ def submit_purchase_order():
         return jsonify({'error': 'An error occurred while submitting the purchase order.'}), 500
 
 
+# to show the submitted purchase orders
 @app.route('/purchase-orders', methods=['GET'])
 def get_purchase_orders():
     conn = get_db_connection()
@@ -1064,6 +1066,91 @@ def get_purchase_orders():
         for po in purchase_orders
     ]
     return jsonify(result)
+
+
+# Route to fetch purchase order details
+@app.route('/purchase_order/<int:order_id>', methods=['GET'])
+def get_purchase_order(order_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM purchase_orders WHERE id = %s
+    """, (order_id,))
+    order = cur.fetchone()
+
+    cur.execute("""
+        SELECT * FROM order_items WHERE purchase_order_id = %s
+    """, (order_id,))
+    items = cur.fetchall()
+    conn.close()
+
+    return jsonify({'order': order, 'items': items})
+
+# Route to fetch evaluation data
+@app.route('/evaluate/<int:order_id>', methods=['GET'])
+def get_evaluation(order_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM item_evaluation WHERE purchase_order_id = %s
+    """, (order_id,))
+    evaluation = cur.fetchall()
+    conn.close()
+
+    return jsonify({'evaluation': evaluation})
+
+# Route to submit evaluation data
+@app.route('/evaluate/<int:order_id>', methods=['POST'])
+def submit_evaluation(order_id):
+    data = request.json
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    for item in data['items']:
+        cur.execute("""
+            INSERT INTO item_evaluation (purchase_order_id, item_id, received_quantity, lost_quantity, damaged_quantity)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (purchase_order_id, item_id) DO UPDATE 
+            SET received_quantity = EXCLUDED.received_quantity,
+                lost_quantity = EXCLUDED.lost_quantity,
+                damaged_quantity = EXCLUDED.damaged_quantity,
+                updated_at = CURRENT_TIMESTAMP
+        """, (order_id, item['item_id'], item['received'], item['lost'], item['damaged']))
+
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Evaluation updated successfully'})
+
+# Route to fetch SKU details
+@app.route('/sku/<int:item_id>', methods=['GET'])
+def get_skus(item_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM item_skus WHERE item_id = %s
+    """, (item_id,))
+    skus = cur.fetchall()
+    conn.close()
+
+    return jsonify({'skus': skus})
+
+# Route to save SKU details
+@app.route('/sku/<int:item_id>', methods=['POST'])
+def save_skus(item_id):
+    data = request.json
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    for sku in data['skus']:
+        cur.execute("""
+            INSERT INTO item_skus (item_id, sku, quantity, expiration_date)
+            VALUES (%s, %s, %s, %s)
+        """, (item_id, sku['sku'], sku['quantity'], sku['expiration_date']))
+
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'SKUs saved successfully'})
+
 
 @app.route('/inventory')
 def inventory():

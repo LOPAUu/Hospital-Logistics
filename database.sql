@@ -81,6 +81,29 @@ ADD CONSTRAINT fk_requisition_id
 FOREIGN KEY (requisition_id)
 REFERENCES requisitions(id);
 
+-- Create purchase_orders table
+CREATE TABLE purchase_orders (
+    id SERIAL PRIMARY KEY,
+    requisition_id INT NOT NULL,
+    supplier VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'Ordered', -- Ordered, Partial, Completed
+    total_amount DECIMAL(10, 2) NOT NULL,
+    issue_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ordered_by VARCHAR(255) NOT NULL,
+    FOREIGN KEY (requisition_id) REFERENCES requisitions(id) ON DELETE CASCADE
+);
+
+-- Create table for storing order items (Optional, for detailed tracking)
+CREATE TABLE order_items (
+    id SERIAL PRIMARY KEY,
+    purchase_order_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id)
+);
+
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (
     medicine_request_id SERIAL PRIMARY KEY,

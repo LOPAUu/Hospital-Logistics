@@ -1,60 +1,3 @@
-// Sample data representing requisitions (for testing purposes)
-const sampleData = [
-    {
-        id: 1,
-        date: '2024-09-23',
-        purpose: 'Order More Vaccines',
-        requested_by: 'John Doe',
-        role: 'Nurse',
-        status: 'pending',
-        total: 1000,
-        items: [{ name: 'Vaccine A', quantity: 10, price: 100, total: 1000 }],
-        attachments: ['order-vaccine.pdf', 'invoice-vaccine.pdf'],
-    },
-    {
-        id: 2,
-        date: '2024-09-25',
-        purpose: 'Request Surgical Supplies',
-        requested_by: 'Jane Smith',
-        role: 'Pharmacist',
-        status: 'approved',
-        total: 3500,
-        items: [
-            { name: 'Scalpel', quantity: 5, price: 200, total: 1000 },
-            { name: 'Surgical Gloves', quantity: 10, price: 250, total: 2500 },
-        ],
-        attachments: ['surgical-order.pdf', 'surgical-invoice.pdf'],
-    },
-    {
-        id: 3,
-        date: '2024-09-27',
-        purpose: 'Request IV Fluids',
-        requested_by: 'Alice Brown',
-        role: 'Doctor',
-        status: 'rejected',
-        total: 1500,
-        items: [
-            { name: 'Normal Saline', quantity: 20, price: 50, total: 1000 },
-            { name: 'Dextrose', quantity: 10, price: 50, total: 500 },
-        ],
-        attachments: ['iv-fluids.pdf'],
-    },
-    {
-        id: 4,
-        date: '2024-09-30',
-        purpose: 'Order Bandages',
-        requested_by: 'Bob White',
-        role: 'Nurse',
-        status: 'pending',
-        total: 800,
-        items: [
-            { name: 'Adhesive Bandage', quantity: 20, price: 20, total: 400 },
-            { name: 'Elastic Bandage', quantity: 10, price: 40, total: 400 },
-        ],
-        attachments: [],
-    },
-];
-
 // Function to fetch requisition data based on status
 function filterByStatus(status) {
     // Highlight the active tab
@@ -65,138 +8,148 @@ function filterByStatus(status) {
         activeTab.classList.add('is-activated');
     }
 
-    // Filter sample data based on status
-    const filteredData = status === 'all' ? sampleData : sampleData.filter(req => req.status === status);
+    // Fetch requisition data from the backend
+    fetch(`/get_requisitions?status=${status}`)
+        .then(response => response.json())
+        .then(data => {
+            const requisitionCards = document.getElementById('requisition-cards');
+            requisitionCards.innerHTML = '';  // Clear current cards
 
-    // Populate requisition cards dynamically
-    const requisitionCards = document.getElementById('requisition-cards');
-    requisitionCards.innerHTML = ''; // Clear current cards
+            // Check if requisitions are returned
+            if (data.length === 0) {
+                requisitionCards.innerHTML = '<p>No requisitions found for this status.</p>';
+                return;
+            }
 
-    if (filteredData.length === 0) {
-        requisitionCards.innerHTML = '<p>No requisitions found for this status.</p>';
-        return;
-    }
-
-    filteredData.forEach(req => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.onclick = () => viewDetails(req.id); // Make the entire card clickable
-
-        // Role-based styling
-        let roleStyle = '';
-        if (req.role === 'Nurse') {
-            roleStyle = 'background-color: #e7f3ff; color: #007bff; border: 2px solid #007bff;';
-        } else if (req.role === 'Pharmacist') {
-            roleStyle = 'background-color: #e6ffe6; color: #28a745; border: 2px solid #28a745;';
-        } else if (req.role === 'Doctor') {
-            roleStyle = 'background-color: #fff5e6; color: #ff9933; border: 2px solid #ff9933;';
-        }
-
-        // Buttons for approve/reject if status is pending
-        let actionButtons = '';
-        if (req.status === 'pending') {
-            actionButtons = `
-                <button class="approve" onclick="approveRequisition(${req.id}); event.stopPropagation();">Approve</button>
-                <button class="reject" onclick="rejectRequisition(${req.id}); event.stopPropagation();">Reject</button>
-            `;
-        } else if (req.status === 'approved') {
-            actionButtons = `<button class="approve" disabled>Approved</button>`;
-        } else if (req.status === 'rejected') {
-            actionButtons = `<button class="reject" disabled>Rejected</button>`;
-        }
-
-        // Card content
-        card.innerHTML = `
-            <div class="card-content">
-                <div class="card-row">
-                    <p><strong>Requisition #</strong> ${req.id}</p>
-                    <p><span class="role" style="${roleStyle} font-weight: bold; padding: 8px 12px; border-radius: 5px;">${req.role}</span></p>
-                </div>
-                <hr>
-                <p><strong>Date:</strong> ${req.date}</p>
-                <p><strong>Purpose:</strong> ${req.purpose}</p>
-                <p><strong>Requested By:</strong> ${req.requested_by}</p>
-                <p><strong>Status:</strong> ${req.status}</p>
-                <p><strong>Total:</strong> ₱${req.total}</p>
-                <hr>
-                <div class="button-group">${actionButtons}</div>
-            </div>
-        `;
-        requisitionCards.appendChild(card);
-    });
+            // Display requisition cards
+            data.forEach(requisition => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `
+                    <h3>Requisition #${requisition.id}</h3>
+                    <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
+                    <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+                    <p><strong>Requested By:</strong> ${requisition.requested_by}</p>
+                    <p><strong>Status:</strong> ${requisition.status}</p>
+                    <button onclick="viewDetails(${requisition.id})">View Details</button>
+                    <button onclick="openActionModal(${requisition.id})">Take Action</button>
+                `;
+                requisitionCards.appendChild(card);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching requisitions:', error);
+            alert('An error occurred while fetching requisitions.');
+        });
 }
 
 // Function to view requisition details
 function viewDetails(requisitionId) {
-    const data = sampleData.find(req => req.id === requisitionId);
-    if (!data) {
-        alert('No details found for this requisition.');
-        return;
-    }
+    console.log(`viewDetails called with ID: ${requisitionId}`);
 
-    const itemsTable = `
-        <table>
-            <thead>
-                <tr><th>Item Name</th><th>Quantity</th><th>Price</th><th>Total</th></tr>
-            </thead>
-            <tbody>
-                ${data.items.map(item => `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.quantity}</td>
-                        <td>₱${item.price}</td>
-                        <td>₱${item.total}</td>
-                    </tr>`).join('')}
-            </tbody>
-        </table>`;
-
-    const attachmentsList = data.attachments.length > 0
-        ? `<ul>${data.attachments.map(att => `<li><a href="#">${att}</a></li>`).join('')}</ul>`
-        : '<p>No attachments available.</p>';
-
-    const modalContent = document.getElementById('view-details-content');
-    modalContent.innerHTML = `
-        <h3>Requisition #${data.id}</h3>
-        <p><strong>Date:</strong> ${data.date}</p>
-        <p><strong>Purpose:</strong> ${data.purpose}</p>
-        <p><strong>Requested By:</strong> ${data.requested_by}</p>
-        <p><strong>Role:</strong> ${data.role}</p>
-        <p><strong>Status:</strong> ${data.status}</p>
-        <p><strong>Total:</strong> ₱${data.total}</p>
-        <h4>Items</h4>
-        ${itemsTable}
-        <h4>Attachments</h4>
-        ${attachmentsList}
-    `;
+    // Show the modal
     document.getElementById('view-details-modal').style.display = 'block';
+
+    // Fetch requisition details from the backend
+    fetch(`/get_requisition_details_modal?id=${requisitionId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Data received:', data);
+            if (data.error) {
+                console.error('Error:', data.error);
+                alert('An error occurred while fetching requisition details.');
+                return;
+            }
+
+            // Get the modal content element
+            const modalContent = document.getElementById('view-details-content');
+
+            // Calculate the overall total for items
+            let totalAmount = 0;
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => {
+                    totalAmount += item.quantity * item.price; // Calculate total
+                });
+            }
+
+            // Update the modal content with the fetched requisition details and the overall total
+            modalContent.innerHTML = `
+                <h3>Requisition #${data.id || 'N/A'}</h3>
+                <p><strong>Date:</strong> ${data.date ? new Date(data.date).toLocaleDateString() : 'N/A'}</p>
+                <p><strong>Purpose:</strong> ${data.purpose || 'N/A'}</p>
+                <p><strong>Company:</strong> ${data.company_name || 'N/A'}</p>
+                <p><strong>Requested By:</strong> ${data.requested_by || 'N/A'}</p>
+                <p><strong>Status:</strong> ${data.status || 'N/A'}</p>
+                <h4>Items</h4>
+                <ul>
+                    ${data.items && data.items.length > 0 ? 
+                        data.items.map(item => `
+                            <li>${item.name} - ${item.quantity} x ${item.price} = ${item.quantity * item.price}</li>
+                        `).join('') : '<li>No items found</li>'
+                    }
+                </ul>
+                <h4>Overall Total: ${totalAmount.toFixed(2)}</h4> <!-- Display the overall total -->
+                <h4>Attachments</h4>
+                <ul>
+                    ${data.attachments && data.attachments.length > 0 ? 
+                        data.attachments.map(attachment => `
+                            <li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>
+                        `).join('') : '<li>No attachments found</li>'
+                    }
+                </ul>
+            `;
+        })
+        .catch(error => {
+            console.error('Error fetching requisition details:', error);
+            alert('An error occurred while fetching requisition details.');
+        });
 }
 
-// Function to close the View Details modal
+
+// Function to close the view details modal
 function closeViewDetailsModal() {
     document.getElementById('view-details-modal').style.display = 'none';
 }
 
-// Function to approve a requisition
-function approveRequisition(reqId) {
-    const req = sampleData.find(r => r.id === reqId);
-    if (req) {
-        req.status = 'approved';
-        filterByStatus('all'); // Refresh the requisition list
-        alert(`Requisition #${reqId} approved.`);
-    }
+// Function to open the action modal
+function openActionModal(requisitionId) {
+    const actionContent = document.getElementById('action-content');
+    actionContent.innerHTML = `
+        <p>Perform actions for Requisition #${requisitionId}</p>
+        <button onclick="approveRequisition(${requisitionId})">Approve</button>
+        <button onclick="rejectRequisition(${requisitionId})">Reject</button>
+    `;
+    document.getElementById('action-modal').style.display = 'flex';
 }
 
-// Function to reject a requisition
-function rejectRequisition(reqId) {
-    const req = sampleData.find(r => r.id === reqId);
-    if (req) {
-        req.status = 'rejected';
-        filterByStatus('all'); // Refresh the requisition list
-        alert(`Requisition #${reqId} rejected.`);
-    }
+// Function to close the action modal
+function closeActionModal() {
+    document.getElementById('action-modal').style.display = 'none';
 }
 
-// Initial population of all requisitions on page load
-document.addEventListener('DOMContentLoaded', () => {
-    filterByStatus('all');
-});
+function approveRequisition(requisitionId) {
+    fetch(`/approve_requisition?id=${requisitionId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // Display success or error message
+            filterByStatus('all'); // Refresh the requisition list
+        })
+        .catch(error => console.error('Error approving requisition:', error));
+}
+
+function rejectRequisition(requisitionId) {
+    fetch(`/reject_requisition?id=${requisitionId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // Display success or error message
+            filterByStatus('all'); // Refresh the requisition list
+        })
+        .catch(error => console.error('Error rejecting requisition:', error));
+}
+
+
+// Initial load of all requisitions
+filterByStatus('all');
+
+
+

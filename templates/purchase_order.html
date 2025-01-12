@@ -49,25 +49,6 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for order in purchase_orders %}
-                    <tr>
-                        <td>{{ order.purchase_order }}</td>
-                        <td>{{ order.supplier }}</td>
-                        <td>{{ order.status }}</td>
-                        <td>{{ order.received }}</td>
-                        <td>{{ order.total }}</td>
-                        <td>{{ order.issue_date }}</td>
-                        <td>{{ order.ordered_by }}</td>
-                        <td>
-                            <button class="viewOrderBtn" data-id="{{ order.id }}">View</button>
-                            <script type="application/json" id="order-data-{{ order.id }}">
-                                {{ order | tojson }}
-                            </script>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
             </table>
 
             
@@ -133,59 +114,59 @@
             </div>
             
             
-                    <!-- View Purchase Order Modal -->
-                    <div id="orderDetailsModal" class="modal">
-                        <div class="modal-view">
-                            <span class="close">&times;</span>
-                            <h3>View Purchase Order</h3>
-                            <div class="modal-body">
-                                <div class="left-section">
-                                    <div class="form-section">
-                                        <label>From</label>
-                                        <input type="text" id="viewFromDetails" readonly>
-                                    </div>
-                                </div>
-                                <div class="right-section">
-                                    <div class="form-section form-row">
-                                        <label>Order Number</label>
-                                        <input type="text" id="viewOrderNumber" readonly>
-                                    </div>
-                                    <div class="form-section form-row">
-                                        <label>Order Status</label>
-                                        <input type="text" id="viewOrderStatus" readonly>
-                                    </div>
-                                    <div class="form-section form-row">
-                                        <label>Issue Date</label>
-                                        <input type="date" id="viewIssueDate" readonly>
-                                    </div>
-                                    <div class="form-section form-row">
-                                        <label>Ordered By</label>
-                                        <input type="text" id="viewOrderedBy" readonly>
-                                    </div>
-                                </div>
-                            </div>
+            <!-- View Purchase Order Modal -->
+            <div id="orderDetailsModal" class="modal">
+                <div class="modal-view">
+                    <span class="close">&times;</span>
+                    <h3>View Purchase Order</h3>
+                    <div class="modal-body">
+                        <div class="left-section">
                             <div class="form-section">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Quantity</th>
-                                            <th>Unit</th>
-                                            <th>Price</th>
-                                            <th>Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="viewItemList">
-                                        <!-- Items will be populated automatically -->
-                                    </tbody>
-                                </table>
+                                <label>From</label>
+                                <input type="text" id="viewFromDetails" readonly>
                             </div>
-                            <div class="form-section">
-                                <label>Total</label>
-                                <input type="text" id="viewTotal" disabled>
+                        </div>
+                        <div class="right-section">
+                            <div class="form-section form-row">
+                                <label>Order Number</label>
+                                <input type="text" id="viewOrderNumber" readonly>
+                            </div>
+                            <div class="form-section form-row">
+                                <label>Order Status</label>
+                                <input type="text" id="viewOrderStatus" readonly>
+                            </div>
+                            <div class="form-section form-row">
+                                <label>Issue Date</label>
+                                <input type="date" id="viewIssueDate" readonly>
+                            </div>
+                            <div class="form-section form-row">
+                                <label>Ordered By</label>
+                                <input type="text" id="viewOrderedBy" readonly>
                             </div>
                         </div>
                     </div>
+                    <div class="form-section">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Unit</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="viewItemList">
+                                <!-- Items will be populated automatically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="form-section">
+                        <label>Total</label>
+                        <input type="text" id="viewTotal" disabled>
+                    </div>
+                </div>
+            </div>
             
                     <!-- Evaluate Items Modal -->
             <div id="evaluateModal" class="modal">
