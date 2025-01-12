@@ -132,25 +132,39 @@ table tbody td { border-bottom: 1px solid #ddd; }
     background-color: rgba(0, 0, 0, 0.4); /* Background overlay */
 }
 
-/* Modal Content */
-.modal-content, .modal-evaluate, .modal-view {
+.modal-content {
     background-color: white;
     border-radius: 8px;
+    max-width: 30%;
     margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
-    position: relative;
-    z-index: 2001; /* Ensure modal content stays on top of the overlay */
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-/* Modal Evaluate */
+.close:hover, .close:focus { color: black; }
+
 .modal-evaluate {
+    background-color: white;
+    border-radius: 8px;
     max-width: 50%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
 }
 
-/* Modal View */
 .modal-view {
+    background-color: white;
+    border-radius: 8px;
     max-width: 60%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
 }
 
 /* Close Button */
