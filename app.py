@@ -919,6 +919,7 @@ def reject_requisition():
         return jsonify({'error': 'An error occurred while rejecting the requisition.'}), 500
 
 
+
 @app.route('/get_approved_requisitions', methods=['GET'])
 def get_approved_requisitions():
     try:
@@ -1068,23 +1069,126 @@ def get_purchase_orders():
     return jsonify(result)
 
 
+
 # Route to fetch purchase order details
 @app.route('/purchase_order/<int:order_id>', methods=['GET'])
 def get_purchase_order(order_id):
     conn = get_db_connection()
     cur = conn.cursor()
+    
+    # Fetch the purchase order details
     cur.execute("""
-        SELECT * FROM purchase_orders WHERE id = %s
+        SELECT id, supplier, status, received, total_amount, issue_date, ordered_by 
+        FROM purchase_orders WHERE id = %s
     """, (order_id,))
     order = cur.fetchone()
 
+    if not order:
+        conn.close()
+        return jsonify({'error': 'Purchase order not found'}), 404
+
+    # Fetch the order items
     cur.execute("""
-        SELECT * FROM order_items WHERE purchase_order_id = %s
+        SELECT name, quantity, unit, price 
+        FROM order_items WHERE purchase_order_id = %s
     """, (order_id,))
     items = cur.fetchall()
+
     conn.close()
 
-    return jsonify({'order': order, 'items': items})
+    # Structure the response
+    order_data = {
+        "id": order[0],
+        "supplier": order[1],
+        "status": order[2],
+        "received": order[3],
+        "total_amount": float(order[4]),  # Convert Decimal to float if necessary
+        "issue_date": order[5].strftime("%Y-%m-%d"),  # Format date as a string
+        "ordered_by": order[6],
+        "items": [
+            {
+                "name": item[0],
+                "quantity": item[1],
+                "unit": item[2],
+                "price": float(item[3]),  # Convert Decimal to float if necessary
+                "total": float(item[1] * item[3])  # Calculate the total for each item
+            }
+            for item in items
+        ]
+    }
+
+    return jsonify(order_data)
+
+
+@app.route('/order-details/<int:order_id>', methods=['GET'])
+def get_order_details(order_id):
+    # Establish DB connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Query to get the main order details
+    cursor.execute("""
+        SELECT id, requisition_id, supplier, status, total_amount, issue_date, ordered_by
+        FROM purchase_orders
+        WHERE id = %s
+    """, (order_id,))
+    order = cursor.fetchone()
+
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+
+    # Query to get the items for the order
+    cursor.execute("""
+        SELECT name, quantity, price, total
+        FROM order_items
+        WHERE purchase_order_id = %s
+    """, (order_id,))
+    items = cursor.fetchall()
+
+    # Close the database connection
+    cursor.close()
+    conn.close()
+
+    # Prepare order details data to be sent back
+    order_data = {
+        'id': order[0],
+        'requisition_id': order[1],
+        'supplier': order[2],
+        'status': order[3],
+        'total_amount': order[4],
+        'issue_date': order[5].strftime('%Y-%m-%d'),  # Convert date to string if necessary
+        'ordered_by': order[6],
+        'items': [{'name': item[0], 'quantity': item[1], 'price': item[2], 'total': item[3]} for item in items]
+    }
+
+    return jsonify(order_data)
+
+@app.route('/order-items/<int:order_id>', methods=['GET'])
+def get_order_items(order_id):
+    # Establish DB connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Query to get the items for the given purchase_order_id (from the purchase_orders table)
+    cursor.execute("""
+        SELECT name, quantity, price, total
+        FROM order_items
+        WHERE purchase_order_id = %s
+    """, (order_id,))
+    items = cursor.fetchall()
+
+    # Close the database connection
+    cursor.close()
+    conn.close()
+
+    if not items:
+        return jsonify({"error": "No items found for this order"}), 404
+
+    # Return the items data
+    items_data = [{'name': item[0], 'quantity': item[1], 'price': item[2], 'total': item[3]} for item in items]
+    return jsonify(items_data)
+
+
 
 # Route to fetch evaluation data
 @app.route('/evaluate/<int:order_id>', methods=['GET'])

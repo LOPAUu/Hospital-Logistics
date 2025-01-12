@@ -49,7 +49,8 @@
             <tbody>
                 {% for requisition in requisitions %}
                 <tr>
-                    <td>{{ requisition.id }}</td>
+                    <!-- Display the current loop index as the number -->
+                    <td>{{ loop.index }}</td>
                     <td>{{ requisition.date }}</td>
                     <td>{{ requisition.purpose }}</td>
                     <td>{{ requisition.company_name }}</td>
@@ -60,10 +61,10 @@
                 </tr>
                 {% endfor %}
             </tbody>
-            
         </table>
         <!-- Modal structure (should be in your HTML) -->
     </div>
+    
     
     <!-- Modal for managing requisitions -->
     <div id="manage-requisition-modal" class="modal requisition-modal">
