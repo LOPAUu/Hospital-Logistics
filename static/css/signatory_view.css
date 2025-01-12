@@ -60,20 +60,27 @@ h1 {
     width: 100%; /* Ensure the container takes full width */
 }
 
-/* Card styles for uniform look */
-.card {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 15px;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 /* Card row styling to ensure consistent layout */
 .card-row {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+    justify-content: space-between; /* Space items evenly */
+    padding: 10px 0; /* Add vertical padding for spacing */
+    border-bottom: 1px solid #eee; /* Add underline between rows */
+}
+
+.card-row:last-child {
+    border-bottom: none; /* Remove underline from the last row */
+}
+
+.card-row p {
+    margin: 0; /* Remove default margins for consistent spacing */
+}
+
+.card-buttons {
+    display: flex;
+    column-gap: 12px;
+    margin-top: 10px;
+    padding-top: 10px;
 }
 
 /* For smaller screens, adjust the number of columns */
@@ -112,6 +119,28 @@ h1 {
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
+
+#view-details-content {
+    display: flex;
+    flex-direction: column; /* Organize into vertical sections */
+    width: 100%; /* Ensure full width of the modal */
+}
+
+.view-details-top {
+    display: flex;
+    justify-content: space-between; /* Split left and right sections */
+}
+
+.view-details-left,
+.view-details-right {
+    flex: 1; /* Distribute equal width to left and right sections */
+}
+
+.view-details-bottom {
+    margin-top: 10px;
+    border-top: 1px solid #ddd; /* Visual separation for the bottom section */
+}
+
 
 .close-button {
     color: #aaa;
@@ -167,14 +196,16 @@ h1 {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     padding: 9px;
-    width: 30%; /* 3 cards per row */
+    width: 22%; /* 3 cards per row */
     cursor: pointer; /* Change cursor to indicate clickability */
     position: relative; /* Added for positioning of buttons */
 }
 
 .card h3 {
-    margin-top: 0;
+    margin: 0 0 10px;
     font-size: 1.2em;
+    border-bottom: 2px solid #ddd; /* Add underline below the heading */
+    padding-bottom: 30px;
 }
 
 .card p {
@@ -242,8 +273,13 @@ table tr:hover {
 
 /* View Details Button */
 .button-view-details {
-    background-color: #4CAF50; /* Green */
+    background-color: #4CAF50; /* Green button */
     color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .button-view-details:hover {
@@ -252,8 +288,13 @@ table tr:hover {
 
 /* Take Action Button */
 .button-take-action {
-    background-color: #2196F3; /* Blue */
+    background-color: #2196F3; /* Blue button */
     color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .button-take-action:hover {
@@ -278,4 +319,26 @@ table tr:hover {
 
 .reject:hover {
     background-color: darkred;
+}
+
+.disabled-button {
+    background-color: #d3d3d3;
+    color: #666;
+    cursor: not-allowed;
+}
+
+
+.status-approved {
+    color: green;
+    font-weight: bold;
+}
+
+.status-rejected {
+    color: red;
+    font-weight: bold;
+}
+
+.status-pending {
+    color: #333; /* Default color (black/gray) */
+    font-weight: bold;
 }

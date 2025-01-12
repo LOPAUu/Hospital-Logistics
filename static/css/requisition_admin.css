@@ -48,6 +48,11 @@ h1 {
     background-color: #f0f0f0;
 }
 
+.swal2-container {
+    z-index: 2500 !important; /* Ensure it appears above other modals */
+}
+
+
 /* Button styles */
 button {
     background-color: #0056b3;

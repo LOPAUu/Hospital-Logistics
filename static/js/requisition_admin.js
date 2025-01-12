@@ -12,11 +12,24 @@ async function fetchRequisition() {
 }
 
 // Render requisitions to the table
-function renderRequisition(requisitions) {
+function renderRequisition(requisitions, order = 'asc') {
     const requisitionList = document.getElementById('requisition-list');
-    requisitionList.innerHTML = requisitions.map(requisition => `
+
+    // Sort the requisitions based on the order (ascending or descending)
+    const sortedRequisitions = [...requisitions].sort((a, b) => {
+        return order === 'asc' ? a.id - b.id : b.id - a.id;
+    });
+
+    // Create a numbering system based on the sorted order
+    const numberedRequisitions = sortedRequisitions.map((requisition, index) => ({
+        ...requisition,
+        displayNumber: order === 'asc' ? index + 1 : sortedRequisitions.length - index,
+    }));
+
+    // Render the table rows with the new numbering system
+    requisitionList.innerHTML = numberedRequisitions.map(requisition => `
         <tr>
-            <td>${requisition.id}</td>
+            <td>${requisition.displayNumber}</td>
             <td>${requisition.date}</td>
             <td>${requisition.purpose}</td>
             <td>${requisition.company_name}</td>
@@ -37,31 +50,41 @@ function renderRequisition(requisitions) {
 
 
 async function saveRequisition(event) {
-    event.preventDefault();  // Prevent the default form submission behavior
-    
+    event.preventDefault(); // Prevent default form submission behavior
+
     const form = document.getElementById('requisition-form');
-    const requisitionId = document.getElementById('requisition-id').value;  // Get requisition ID
-    
+    const requisitionId = document.getElementById('requisition-id').value;
+
     // Collect requisition data from form fields
     const requisitionData = {
         date: form.date.value,
         purpose: form.purpose.value,
         company_name: form.company_name.value,
-        requested_by: form.requested_by.value, // Include requested_by field
+        requested_by: form.requested_by.value,
         items: getItemsFromForm(form)
     };
 
+    // Check if attachments are provided
+    const files = document.getElementById('attachments').files;
+    if (files.length === 0) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Attachment is required. Please upload at least one file.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return; // Exit the function if no files are attached
+    }
+
     // Create FormData object for attachments
     let formData = new FormData();
-    formData.append('requisition_id', requisitionId);  // Append requisition ID
-    formData.append('requisition_data', JSON.stringify(requisitionData)); // Append requisition data
+    formData.append('requisition_id', requisitionId);
+    formData.append('requisition_data', JSON.stringify(requisitionData));
 
-    const files = document.getElementById('attachments').files;
     for (let i = 0; i < files.length; i++) {
         formData.append('attachments', files[i]);
     }
 
-    // Perform the API requests as described in your code
     try {
         const requisitionResponse = await fetch('/requisition', {
             method: 'POST',
@@ -89,10 +112,20 @@ async function saveRequisition(event) {
                     window.location.reload();
                 });
             } else {
-                throw new Error('Error uploading attachments');
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Error uploading attachments.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
             }
         } else {
-            throw new Error('Failed to save requisition');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to save requisition.',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
         }
     } catch (error) {
         Swal.fire({
@@ -103,6 +136,8 @@ async function saveRequisition(event) {
         });
     }
 }
+
+
 
 
 
