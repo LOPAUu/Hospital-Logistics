@@ -49,7 +49,28 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
+                <tbody>
+                    {% for order in purchase_orders %}
+                    <tr>
+                        <td>{{ order.purchase_order }}</td>
+                        <td>{{ order.supplier }}</td>
+                        <td>{{ order.status }}</td>
+                        <td>{{ order.received }}</td>
+                        <td>{{ order.total }}</td>
+                        <td>{{ order.issue_date }}</td>
+                        <td>{{ order.ordered_by }}</td>
+                        <td>
+                            <button class="viewOrderBtn" data-id="{{ order.id }}">View</button>
+                            <script type="application/json" id="order-data-{{ order.id }}">
+                                {{ order | tojson }}
+                            </script>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
+
+            
     
             <!-- Create Purchase Order Modal -->
             <div id="purchaseOrderModal" class="modal">

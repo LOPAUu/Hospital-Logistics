@@ -987,24 +987,20 @@ def submit_purchase_order():
     total_amount = data.get('totalAmount')
     items = data.get('items', [])
 
-    # Validate required fields and collect missing fields
+    # Validate required fields
     missing_fields = []
-    if not order_number:
-        missing_fields.append('orderNumber')
-    if not supplier_name:
-        missing_fields.append('supplierName')
-    if not requested_by:
-        missing_fields.append('requestedBy')
-    if not order_status:
-        missing_fields.append('orderStatus')
-    if not issue_date:
-        missing_fields.append('issueDate')
-    if total_amount is None:
-        missing_fields.append('totalAmount')
-    if not items:
-        missing_fields.append('items')
+    for field, value in [
+        ('orderNumber', order_number),
+        ('supplierName', supplier_name),
+        ('requestedBy', requested_by),
+        ('orderStatus', order_status),
+        ('issueDate', issue_date),
+        ('totalAmount', total_amount),
+        ('items', items)
+    ]:
+        if not value:
+            missing_fields.append(field)
 
-    # If there are any missing fields, return a detailed error message
     if missing_fields:
         return jsonify({'error': f'Missing required fields: {", ".join(missing_fields)}'}), 400
 
@@ -1013,23 +1009,21 @@ def submit_purchase_order():
         connection = get_db_connection()
         cursor = connection.cursor()
 
-        # Insert the purchase order into the database
+        # Insert purchase order into the database
         cursor.execute("""
             INSERT INTO purchase_orders (requisition_id, supplier, status, total_amount, issue_date, ordered_by)
             VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
         """, (order_number, supplier_name, order_status, total_amount, issue_date, requested_by))
 
-        # Get the generated purchase_order_id
         purchase_order_id = cursor.fetchone()[0]
 
-        # Insert the order items into the order_items table
+        # Insert items into the database
         for item in items:
             cursor.execute("""
                 INSERT INTO order_items (purchase_order_id, name, quantity, price, total)
                 VALUES (%s, %s, %s, %s, %s)
             """, (purchase_order_id, item['name'], item['quantity'], item['price'], item['total']))
 
-        # Commit the changes and close the connection
         connection.commit()
         cursor.close()
         connection.close()
@@ -1041,7 +1035,35 @@ def submit_purchase_order():
         return jsonify({'error': 'An error occurred while submitting the purchase order.'}), 500
 
 
-
+@app.route('/purchase-orders', methods=['GET'])
+def get_purchase_orders():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            po.id, po.supplier, po.status, po.total_amount, po.issue_date, po.ordered_by,
+            COALESCE(SUM(oi.quantity), 0) AS received
+        FROM purchase_orders po
+        LEFT JOIN order_items oi ON po.id = oi.purchase_order_id
+        GROUP BY po.id
+    """)
+    purchase_orders = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    result = [
+        {
+            "id": po[0],
+            "supplier": po[1],
+            "status": po[2],
+            "received": po[6],
+            "total_amount": float(po[3]),
+            "issue_date": po[4].strftime('%Y-%m-%d'),
+            "ordered_by": po[5],
+        }
+        for po in purchase_orders
+    ]
+    return jsonify(result)
 
 @app.route('/inventory')
 def inventory():

@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateField = document.getElementById('date'); // Field for date
     const requestedByField = document.getElementById('requestedBy'); // Field for requested by
     const totalAmountField = document.getElementById('totalAmount'); // Field for total amount
+    const items = []; // Declare items array in a broader scope
 
     // Fetch and populate the dropdown with approved requisitions
     const fetchApprovedRequisitions = () => {
@@ -140,18 +141,29 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error:', error));
     };
 
-    // Populate the items table
-    const populateItemsTable = items => {
+    // Populate the items table and synchronize the items array
+    const populateItemsTable = itemsData => {
         tableBody.innerHTML = ''; // Clear existing rows
-        items.forEach(item => {
+        items.length = 0; // Reset items array
+
+        itemsData.forEach(item => {
             const row = document.createElement('tr');
+            row.classList.add('item-row');
             row.innerHTML = `
-                <td>${item.name}</td>
-                <td>${item.quantity}</td>
-                <td>${item.price}</td>
-                <td>${item.quantity * item.price}</td>
+                <td class="item-name">${item.name}</td>
+                <td class="item-quantity">${item.quantity}</td>
+                <td class="item-price">${item.price}</td>
+                <td class="item-total">${(item.quantity * item.price).toFixed(2)}</td>
             `;
             tableBody.appendChild(row);
+
+            // Add item to items array
+            items.push({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                total: item.quantity * item.price
+            });
         });
     };
 
@@ -197,70 +209,118 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch approved requisitions on page load
     fetchApprovedRequisitions();
+
+    // Event listener for submitting the purchase order
+    const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+    confirmOrderBtn.addEventListener('click', async () => {
+        const orderNumber = dropdown.value;
+        const supplierName = companyNameField.textContent.trim();
+        const requestedBy = requestedByField.textContent.trim();
+        const orderStatus = statusField.textContent.trim();
+        const issueDate = dateField.textContent.trim();
+        const totalAmount = parseFloat(totalAmountField.textContent.replace(/[^\d.-]/g, '')) || 0;
+
+        if (!items.length) {
+            alert('Please add items to the order.');
+            return; // Prevent submission if no items are present
+        }
+
+        const orderData = {
+            orderNumber,
+            supplierName,
+            requestedBy,
+            orderStatus,
+            issueDate,
+            totalAmount,
+            items
+        };
+
+        try {
+            const response = await fetch('/submit_purchase_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+            } else {
+                alert(result.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the purchase order.');
+        }
+    });
 });
 
 
 
 
-const confirmOrderBtn = document.getElementById('confirmOrderBtn');
 
-// Event listener for submitting the purchase order
-confirmOrderBtn.addEventListener('click', async () => {
-    const orderNumber = document.getElementById('approvedRequisitionsDropdown').value;
-    const supplierName = document.getElementById('companyName').innerText;
-    const requestedBy = document.getElementById('requestedBy').innerText;
-    const orderStatus = document.getElementById('status').innerText;
-    const issueDate = document.getElementById('date').innerText;
-    const totalAmountText = document.getElementById('totalAmount').innerText;
 
-    // Extract numerical value from the 'Total: N/A' text (if applicable)
-    const totalAmount = totalAmountText.replace(/[^\d.-]/g, '') || 0;
+document.addEventListener("DOMContentLoaded", () => {
+    const table = document.querySelector("table");
 
-    // Extract order items from the table (assuming you have rows with this class)
-    const items = [];
-    const itemRows = document.querySelectorAll('.item-row');
-    itemRows.forEach(row => {
-        const name = row.querySelector('.item-name').innerText;
-        const quantity = parseInt(row.querySelector('.item-quantity').innerText, 10);
-        const price = parseFloat(row.querySelector('.item-price').innerText);
-        const total = parseFloat(row.querySelector('.item-total').innerText);
-        items.push({ name, quantity, price, total });
-    });
-
-    if (items.length === 0) {
-        alert('Please add items to the order.');
-        return; // Prevent sending if no items are present
-    }
-
-    const orderData = {
-        orderNumber: orderNumber,
-        supplierName: supplierName,
-        requestedBy: requestedBy,
-        orderStatus: orderStatus,
-        issueDate: issueDate,
-        totalAmount: parseFloat(totalAmount),
-        items: items  // Send the items array as part of the payload
+    // Fetch purchase orders from the backend
+    const fetchPurchaseOrders = async () => {
+        try {
+            const response = await fetch('/purchase-orders');
+            const data = await response.json();
+            renderPurchaseOrders(data);
+        } catch (error) {
+            console.error("Error fetching purchase orders:", error);
+        }
     };
 
-    try {
-        const response = await fetch('/submit_purchase_order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(orderData)
+    // Render purchase orders to the table
+    const renderPurchaseOrders = (orders) => {
+        const tbody = document.createElement("tbody");
+
+        orders.forEach(order => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${order.id}</td>
+                <td>${order.supplier}</td>
+                <td>${order.status}</td>
+                <td>${order.received}</td>
+                <td>${order.total_amount.toFixed(2)}</td>
+                <td>${order.issue_date}</td>
+                <td>${order.ordered_by}</td>
+                <td>
+                    <button class="view-btn" data-id="${order.id}">View</button>
+                    <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
         });
 
-        const result = await response.json();
+        // Clear existing rows and append the new ones
+        const existingTbody = table.querySelector("tbody");
+        if (existingTbody) table.removeChild(existingTbody);
+        table.appendChild(tbody);
+    };
 
-        if (response.ok) {
-            alert(result.message);
-        } else {
-            alert(result.error);
+    // Initialize fetch on page load
+    fetchPurchaseOrders();
+
+    // Example: Add event listeners for buttons
+    table.addEventListener("click", (e) => {
+        if (e.target.classList.contains("view-btn")) {
+            const orderId = e.target.dataset.id;
+            console.log(`View order: ${orderId}`);
+            // Add logic to open and populate the View Modal
+        } else if (e.target.classList.contains("evaluate-btn")) {
+            const orderId = e.target.dataset.id;
+            console.log(`Evaluate order: ${orderId}`);
+            // Add logic to open and populate the Evaluate Modal
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while submitting the purchase order.');
-    }
+    });
 });
+
+
 
