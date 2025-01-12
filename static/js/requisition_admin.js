@@ -186,7 +186,7 @@ function viewDetails(requisitionId) {
             document.getElementById('details-content').innerHTML = `
                 <div class="details-group">
                     <div class="detail-pair">
-                        <p><strong>No.:</strong> ${data.requisition.id}</p>
+                        <p><strong>No:</strong> ${data.requisition.id}</p>
                         <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
                     </div>
                     <div class="detail-pair">

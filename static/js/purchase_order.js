@@ -280,24 +280,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const renderPurchaseOrders = (orders) => {
         const tbody = document.createElement("tbody");
 
-        orders.forEach(order => {
+        orders.forEach((order, index) => {
             const row = document.createElement("tr");
 
             row.innerHTML = `
-                <td>${order.id}</td>
-                <td>${order.supplier}</td>
-                <td>${order.status}</td>
-                <td>${order.received ? "Yes" : "No"}</td>
-                <td>${order.total_amount.toFixed(2)}</td>
-                <td>${order.issue_date}</td>
-                <td>${order.ordered_by}</td>
-                <td>
-                    <button class="view-btn" data-id="${order.id}">View</button>
-                    <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
-                    <button class="delete-btn" data-id="${order.id}">Delete</button>
-                    <button class="sku-btn" data-id="${order.id}">SKU</button>
-                </td>
-            `;
+            <td>${index + 1}</td> <!-- Use index + 1 to display row numbers starting from 1 -->
+            <td>${order.supplier}</td>
+            <td>${order.status}</td>
+            <td>${order.received ? "Yes" : "No"}</td>
+            <td>${order.total_amount.toFixed(2)}</td>
+            <td>${order.issue_date}</td>
+            <td>${order.ordered_by}</td>
+            <td>
+                <button class="view-btn" data-id="${order.id}">View</button>
+                <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
+                <button class="delete-btn" data-id="${order.id}">Delete</button>
+                <button class="sku-btn" data-id="${order.id}">SKU</button>
+            </td>
+        `;
 
             tbody.appendChild(row);
         });
