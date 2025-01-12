@@ -39,6 +39,19 @@ h3 {
 button:hover, .header button:hover, .filter-btn:hover {
     background-color: #00448d;
 }
+
+#confirmOrderBtn {
+    font-size: 14px;
+    background-color: #0056b3;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+
 .filter-btn {
     background-color: #e0e0e0;
     font-size: 12px;
@@ -121,7 +134,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
 .modal-content {
     background-color: white;
     border-radius: 8px;
-    max-width: 23%;
+    max-width: 30%;
     margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
@@ -155,8 +168,23 @@ table tbody td { border-bottom: 1px solid #ddd; }
 }
 
 /* Form and Input Styling */
-.form-section { margin-bottom: 15px; }
-label { display: block; margin-bottom: 5px; font-size:  16px; }
+.form-section { 
+    margin-bottom: 15px; 
+}
+
+.form-section-total { 
+    margin-bottom: 15px; 
+    margin-left: 75%;
+    font-weight: bold;
+    font-size: 17px;
+}
+
+label { 
+    display: block; 
+    margin-bottom: 5px; 
+    font-size:  16px; 
+    font-weight: bold;
+}
 
 .input, .small-input, .small-select {
     width: 50%;
@@ -171,7 +199,7 @@ input[type=number] {
 }
 
 .small-input { width: 150px; }
-.small-select { width: 150px; }
+.small-select { width: 250px; }
 
 /* Clickable Row */
 .clickable-row {
