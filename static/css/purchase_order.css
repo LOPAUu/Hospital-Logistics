@@ -1,278 +1,329 @@
-
+/* General Container Styling */
 .container {
-    max-width: 100%;
-    margin: 150px auto;
+    max-width: 95%;
+    margin: 0px auto;
     background: white;
-    padding: 50px;
+    padding: 30px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 15px;
 }
 
 h2 {
-    display: block;
-    font-size: 2em; /* Increase or decrease as needed */
-    margin-block-start: 0.83em;
-    margin-block-end: 0.83em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-    unicode-bidi: isolate;
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 155px;
 }
 
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+h3 {
+    margin-left: 2%;
+    font-size: 30px;
+    margin-top: 0px;
 }
 
-.header h1 {
-    font-size: 24px;
-    margin: 0;
-}
-
-.header p {
+#createOrderBtn {
     font-size: 14px;
-    color: #0056b3;
-}
-
-.header button {
-    background-color: #0056b3;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-/* Filters Styles */
-.filters {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-.filter-btn {
-    background-color: #e0e0e0;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.filter-btn.active {
-    background-color: #0056b3;
-    color: white;
-}
-
-/* Table Styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-table thead {
-    background-color: #f1f1f1;
-}
-
-table thead th {
-    padding: 12px;
-    text-align: left;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-table tbody td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-}
-
-.status-closed {
-    color: red;
-    font-weight: bold;
-}
-
-.status-open {
-    color: green;
-    font-weight: bold;
-}
-
-/* Tab Navigation Styles */
-.tabs--secondary {
-    margin-top: 20px;
-    border-bottom: 1px solid #ccc;
-}
-
-.tab__nav ul {
-    display: flex;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    margin-bottom: 13px;
-}
-
-.tab__item {
-    margin-right: 20px;
-}
-
-.tab__item a {
-    text-decoration: none;
-    padding: 10px 20px;
-    color: #333;
-    border-radius: 4px;
-    display: inline-block;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.tab__item a.is-activated {
-    background-color: #007bff;
-    color: white;
-}
-
-.tab__item a:hover:not(.is-disabled) {
-    background-color: #e7e7e7;
-}
-
-.tab__item a.is-disabled {
-    color: #999;
-    cursor: not-allowed;
-}
-
-.tab__content {
-    margin-top: 20px;
-}
-
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-content {
-    background-color: #fff;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
-    border-radius: 8px;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.form-section {
-    margin-bottom: 15px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-input {
-    width: 70%;
-    padding: 8px;
-    margin-bottom: 10px;
-}
-
-/* Flex container for order number and order status */
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* Smaller width for order number input */
-.small-input {
-    width: 150px;
-    padding: 5px;
-    font-size: 14px;
-}
-
-/* Smaller width for order status select */
-.small-select {
-    width: 120px; /* Adjust this width to your preference */
-    padding: 5px;
-    font-size: 14px;
-}
-
-/* Make table rows clickable */
-.clickable-row {
-    cursor: pointer;
-}
-
-.clickable-row:hover {
-    background-color: #f1f1f1;
-}
-
-
-button {
     background-color: #0056b3;
     color: white;
     padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 0%;
+    margin-left: 77.8%;
+    transition: background-color 0.3s ease; /* Smooth transition */
 }
 
-button:hover {
+#createOrderBtn:hover {
+    background-color: #003f7f; /* Deep navy blue on hover */
+}
+
+button:hover, .header button:hover, .filter-btn:hover {
+    background-color: #00448d;
+}
+
+#confirmOrderBtn {
+    font-size: 14px;
     background-color: #0056b3;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth transition */
 }
 
-.modal-body {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
+
+.filter-btn {
+    background-color: #e0e0e0;
+    font-size: 12px;
+    padding: 8px 12px;
+}
+.filter-btn.active { 
+    background-color: #0056b3; 
+    color: white; 
 }
 
-.left-section,
-.right-section {
-    flex: 1;
-}
-
-.form-section {
-    margin-bottom: 15px;
-}
-
-.small-input, .small-select {
+/* Table Styling */
+table {
     width: 100%;
-}
-
-.table {
-    width: 100%;
+    border-collapse: collapse;
     margin-top: 20px;
+}
+table thead {
+    background-color: #f1f1f1;
+}
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+}
+table thead th { 
+    background-color: #53649c;
+    color: #d1d1d1;
+    font-weight: bold; 
+}
+table tbody td { border-bottom: 1px solid #ddd; }
+
+.status-open { color: green; font-weight: bold; }
+.status-closed { color: red; font-weight: bold; }
+
+/* Tab Navigation Styling */
+.tabs--secondary {
+    margin-top: 0px;
+    border-bottom: 1px solid #ccc;
+}
+.tab__nav ul {
+    display: flex;
+    padding: 0;
+    margin: 0 0 13px;
+    list-style-type: none;
+}
+.tab__item {
+    margin-right: 20px;
+}
+.tab__item a {
+    text-decoration: none;
+    padding: 10px 20px;
+    color: #333;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+.tab__item a.is-activated {
+    background-color: #53649c;
+    color: white;
+}
+.tab__item a:hover:not(.is-disabled) {
+    background-color: #e7e7e7;
+}
+.tab__item a.is-disabled {
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;  /* Adjust z-index to ensure it's in front of other elements */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4); /* Background overlay */
 }
 
 .modal-content {
-    padding: 20px;
     background-color: white;
     border-radius: 8px;
-    max-width: 800px;
-    margin: 0 auto;
-    margin-top: 150px;
+    max-width: 30%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover, .close:focus { color: black; }
+
+.modal-evaluate {
+    background-color: white;
+    border-radius: 8px;
+    max-width: 50%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
+}
+
+.modal-view {
+    background-color: white;
+    border-radius: 8px;
+    max-width: 60%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
+}
+
+/* Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Hover and focus effect for close button */
+.close:hover, .close:focus { 
+    color: black; 
+}
+
+/* Optional: Styling for modal content when it's visible */
+.modal.show {
+    display: block;
 }
 
 
+/* Form and Input Styling */
+.form-section { 
+    margin-bottom: 15px; 
+}
+
+.form-section-total { 
+    margin-bottom: 15px; 
+    margin-left: 75%;
+    font-weight: bold;
+    font-size: 17px;
+}
+
+label { 
+    display: block; 
+    margin-bottom: 5px; 
+    font-size:  16px; 
+    font-weight: bold;
+}
+
+.input, .small-input, .small-select {
+    width: 50%;
+    padding: 8px;
+    margin-bottom: 5px;
+}
+
+input[type=text],
+input[type=date],
+input[type=number] {
+    font-size: 11pt;
+}
+
+.small-input { width: 150px; }
+.small-select { width: 250px; }
+
+/* Clickable Row */
+.clickable-row {
+    cursor: pointer;
+}
+.clickable-row:hover {
+    background-color: #f1f1f1;
+}
+
+/* Layout for Modal Content */
+.modal-body {
+    display: flex;
+    gap: 40px;
+}
+.left-section, .right-section {
+    flex: 1;
+}
+
+.container th:nth-child(2), 
+.container td:nth-child(2) {
+    font-weight: bold;
+}
+
+.container th:nth-child(4), 
+.container td:nth-child(4) {
+    font-weight: bold;
+}
+
+
+button#submitEvaluationBtn {
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button#submitEvaluationBtn:hover {
+    background-color: #45a049;
+}
+
+.modal-body-evaluate {
+    gap: 40px;
+}
+
+.form-display {
+    display: flex;
+    gap: 15px;
+    box-shadow: none; 
+    outline: none; 
+}
+
+/* Button styling */
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.viewBtn {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.deleteBtn {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+.evaluateBtn {
+    background-color: #ff9800; /* Orange */
+    color: white;
+}
+
+.skuBtn, .addSkuBtn, .saveSkuRowBtn {
+    background-color: #008CBA; /* Blue */
+    color: white;
+}
+
+#saveSkuBtn {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.deleteRowBtn {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+/*sku*/
+
+.modal-sku {
+    background-color: white;
+    border-radius: 8px;
+    max-width: 50%;
+    margin: 12% auto;
+    padding: 30px;
+    border: 1px solid #888;
+}
