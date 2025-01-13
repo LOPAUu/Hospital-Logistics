@@ -259,6 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
 document.addEventListener("DOMContentLoaded", () => {
     const table = document.querySelector("table");
 
@@ -341,26 +343,36 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(response => response.json())
             .then(data => {
                 // Populate the modal with order details
-                document.getElementById("viewFromDetails").textContent = data.supplier;
-                document.getElementById("viewOrderNumber").textContent = data.id;
-                document.getElementById("viewOrderStatus").textContent = data.status;
-                document.getElementById("viewIssueDate").textContent = data.issue_date;
-                document.getElementById("viewOrderedBy").textContent = data.ordered_by;
-                document.getElementById("viewTotal").textContent = data.total_amount.toFixed(2);
-    
+                document.getElementById("viewFromDetails").textContent = data.supplier || "N/A";
+                document.getElementById("viewOrderNumber").textContent = data.loop?.index || "N/A";
+                document.getElementById("viewOrderStatus").textContent = data.status || "N/A";
+                document.getElementById("viewIssueDate").textContent = data.issue_date || "N/A";
+                document.getElementById("viewOrderedBy").textContent = data.ordered_by || "N/A";
+                document.getElementById("viewTotal").textContent =
+                    data.total_amount !== undefined
+                        ? parseFloat(data.total_amount).toFixed(2)
+                        : "0.00";
+
                 // Fetch and populate the items
                 fetch(`/order-items/${orderId}`)
                     .then(response => response.json())
                     .then(items => {
                         const itemList = document.getElementById("viewItemList");
-                        itemList.innerHTML = "";  // Clear existing items
+                        itemList.innerHTML = ""; // Clear existing items
                         items.forEach(item => {
+                            const itemTotal = item.total !== undefined
+                                ? parseFloat(item.total).toFixed(2)
+                                : "0.00";
+                            const itemPrice = item.price !== undefined
+                                ? parseFloat(item.price).toFixed(2)
+                                : "0.00";
                             itemList.innerHTML += `
                                 <tr>
-                                    <td>${item.name}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>${item.price}</td>
-                                    <td>${item.total}</td>
+                                    <td>${item.name || "N/A"}</td>
+                                    <td>${item.quantity || 0}</td>
+                                    <td>${item.unit || "N/A"}</td>
+                                    <td>${itemPrice}</td>
+                                    <td>${itemTotal}</td>
                                 </tr>
                             `;
                         });
@@ -368,11 +380,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     .catch(error => console.error("Error fetching items:", error));
             })
             .catch(error => console.error("Error fetching order details:", error));
-    
+
         // Close modal logic
         closeModal.addEventListener("click", () => {
             viewModal.style.display = "none";
         });
+
     
         // Close modal if clicked outside
         window.addEventListener("click", (e) => {
@@ -382,4 +395,156 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
         
+});
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const table = document.querySelector("table");
+
+    // Fetch purchase orders
+    const fetchPurchaseOrders = async () => {
+        try {
+            const response = await fetch('/purchase-orders');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();
+            renderPurchaseOrders(data);
+        } catch (error) {
+            console.error("Error fetching purchase orders:", error);
+        }
+    };
+
+    // Render purchase orders to the table
+    const renderPurchaseOrders = (orders) => {
+        const tbody = document.createElement("tbody");
+
+        orders.forEach((order, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${order.supplier}</td>
+                <td>${order.status}</td>
+                <td>${order.received ? "Yes" : "No"}</td>
+                <td>${order.total_amount.toFixed(2)}</td>
+                <td>${order.issue_date}</td>
+                <td>${order.ordered_by}</td>
+                <td>
+                    <button class="view-btn" data-id="${order.id}">View</button>
+                    <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
+                    <button class="delete-btn" data-id="${order.id}">Delete</button>
+                    <button class="sku-btn" data-id="${order.id}">SKU</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        const existingTbody = table.querySelector("tbody");
+        if (existingTbody) table.removeChild(existingTbody);
+        table.appendChild(tbody);
+    };
+
+    // Fetch purchase orders on load
+    fetchPurchaseOrders();
+
+    // Handle button clicks (View, Evaluate, Delete, SKU)
+    table.addEventListener("click", (e) => {
+        const button = e.target;
+        const orderId = button.dataset.id;
+
+        if (button.classList.contains("evaluate-btn")) {
+            openEvaluateModal(orderId); // Handle Evaluate logic
+        } else if (button.classList.contains("sku-btn")) {
+            openSkuModal(orderId); // Handle SKU logic
+        }
+    });
+
+    // Open Evaluate Modal
+    const openEvaluateModal = (orderId) => {
+        const evaluateModal = document.getElementById("evaluateModal");
+        const closeModal = evaluateModal.querySelector(".close");
+
+        evaluateModal.style.display = "block";
+
+        fetch(`/order-details/${orderId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Populate Evaluate modal details
+                document.getElementById("evaluateOrderNumber").textContent = data.order_number || "N/A";
+                document.getElementById("createdDate").textContent = data.created_date || "N/A";
+                document.getElementById("updatedDate").textContent = data.updated_date || "N/A";
+
+                const itemList = document.getElementById("evaluateItemList");
+                itemList.innerHTML = ""; // Clear any existing items
+
+                data.items.forEach(item => {
+                    itemList.innerHTML += `
+                        <tr>
+                            <td>${item.name || "N/A"}</td>
+                            <td>${item.quantity || 0}</td>
+                            <td><input type="number" class="received" value="${item.received || 0}" /></td>
+                            <td><input type="number" class="lost" value="${item.lost || 0}" /></td>
+                            <td><input type="number" class="damaged" value="${item.damaged || 0}" /></td>
+                        </tr>
+                    `;
+                });
+            })
+            .catch(error => console.error("Error fetching order details:", error));
+
+        // Close modal logic
+        closeModal.addEventListener("click", () => {
+            evaluateModal.style.display = "none";
+        });
+    };
+
+    // Open SKU Modal
+    const openSkuModal = (orderId) => {
+        const skuModal = document.getElementById("skuModal");
+        const closeModal = skuModal.querySelector(".close");
+
+        skuModal.style.display = "block";
+
+        fetch(`/sku-details/${orderId}`)
+            .then(response => response.json())
+            .then(data => {
+                const skuTableBody = document.getElementById("skuTableBody");
+                skuTableBody.innerHTML = ""; // Clear existing rows
+
+                data.items.forEach(item => {
+                    skuTableBody.innerHTML += `
+                        <tr>
+                            <td>${item.name || "N/A"}</td>
+                            <td>${item.quantity_ordered || 0}</td>
+                            <td><input type="text" value="${item.sku || ""}" /></td>
+                            <td><input type="number" value="${item.quantity || 0}" /></td>
+                            <td><input type="date" value="${item.expiration || ""}" /></td>
+                            <td>
+                                <button class="save-item-btn" data-id="${item.id}">Save</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            })
+            .catch(error => console.error("Error fetching SKU details:", error));
+
+        // Close modal logic
+        closeModal.addEventListener("click", () => {
+            skuModal.style.display = "none";
+        });
+    };
+
+    // Close modals if clicked outside
+    window.addEventListener("click", (e) => {
+        const evaluateModal = document.getElementById("evaluateModal");
+        const skuModal = document.getElementById("skuModal");
+
+        if (e.target === evaluateModal) {
+            evaluateModal.style.display = "none";
+        } else if (e.target === skuModal) {
+            skuModal.style.display = "none";
+        }
+    });
 });

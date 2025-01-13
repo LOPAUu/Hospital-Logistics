@@ -175,19 +175,20 @@
 
 
             
-                    <!-- Evaluate Items Modal -->
+            <!-- Evaluate Items Modal -->
             <div id="evaluateModal" class="modal">
                 <div class="modal-evaluate">
                     <span class="close">&times;</span>
                     <h3>Evaluate Received Items</h3>
+                    <div id="modalEvaluateDetails"></div>
                     <div class="modal-evaluate-body">
                         <div class="form-display">
                             <label>Order Number</label>
-                            <input type="text" id="evaluateOrderNumber" disabled="disabled">
+                            <span id="evaluateOrderNumber" class="modal-span"></span>
                             <label>Created Date</label>
-                            <input type="text" id="createdDate" disabled="disabled">
+                            <span id="createdDate" class="modal-span"></span>
                             <label>Updated Date</label>
-                            <input type="text" id="updatedDate" disabled="disabled">
+                            <span id="updatedDate" class="modal-span"></span>
                         </div>
                         <div class="form-section">
                             <table>
@@ -206,7 +207,9 @@
                         </div>
                         <button id="submitEvaluationBtn">Update Evaluation</button>
                     </div>
-            
+                </div>
+            </div>
+
             <!-- SKU Modal --> 
             <div id="skuModal" class="modal">
                 <div class="modal-sku">
