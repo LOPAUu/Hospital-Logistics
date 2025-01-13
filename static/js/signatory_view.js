@@ -22,41 +22,47 @@ function filterByStatus(status) {
             }
 
             // Display requisition cards
-            data.forEach((requisition, index) => {
-                const totalAmount = requisition.items.reduce((sum, item) => sum + item.quantity * item.price, 0); // Calculate total
-            
-                // Determine the status class
-                let statusClass = '';
-                if (requisition.status.toLowerCase() === 'approved') {
-                    statusClass = 'status-approved';
-                } else if (requisition.status.toLowerCase() === 'rejected') {
-                    statusClass = 'status-rejected';
-                } else if (requisition.status.toLowerCase() === 'pending') {
-                    statusClass = 'status-pending';
-                }
-            
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.innerHTML = `
-                    <h3>Requisition #${index + 1}</h3>
-                    <div class="card-row">
-                        <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
-                        <p><strong>Purpose:</strong> ${requisition.purpose}</p>
-                    </div>
-                    <div class="card-row">
-                        <p><strong>Status:</strong> <span class="${statusClass}">${requisition.status}</span></p>
-                        <p><strong>Requested By:</strong> ${requisition.requested_by}</p>
-                    </div>
-                    <div class="card-row">
-                        <p><strong>Total:</strong> ₱${totalAmount.toFixed(2)}</p>
-                    </div>
-                    <div class="card-buttons">
-                        <button class="button button-view-details" onclick="viewDetails(${requisition.id})">View Details</button>
-                        <button class="button button-take-action" onclick="openActionModal(${requisition.id})">Take Action</button>
-                    </div>
-                `;
-                requisitionCards.appendChild(card);
-            });
+data.forEach((requisition, index) => {
+    const totalAmount = requisition.items.reduce((sum, item) => sum + item.quantity * item.price, 0); // Calculate total
+
+    // Determine the status class
+    let statusClass = '';
+    if (requisition.status.toLowerCase() === 'approved') {
+        statusClass = 'status-approved';
+    } else if (requisition.status.toLowerCase() === 'rejected') {
+        statusClass = 'status-rejected';
+    } else if (requisition.status.toLowerCase() === 'pending') {
+        statusClass = 'status-pending';
+    }
+
+    // Disable "Take Action" button for approved or rejected requisitions
+    const isDisabled = requisition.status.toLowerCase() === 'approved' || requisition.status.toLowerCase() === 'rejected';
+    const buttonClass = isDisabled ? 'button-take-action disabled-button' : 'button-take-action';
+    const onClickAttribute = isDisabled ? '' : `onclick="openActionModal(${requisition.id})"`;
+
+    const card = document.createElement('div');
+    card.classList.add('card');
+    card.innerHTML = `
+        <h3>Requisition #${index + 1}</h3>
+        <div class="card-row">
+            <p><strong>Date:</strong> ${new Date(requisition.date).toLocaleDateString()}</p>
+            <p><strong>Purpose:</strong> ${requisition.purpose}</p>
+        </div>
+        <div class="card-row">
+            <p><strong>Status:</strong> <span class="${statusClass}">${requisition.status}</span></p>
+            <p><strong>Requested By:</strong> ${requisition.requested_by}</p>
+        </div>
+        <div class="card-row">
+            <p><strong>Total:</strong> ₱${totalAmount.toFixed(2)}</p>
+        </div>
+        <div class="card-buttons">
+            <button class="button button-view-details" onclick="viewDetails(${requisition.id})">View Details</button>
+            <button class="${buttonClass}" ${onClickAttribute}>Take Action</button>
+        </div>
+    `;
+    requisitionCards.appendChild(card);
+});
+        
             
             
             
