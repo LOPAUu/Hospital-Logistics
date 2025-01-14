@@ -194,7 +194,6 @@ function viewDetails(requisitionId) {
                         <p><strong>Company Name:</strong> ${data.requisition.company_name}</p>
                     </div>
                     <p><strong>Requested By:</strong> ${data.requisition.requested_by}</p>
-                    <p><strong>Total:</strong> ₱${data.total}</p>
                 </div>
                 <div class="details-group">
                     <h3>Attachments:</h3>
@@ -212,6 +211,7 @@ function viewDetails(requisitionId) {
                     <ul>
                         ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
                     </ul>
+                    <p><strong>Total:</strong> ₱${data.total}</p>
                 </div>
             `;
             openDetailsModal();
