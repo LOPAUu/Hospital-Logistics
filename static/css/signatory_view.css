@@ -63,9 +63,11 @@ h1 {
 /* Card row styling to ensure consistent layout */
 .card-row {
     display: flex;
-    justify-content: space-between; /* Space items evenly */
+    flex-direction: column; /* Stack the elements vertically */
+    gap: 5px; /* Add spacing between rows */
     padding: 10px 0; /* Add vertical padding for spacing */
     border-bottom: 1px solid #eee; /* Add underline between rows */
+    word-wrap: break-word; /* Ensure text wraps within the container */
 }
 
 .card-row:last-child {
@@ -74,6 +76,8 @@ h1 {
 
 .card-row p {
     margin: 0; /* Remove default margins for consistent spacing */
+    line-height: 1.5; /* Improve readability for long text */
+    white-space: pre-wrap; /* Preserve whitespace and allow wrapping */
 }
 
 .card-buttons {
@@ -91,8 +95,9 @@ h1 {
 }
 
 @media (max-width: 768px) {
-    .cards-container {
-        grid-template-columns: 1fr; /* 1 card per row on small screens */
+    .card {
+        width: 90%; /* Adjust card width for small screens */
+        margin: 10px auto; /* Add spacing on mobile devices */
     }
 }
 
@@ -205,7 +210,8 @@ h1 {
     margin: 0 0 10px;
     font-size: 1.2em;
     border-bottom: 2px solid #ddd; /* Add underline below the heading */
-    padding-bottom: 30px;
+    padding-bottom: 10px;
+    word-wrap: break-word; /* Ensure long text wraps */
 }
 
 .card p {

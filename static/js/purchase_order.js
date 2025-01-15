@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${order.supplier}</td>
             <td>${order.status}</td>
             <td>${order.received ? "Yes" : "No"}</td>
-            <td>${order.total_amount.toFixed(2)}</td>
+            <td>₱${order.total_amount.toFixed(2)}</td>
             <td>${order.issue_date}</td>
             <td>${order.ordered_by}</td>
             <td>
@@ -334,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const openViewModal = (orderId) => {
         const viewModal = document.getElementById("viewModal");
-        const closeModal = viewModal.querySelector(".close-btn");
+        const closeModal = viewModal.querySelector(".close");
     
         // Show the modal
         viewModal.style.display = "block";
@@ -348,8 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("viewOrderStatus").textContent = data.status || "N/A";
                 document.getElementById("viewIssueDate").textContent = data.issue_date || "N/A";
                 document.getElementById("viewOrderedBy").textContent = data.ordered_by || "N/A";
-                document.getElementById("viewTotal").textContent =
-                    data.total_amount !== undefined
+                document.getElementById("viewTotal").textContent = data.total_amount !== undefined
                         ? parseFloat(data.total_amount).toFixed(2)
                         : "0.00";
 
@@ -371,8 +370,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <td>${item.name || "N/A"}</td>
                                     <td>${item.quantity || 0}</td>
                                     <td>${item.unit || "N/A"}</td>
-                                    <td>${itemPrice}</td>
-                                    <td>${itemTotal}</td>
+                                    <td>₱${itemPrice}</td>
+                                    <td>₱${itemTotal}</td>
                                 </tr>
                             `;
                         });
@@ -429,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${order.supplier}</td>
                 <td>${order.status}</td>
                 <td>${order.received ? "Yes" : "No"}</td>
-                <td>${order.total_amount.toFixed(2)}</td>
+                <td>₱${order.total_amount.toFixed(2)}</td>
                 <td>${order.issue_date}</td>
                 <td>${order.ordered_by}</td>
                 <td>

@@ -121,7 +121,7 @@
             <!-- View Purchase Order Modal -->
             <div id="viewModal" class="modal">
                 <div class="modal-content">
-                    <span class="close-btn">&times;</span>
+                    <span class="close">&times;</span>
                     <h3>View Purchase Order</h3>
                     <div id="modalOrderDetails"></div>
                     <div class="modal-body">
@@ -130,6 +130,14 @@
                                 <label>From</label>
                                 <span id="viewFromDetails"></span>
                             </div>
+                            <div class="form-section form-row">
+                                <label>Ordered By</label>
+                                <span id="viewOrderedBy"></span>
+                            </div>
+                            <div class="form-section form-row">
+                                <label>Order Status</label>
+                                <span id="viewOrderStatus"></span>
+                            </div>
                         </div>
                         <div class="right-section">
                             <div class="form-section form-row">
@@ -137,16 +145,8 @@
                                 <span id="viewOrderNumber"></span>
                             </div>
                             <div class="form-section form-row">
-                                <label>Order Status</label>
-                                <span id="viewOrderStatus"></span>
-                            </div>
-                            <div class="form-section form-row">
                                 <label>Issue Date</label>
                                 <span id="viewIssueDate"></span>
-                            </div>
-                            <div class="form-section form-row">
-                                <label>Ordered By</label>
-                                <span id="viewOrderedBy"></span>
                             </div>
                         </div>
                     </div>
@@ -166,7 +166,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="form-section">
+                    <div class="form-section-total">
                         <label>Total</label>
                         <span id="viewTotal"></span>
                     </div>
