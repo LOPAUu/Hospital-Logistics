@@ -462,27 +462,46 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Open Evaluate Modal
+    
+
     const openEvaluateModal = (orderId) => {
         const evaluateModal = document.getElementById("evaluateModal");
         const closeModal = evaluateModal.querySelector(".close");
 
-        evaluateModal.style.display = "block";
+        // Function to close the modal
+        const closeEvaluateModal = () => {
+            evaluateModal.style.display = "none";
+        };
 
+        // Close modal on click of the close button
+        closeModal.addEventListener("click", closeEvaluateModal);
+
+        // Close modal if the user clicks outside the modal content
+        window.addEventListener("click", (event) => {
+            if (event.target === evaluateModal) {
+                closeEvaluateModal();
+            }
+        });
+    
+        evaluateModal.style.display = "block";
+    
         fetch(`/order-details/${orderId}`)
             .then(response => response.json())
             .then(data => {
+                // Log the full data to check if purchase_order_id exists
+                console.log("Order details:", data);
+    
                 // Populate Evaluate modal details
-                document.getElementById("evaluateOrderNumber").textContent = data.order_number || "N/A";
-                document.getElementById("createdDate").textContent = data.created_date || "N/A";
+                document.getElementById("evaluateOrderNumber").textContent = data.id || "N/A"; // Changed to `data.id` for correct field
+                document.getElementById("createdDate").textContent = data.issue_date || "N/A";
                 document.getElementById("updatedDate").textContent = data.updated_date || "N/A";
-
+    
                 const itemList = document.getElementById("evaluateItemList");
                 itemList.innerHTML = ""; // Clear any existing items
-
-                data.items.forEach(item => {
+    
+                data.items.forEach((item, index) => {
                     itemList.innerHTML += `
-                        <tr>
+                        <tr data-index="${index}">
                             <td>${item.name || "N/A"}</td>
                             <td>${item.quantity || 0}</td>
                             <td><input type="number" class="received" value="${item.received || 0}" /></td>
@@ -491,60 +510,222 @@ document.addEventListener("DOMContentLoaded", () => {
                         </tr>
                     `;
                 });
-            })
-            .catch(error => console.error("Error fetching order details:", error));
-
-        // Close modal logic
-        closeModal.addEventListener("click", () => {
-            evaluateModal.style.display = "none";
-        });
-    };
-
-    // Open SKU Modal
-    const openSkuModal = (orderId) => {
-        const skuModal = document.getElementById("skuModal");
-        const closeModal = skuModal.querySelector(".close");
-
-        skuModal.style.display = "block";
-
-        fetch(`/sku-details/${orderId}`)
-            .then(response => response.json())
-            .then(data => {
-                const skuTableBody = document.getElementById("skuTableBody");
-                skuTableBody.innerHTML = ""; // Clear existing rows
-
-                data.items.forEach(item => {
-                    skuTableBody.innerHTML += `
-                        <tr>
-                            <td>${item.name || "N/A"}</td>
-                            <td>${item.quantity_ordered || 0}</td>
-                            <td><input type="text" value="${item.sku || ""}" /></td>
-                            <td><input type="number" value="${item.quantity || 0}" /></td>
-                            <td><input type="date" value="${item.expiration || ""}" /></td>
-                            <td>
-                                <button class="save-item-btn" data-id="${item.id}">Save</button>
-                            </td>
-                        </tr>
-                    `;
+    
+                // Add submission logic
+                document.getElementById("submitEvaluationBtn").addEventListener("click", async (event) => {
+                    event.preventDefault(); // Prevent default form submission
+    
+                    const rows = document.querySelectorAll("#evaluateItemList tr");
+    
+                    // Prepare the items data
+                    const items = Array.from(rows).map(row => {
+                        const index = row.getAttribute("data-index");
+                        return {
+                            order_detail_id: data.items[index].id,
+                            received: parseInt(row.querySelector(".received").value, 10) || 0,
+                            lost: parseInt(row.querySelector(".lost").value, 10) || 0,
+                            damaged: parseInt(row.querySelector(".damaged").value, 10) || 0,
+                        };
+                    });
+    
+                    // Prepare the payload including the purchase_order_id
+                    const payload = {
+                        purchase_order_id: data.id,  // Changed to `data.id` for the correct field
+                        items: items,
+                    };
+    
+                    console.log("Sending payload:", payload); // Log the payload for debugging
+    
+                    try {
+                        const response = await fetch('/submit-evaluation', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(payload),
+                        });
+    
+                        const result = await response.json();
+                        console.log("Response:", result); // Log the response for debugging
+    
+                        if (response.ok) {
+                            alert(result.message);
+                            evaluateModal.style.display = "none"; // Close the modal on success
+                        } else {
+                            alert(result.error || "Failed to submit evaluation. Please try again.");
+                        }
+                    } catch (error) {
+                        console.error("Error submitting evaluation:", error);
+                        alert("Failed to submit evaluation. Please try again.");
+                    }
                 });
             })
-            .catch(error => console.error("Error fetching SKU details:", error));
-
-        // Close modal logic
-        closeModal.addEventListener("click", () => {
-            skuModal.style.display = "none";
-        });
+            .catch(error => {
+                console.error("Error fetching order details:", error);
+                alert("Failed to fetch order details. Please try again.");
+            });
+            closeModalButton.addEventListener("click", () => closeModal("evaluateModal"));
     };
+    
 
-    // Close modals if clicked outside
-    window.addEventListener("click", (e) => {
-        const evaluateModal = document.getElementById("evaluateModal");
-        const skuModal = document.getElementById("skuModal");
+    
+    
+    
 
-        if (e.target === evaluateModal) {
-            evaluateModal.style.display = "none";
-        } else if (e.target === skuModal) {
-            skuModal.style.display = "none";
-        }
+    
+
+    // Open SKU Modal
+    // Function to open SKU modal for a specific purchase_order_id
+    function openSkuModal(purchaseOrderId) {
+        console.log('Opening SKU modal for PO ID:', purchaseOrderId);
+        skuTableBody.innerHTML = ''; // Clear previous data
+
+        // Fetch SKU data for the specific purchase_order_id
+        fetch(`/get-sku-details/${purchaseOrderId}`)
+            .then(response => response.json())
+            .then(items => {
+                if (items.error) {
+                    console.error('No items found:', items.error);
+                    return;
+                }
+
+                items.forEach(item => {
+                    if (item.item_name && item.ordered_quantity !== undefined) {
+                        addItemRow(item.item_name, item.ordered_quantity); // Ensure both fields are available
+                    } else {
+                        console.error('Item data is incomplete:', item);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching SKU details:', error);
+            });
+
+        // Hide other modals and show the SKU modal
+        evaluateModal.style.display = 'none';
+        skuModal.style.display = 'block';
+    }
+
+    // Attach event listener to the SKU button and pass purchase_order_id when clicked
+    document.querySelectorAll('.skuBtn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent triggering other events
+            const purchaseOrderId = button.getAttribute('data-purchase-order-id'); // Ensure each button has a data attribute for PO ID
+            openSkuModal(purchaseOrderId); // Pass the PO ID to open the SKU modal for specific items
+        });
     });
+
+
+    // Function to add a new item row
+    function addItemRow(itemName, orderedQuantity) {
+        if (!itemName || orderedQuantity === undefined) {
+            console.error('Item Name or Quantity is missing');
+            return; // Prevent adding a row with missing data
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${itemName}</td>
+            <td>${orderedQuantity}</td>
+            <td><input type="text" class="sku-input" placeholder="Enter SKU" /></td>
+            <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
+            <td><input type="date" class="expiration-input" /></td>
+            <td>
+                <button class="deleteRowBtn">Delete</button>
+                <button class="addSkuBtn">Add SKU</button>
+            </td>
+        `;
+        document.getElementById('skuTableBody').appendChild(row);
+
+        // Add event listener for the delete button
+        row.querySelector('.deleteRowBtn').addEventListener('click', () => {
+            row.remove();
+        });
+
+        // Add event listener for the add SKU button
+        row.querySelector('.addSkuBtn').addEventListener('click', () => {
+            addSkuRow(row);
+        });
+    }
+
+
+    // Function to add a new SKU row below an existing item row
+    function addSkuRow(itemRow) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td></td>
+            <td></td>
+            <td><input type="text" class="sku-input" placeholder="Enter SKU" /></td>
+            <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
+            <td><input type="date" class="expiration-input" /></td>
+            <td><button class="deleteRowBtn">Delete</button></td>
+        `;
+        itemRow.insertAdjacentElement('afterend', row);
+
+        // Add event listener for the delete button
+        row.querySelector('.deleteRowBtn').addEventListener('click', () => {
+            row.remove();
+        });
+    }
+
+
+    // Attach event listener to the SKU button
+    document.querySelectorAll('.skuBtn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent triggering other events
+            openSkuModal(); // Open the SKU modal without purchaseOrderId
+        });
+    });
+
+    // Save SKU functionality
+    document.getElementById('saveSkuBtn').addEventListener('click', () => {
+        const rows = document.querySelectorAll('#skuTableBody tr');
+        const skuData = Array.from(rows).map(row => ({
+            item_name: row.cells[0]?.textContent.trim(),
+            ordered_quantity: parseInt(row.cells[1]?.textContent.trim()) || 0,
+            sku: row.querySelector('.sku-input')?.value.trim(),
+            quantity: parseInt(row.querySelector('.quantity-input')?.value.trim()) || 0,
+            expiration: row.querySelector('.expiration-input')?.value
+        })).filter(sku => sku.item_name && sku.sku && sku.quantity > 0 && sku.expiration); // Filter out invalid rows
+
+        if (skuData.length === 0) {
+            console.error('No valid SKU data to save.');
+            return;
+        }
+
+        // Send the SKU data to the backend
+        fetch('/save-sku-details', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ skus: skuData })
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    console.log('SKU details saved successfully!');
+                    document.getElementById('skuModal').style.display = 'none';
+                } else {
+                    console.error('Error saving SKU details:', result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+
+
+
+
+    
 });
+
+
+
+
+
+
+
+
+

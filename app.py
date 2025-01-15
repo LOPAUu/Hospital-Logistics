@@ -1125,7 +1125,7 @@ def get_order_details(order_id):
     # Establish DB connection
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     # Query to get the main order details
     cursor.execute("""
         SELECT id, requisition_id, supplier, status, total_amount, issue_date, ordered_by
@@ -1139,7 +1139,7 @@ def get_order_details(order_id):
 
     # Query to get the items for the order
     cursor.execute("""
-        SELECT name, quantity, price, total
+        SELECT id, name, quantity, price, total, received, lost, damaged
         FROM order_items
         WHERE purchase_order_id = %s
     """, (order_id,))
@@ -1158,9 +1158,8 @@ def get_order_details(order_id):
         'total_amount': order[4],
         'issue_date': order[5].strftime('%Y-%m-%d'),  # Convert date to string if necessary
         'ordered_by': order[6],
-        'items': [{'name': item[0], 'quantity': item[1], 'price': item[2], 'total': item[3]} for item in items]
+        'items': [{'id': item[0], 'name': item[1], 'quantity': item[2], 'price': item[3], 'total': item[4], 'received': item[5], 'lost': item[6], 'damaged': item[7]} for item in items]
     }
-
     return jsonify(order_data)
 
 @app.route('/order-items/<int:order_id>', methods=['GET'])
@@ -1190,70 +1189,119 @@ def get_order_items(order_id):
 
 
 
-# Route to fetch evaluation data
-@app.route('/evaluate/<int:order_id>', methods=['GET'])
-def get_evaluation(order_id):
+@app.route('/submit-evaluation', methods=['POST'])
+def submit_evaluation():
+    data = request.get_json()  # Get the JSON payload from the frontend
+    print("Received data:", data)  # Print the data to check the structure
+
+    # Check for the existence of purchase_order_id and items
+    if not data or not data.get('purchase_order_id') or not data.get('items'):
+        return jsonify({'error': 'Invalid data'}), 400
+
+    purchase_order_id = data['purchase_order_id']
+    print(f"Purchase Order ID: {purchase_order_id}")  # Log to verify
+
+    items = data['items']
+    print(f"Items: {items}")  # Log the items to verify
+
+    try:
+        # Connect to the database
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update the evaluation data for each item
+        for item in items:
+            order_detail_id = item['order_detail_id']
+            received = item['received']
+            lost = item['lost']
+            damaged = item['damaged']
+
+            # Update the order item evaluation data in the database
+            cur.execute("""
+                UPDATE order_items
+                SET received = %s, lost = %s, damaged = %s
+                WHERE id = %s AND purchase_order_id = %s
+            """, (received, lost, damaged, order_detail_id, purchase_order_id))
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close the cursor and connection
+        cur.close()
+        conn.close()
+
+        return jsonify({'message': 'Evaluation submitted successfully'}), 200
+
+    except Exception as e:
+        # Rollback in case of error
+        if conn:
+            conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/get-sku-details/<int:purchase_order_id>', methods=['GET'])
+def fetch_sku_details(purchase_order_id):
     conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT * FROM item_evaluation WHERE purchase_order_id = %s
-    """, (order_id,))
-    evaluation = cur.fetchall()
+    cursor = conn.cursor()
+
+    # Fetch item names and quantities from the order_items table for the specific purchase_order_id
+    cursor.execute("""
+        SELECT oi.name AS item_name, oi.quantity AS ordered_quantity
+        FROM order_items oi
+        WHERE oi.purchase_order_id = %s
+    """, (purchase_order_id,))
+
+    items = cursor.fetchall()
     conn.close()
 
-    return jsonify({'evaluation': evaluation})
+    return jsonify([
+        {
+            "item_name": item[0],
+            "ordered_quantity": item[1]
+        }
+        for item in items
+    ])
 
-# Route to submit evaluation data
-@app.route('/evaluate/<int:order_id>', methods=['POST'])
-def submit_evaluation(order_id):
-    data = request.json
+
+
+
+@app.route('/save-sku-details', methods=['POST'])
+def save_sku_details():
+    data = request.get_json()
+    if not data or 'skus' not in data:
+        return jsonify({'success': False, 'message': 'Invalid data format.'}), 400
+
     conn = get_db_connection()
-    cur = conn.cursor()
+    cursor = conn.cursor()
 
-    for item in data['items']:
-        cur.execute("""
-            INSERT INTO item_evaluation (purchase_order_id, item_id, received_quantity, lost_quantity, damaged_quantity)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (purchase_order_id, item_id) DO UPDATE 
-            SET received_quantity = EXCLUDED.received_quantity,
-                lost_quantity = EXCLUDED.lost_quantity,
-                damaged_quantity = EXCLUDED.damaged_quantity,
-                updated_at = CURRENT_TIMESTAMP
-        """, (order_id, item['item_id'], item['received'], item['lost'], item['damaged']))
+    try:
+        for sku in data['skus']:
+            cursor.execute("""
+                INSERT INTO sku_details (item_name, quantity_ordered, sku, quantity, expiration)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (sku) DO UPDATE 
+                SET quantity = EXCLUDED.quantity,
+                    expiration = EXCLUDED.expiration,
+                    updated_at = CURRENT_TIMESTAMP
+            """, (
+                sku['item_name'], sku['ordered_quantity'], sku['sku'],
+                sku['quantity'], sku['expiration']
+            ))
 
-    conn.commit()
-    conn.close()
-    return jsonify({'message': 'Evaluation updated successfully'})
+        conn.commit()
+        return jsonify({'success': True}), 200
 
-# Route to fetch SKU details
-@app.route('/sku/<int:item_id>', methods=['GET'])
-def get_skus(item_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT * FROM item_skus WHERE item_id = %s
-    """, (item_id,))
-    skus = cur.fetchall()
-    conn.close()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-    return jsonify({'skus': skus})
+    finally:
+        cursor.close()
+        conn.close()
 
-# Route to save SKU details
-@app.route('/sku/<int:item_id>', methods=['POST'])
-def save_skus(item_id):
-    data = request.json
-    conn = get_db_connection()
-    cur = conn.cursor()
 
-    for sku in data['skus']:
-        cur.execute("""
-            INSERT INTO item_skus (item_id, sku, quantity, expiration_date)
-            VALUES (%s, %s, %s, %s)
-        """, (item_id, sku['sku'], sku['quantity'], sku['expiration_date']))
 
-    conn.commit()
-    conn.close()
-    return jsonify({'message': 'SKUs saved successfully'})
+
 
 
 @app.route('/inventory')

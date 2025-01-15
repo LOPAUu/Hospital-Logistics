@@ -104,6 +104,31 @@ CREATE TABLE order_items (
     FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id)
 );
 
+CREATE TABLE evaluations (
+    id SERIAL PRIMARY KEY,
+    purchase_order_id INT NOT NULL,
+    order_item_id INT NOT NULL,
+    received INT NOT NULL,
+    lost INT NOT NULL,
+    damaged INT NOT NULL,
+    evaluation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
+);
+
+CREATE TABLE sku_details (
+    id SERIAL PRIMARY KEY,
+    item_name VARCHAR(255) NOT NULL,
+    quantity_ordered INT NOT NULL,
+    sku VARCHAR(255) NOT NULL UNIQUE,
+    quantity INT NOT NULL DEFAULT 0,
+    expiration DATE NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (
     medicine_request_id SERIAL PRIMARY KEY,
