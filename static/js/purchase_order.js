@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${order.supplier}</td>
             <td>${order.status}</td>
             <td>${order.received ? "Yes" : "No"}</td>
-            <td>₱${order.total_amount.toFixed(2)}</td>
+            <td>${order.total_amount.toFixed(2)}</td>
             <td>${order.issue_date}</td>
             <td>${order.ordered_by}</td>
             <td>
@@ -334,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const openViewModal = (orderId) => {
         const viewModal = document.getElementById("viewModal");
-        const closeModal = viewModal.querySelector(".close");
+        const closeModal = viewModal.querySelector(".close-btn");
     
         // Show the modal
         viewModal.style.display = "block";
@@ -348,7 +348,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("viewOrderStatus").textContent = data.status || "N/A";
                 document.getElementById("viewIssueDate").textContent = data.issue_date || "N/A";
                 document.getElementById("viewOrderedBy").textContent = data.ordered_by || "N/A";
-                document.getElementById("viewTotal").textContent = data.total_amount !== undefined
+                document.getElementById("viewTotal").textContent =
+                    data.total_amount !== undefined
                         ? parseFloat(data.total_amount).toFixed(2)
                         : "0.00";
 
@@ -370,8 +371,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <td>${item.name || "N/A"}</td>
                                     <td>${item.quantity || 0}</td>
                                     <td>${item.unit || "N/A"}</td>
-                                    <td>₱${itemPrice}</td>
-                                    <td>₱${itemTotal}</td>
+                                    <td>${itemPrice}</td>
+                                    <td>${itemTotal}</td>
                                 </tr>
                             `;
                         });
@@ -428,7 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${order.supplier}</td>
                 <td>${order.status}</td>
                 <td>${order.received ? "Yes" : "No"}</td>
-                <td>₱${order.total_amount.toFixed(2)}</td>
+                <td>${order.total_amount.toFixed(2)}</td>
                 <td>${order.issue_date}</td>
                 <td>${order.ordered_by}</td>
                 <td>
@@ -513,9 +514,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Add submission logic
                 document.getElementById("submitEvaluationBtn").addEventListener("click", async (event) => {
                     event.preventDefault(); // Prevent default form submission
-    
+                
                     const rows = document.querySelectorAll("#evaluateItemList tr");
-    
+                
                     // Prepare the items data
                     const items = Array.from(rows).map(row => {
                         const index = row.getAttribute("data-index");
@@ -526,15 +527,15 @@ document.addEventListener("DOMContentLoaded", () => {
                             damaged: parseInt(row.querySelector(".damaged").value, 10) || 0,
                         };
                     });
-    
+                
                     // Prepare the payload including the purchase_order_id
                     const payload = {
-                        purchase_order_id: data.id,  // Changed to `data.id` for the correct field
+                        purchase_order_id: data.id, // Changed to `data.id` for the correct field
                         items: items,
                     };
-    
+                
                     console.log("Sending payload:", payload); // Log the payload for debugging
-    
+                
                     try {
                         const response = await fetch('/submit-evaluation', {
                             method: 'POST',
@@ -543,10 +544,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             },
                             body: JSON.stringify(payload),
                         });
-    
+                
                         const result = await response.json();
                         console.log("Response:", result); // Log the response for debugging
-    
+                
                         if (response.ok) {
                             alert(result.message);
                             evaluateModal.style.display = "none"; // Close the modal on success
@@ -557,13 +558,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         console.error("Error submitting evaluation:", error);
                         alert("Failed to submit evaluation. Please try again.");
                     }
-                });
+                }, { once: true }); // Ensures the listener is added only once
+                
             })
             .catch(error => {
                 console.error("Error fetching order details:", error);
                 alert("Failed to fetch order details. Please try again.");
             });
-            closeModalButton.addEventListener("click", () => closeModal("evaluateModal"));
     };
     
 
