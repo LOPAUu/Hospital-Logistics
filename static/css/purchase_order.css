@@ -194,7 +194,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
 
 .form-section-total { 
     margin-bottom: 15px; 
-    margin-left: 75%;
+    margin-left: 80%;
     font-weight: bold;
     font-size: 17px;
 }
@@ -287,22 +287,22 @@ button:hover {
     opacity: 0.8;
 }
 
-.viewBtn {
+.view-btn {
     background-color: #4CAF50; /* Green */
     color: white;
 }
 
-.deleteBtn {
+.delete-btn {
     background-color: #f44336; /* Red */
     color: white;
 }
 
-.evaluateBtn {
+.evaluate-btn {
     background-color: #ff9800; /* Orange */
     color: white;
 }
 
-.skuBtn, .addSkuBtn, .saveSkuRowBtn {
+.sku-btn, .addSkuBtn, .saveSkuRowBtn {
     background-color: #008CBA; /* Blue */
     color: white;
 }
