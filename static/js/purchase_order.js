@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
+// PO VIEW 
 document.addEventListener("DOMContentLoaded", () => {
     const table = document.querySelector("table");
 
@@ -346,55 +346,67 @@ document.addEventListener("DOMContentLoaded", () => {
         // Display the modal
         viewModal.style.display = "block";
     
-        fetch(`/order-details/${orderId}`)
-            .then(response => response.json())
-            .then(data => {
-                // Populate the modal with order details
-                document.getElementById("viewOrderNumber").textContent = orderIndex || "N/A";
-                document.getElementById("viewFromDetails").textContent = data.supplier || "N/A";
-                document.getElementById("viewOrderStatus").textContent = data.status || "N/A";
-                document.getElementById("viewIssueDate").textContent = data.issue_date || "N/A";
-                document.getElementById("viewOrderedBy").textContent = data.ordered_by || "N/A";
-                document.getElementById("viewTotal").textContent =
-                    data.total_amount !== undefined
-                        ? parseFloat(data.total_amount).toFixed(2)
-                        : "0.00";
-    
-                // Fetch and populate the items
-                fetch(`/order-items/${orderId}`)
-                    .then(response => response.json())
-                    .then(items => {
-                        const itemList = document.getElementById("viewItemList");
-                        itemList.innerHTML = ""; // Clear existing items
-                        items.forEach(item => {
-                            const itemTotal = item.total !== undefined
-                                ? parseFloat(item.total).toFixed(2)
-                                : "0.00";
-                            const itemPrice = item.price !== undefined
-                                ? parseFloat(item.price).toFixed(2)
-                                : "0.00";
-                            itemList.innerHTML += `
-                                <tr>
-                                    <td>${item.name || "N/A"}</td>
-                                    <td>${item.quantity || 0}</td>
-                                    <td>${item.unit || "N/A"}</td>
-                                    <td>${itemPrice}</td>
-                                    <td>${itemTotal}</td>
-                                </tr>
-                            `;
-                        });
-                        
-                    })
-                    .catch(error => console.error("Error fetching items:", error));
-            })
-            .catch(error => console.error("Error fetching order details:", error));
+        // Clear the existing modal content
+        document.getElementById("viewOrderNumber").textContent = "Loading...";
+        document.getElementById("viewFromDetails").textContent = "Loading...";
+        document.getElementById("viewOrderStatus").textContent = "Loading...";
+        document.getElementById("viewIssueDate").textContent = "Loading...";
+        document.getElementById("viewOrderedBy").textContent = "Loading...";
+        document.getElementById("viewTotal").textContent = "Loading...";
+        const itemList = document.getElementById("viewItemList");
+        itemList.innerHTML = "<tr><td>Loading items...</td></tr>";  // Show loading message for items
+
+        // Fetch order details and items
+        Promise.all([
+            fetch(`/order-details/${orderId}`).then(response => response.json()),
+            fetch(`/order-items/${orderId}`).then(response => response.json())
+        ])
+        .then(([orderData, items]) => {
+            // Populate the modal with order details
+            document.getElementById("viewOrderNumber").textContent = orderIndex || "N/A";
+            document.getElementById("viewFromDetails").textContent = orderData.supplier || "N/A";
+            document.getElementById("viewOrderStatus").textContent = orderData.status || "N/A";
+            document.getElementById("viewIssueDate").textContent = orderData.issue_date || "N/A";
+            document.getElementById("viewOrderedBy").textContent = orderData.ordered_by || "N/A";
+            document.getElementById("viewTotal").textContent =
+                orderData.total_amount !== undefined
+                    ? parseFloat(orderData.total_amount).toFixed(2)
+                    : "0.00";
+
+            // Clear existing items and populate with new items
+            itemList.innerHTML = ""; // Clear existing items
+            items.forEach(item => {
+                const itemTotal = item.total !== undefined
+                    ? parseFloat(item.total).toFixed(2)
+                    : "0.00";
+                const itemPrice = item.price !== undefined
+                    ? parseFloat(item.price).toFixed(2)
+                    : "0.00";
+                itemList.innerHTML += `
+                    <tr>
+                        <td>${item.name || "N/A"}</td>
+                        <td>${item.quantity || 0}</td>
+                        <td>${item.unit || "N/A"}</td>
+                        <td>${itemPrice}</td>
+                        <td>${itemTotal}</td>
+                    </tr>
+                `;
+            });
+
+            // Once all the content is populated, show the modal
+            viewModal.style.display = "block";
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+            viewModal.style.display = "none"; // Ensure the modal doesn't appear on error
+        });
     };
 });
 
 
 
 
-
+// PO EVAL
 document.addEventListener("DOMContentLoaded", () => {
     const table = document.querySelector("table");
 
@@ -483,96 +495,144 @@ document.addEventListener("DOMContentLoaded", () => {
         // Display the modal
         evaluateModal.style.display = "block";
     
+        // Clear existing content in the modal and reset the form
+        document.getElementById("evaluateOrderNumber").textContent = "Loading...";
+        document.getElementById("createdDate").textContent = "Loading...";
+        document.getElementById("updatedDate").textContent = "Loading...";
+
+        const itemList = document.getElementById("evaluateItemList");
+        itemList.innerHTML = "<tr><td>Loading items...</td></tr>";  // Show loading message for items
+
+        // Display the modal after content is cleared
+        evaluateModal.style.display = "block";
+        
+        // Fetch order details and items
         fetch(`/order-details/${orderId}`)
-            .then(response => response.json())
-            .then(data => {
-                // Display the row number and order details in the modal
-                document.getElementById("evaluateOrderNumber").textContent = rowNumber || "N/A"; // Use the row number
-                document.getElementById("createdDate").textContent = data.issue_date || "N/A";
-                document.getElementById("updatedDate").textContent = data.updated_date || "N/A";
-    
-                const itemList = document.getElementById("evaluateItemList");
-                itemList.innerHTML = ""; // Clear any existing items
-    
-                data.items.forEach((item, index) => {
-                    itemList.innerHTML += `
-                        <tr data-index="${index}">
-                            <td>${item.name || "N/A"}</td>
-                            <td>${item.quantity || 0}</td>
-                            <td><input type="number" class="received" value="${item.received || 0}" /></td>
-                            <td><input type="number" class="lost" value="${item.lost || 0}" /></td>
-                            <td><input type="number" class="damaged" value="${item.damaged || 0}" /></td>
-                        </tr>
-                    `;
-                });
-    
-                // Add submission logic
-                document.getElementById("submitEvaluationBtn").addEventListener("click", async (event) => {
-                    event.preventDefault(); // Prevent default form submission
-                
-                    const rows = document.querySelectorAll("#evaluateItemList tr");
-                
-                    // Prepare the items data
-                    const items = Array.from(rows).map(row => {
-                        const index = row.getAttribute("data-index");
-                        return {
-                            order_detail_id: data.items[index].id,
-                            received: parseInt(row.querySelector(".received").value, 10) || 0,
-                            lost: parseInt(row.querySelector(".lost").value, 10) || 0,
-                            damaged: parseInt(row.querySelector(".damaged").value, 10) || 0,
-                        };
-                    });
-                
-                    // Prepare the payload including the purchase_order_id
-                    const payload = {
-                        purchase_order_id: data.id, // Changed to `data.id` for the correct field
-                        items: items,
-                    };
-                
-                    console.log("Sending payload:", payload); // Log the payload for debugging
-                
-                    try {
-                        const response = await fetch('/submit-evaluation', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(payload),
-                        });
-                
-                        const result = await response.json();
-                        console.log("Response:", result); // Log the response for debugging
-                
-                        if (response.ok) {
-                            alert(result.message);
-                            evaluateModal.style.display = "none"; // Close the modal on success
-                            fetchPurchaseOrders(); // Refresh the purchase orders after closing the modal
-                        } else {
-                            alert(result.error || "Failed to submit evaluation. Please try again.");
-                        }
-                    } catch (error) {
-                        console.error("Error submitting evaluation:", error);
-                        alert("Failed to submit evaluation. Please try again.");
-                    }
-                }, { once: true }); // Ensures the listener is added only once
-                
-            })
-            .catch(error => {
-                console.error("Error fetching order details:", error);
-                alert("Failed to fetch order details. Please try again.");
+        .then(response => response.json())
+        .then(data => {
+            // Display the row number and order details in the modal
+            document.getElementById("evaluateOrderNumber").textContent = rowNumber || "N/A"; // Use the row number
+            document.getElementById("createdDate").textContent = data.issue_date || "N/A";
+            document.getElementById("updatedDate").textContent = data.updated_date || "N/A";
+
+            // Clear previous items and populate with fresh data
+            itemList.innerHTML = ""; // Clear any existing items
+
+            data.items.forEach((item, index) => {
+                const remainingQuantity = item.quantity - (item.received || 0) - (item.lost || 0) - (item.damaged || 0);
+
+                itemList.innerHTML += `
+                    <tr data-index="${index}">
+                        <td>${item.name || "N/A"}</td>
+                        <td>${item.quantity || 0}</td>
+                        <td><input type="number" class="received" value="${item.received || 0}" /></td>
+                        <td><input type="number" class="lost" value="${item.lost || 0}" /></td>
+                        <td><input type="number" class="damaged" value="${item.damaged || 0}" /></td>
+                        <td><input type="number" class="remaining-quantity" value="${remainingQuantity}" readonly /></td>
+                    </tr>
+                `;
             });
-    };
+
+            document.getElementById("evaluateItemList").addEventListener("input", (event) => {
+                if (event.target.classList.contains("received") || 
+                    event.target.classList.contains("lost") || 
+                    event.target.classList.contains("damaged")) {
+            
+                    const row = event.target.closest("tr");
+                    const quantity = parseInt(row.children[1].textContent, 10) || 0;
+                    let received = parseInt(row.querySelector(".received").value, 10) || 0;
+                    const lost = parseInt(row.querySelector(".lost").value, 10) || 0;
+                    const damaged = parseInt(row.querySelector(".damaged").value, 10) || 0;
+                    const remainingQuantityInput = row.querySelector(".remaining-quantity");
+            
+                    // Get the original remaining quantity (saved in a hidden data attribute or as initial value)
+                    const originalRemainingQuantity = parseInt(remainingQuantityInput.dataset.originalRemaining || 0, 10);
+            
+                    // If lost and damaged are both zero, add the original remaining quantity to received
+                    if (lost === 0 && damaged === 0 && received < quantity) {
+                        received += originalRemainingQuantity;  // Add remaining quantity to received
+                        remainingQuantityInput.dataset.originalRemaining = "0"; // Reset the added value
+                    }
+            
+                    // Calculate the remaining quantity as the original quantity minus received, lost, and damaged
+                    const remainingQuantity = quantity - (received + lost + damaged);
+            
+                    // Update the remaining quantity display dynamically
+                    remainingQuantityInput.value = remainingQuantity >= 0 ? remainingQuantity : 0; // Ensure non-negative value
+            
+                    // Update the received field (this value includes the added remaining quantity)
+                    row.querySelector(".received").value = received;
+                }
+            });
+            
+            
+            
+            
+
+            // Add submission logic (unchanged from your original code)
+            document.getElementById("submitEvaluationBtn").addEventListener("click", async (event) => {
+                event.preventDefault(); // Prevent default form submission
+            
+                const rows = document.querySelectorAll("#evaluateItemList tr");
+            
+                // Prepare the items data
+                const items = Array.from(rows).map(row => {
+                    const index = row.getAttribute("data-index");
+                    const received = parseInt(row.querySelector(".received").value, 10) || 0;
+                    const lost = parseInt(row.querySelector(".lost").value, 10) || 0;
+                    const damaged = parseInt(row.querySelector(".damaged").value, 10) || 0;
+                    const remainingQuantity = parseInt(row.querySelector(".remaining-quantity").value, 10); // Keep the original remaining quantity
+            
+                    return {
+                        order_detail_id: data.items[index].id,
+                        received: received,
+                        lost: lost,
+                        damaged: damaged,
+                        remainingQuantity: remainingQuantity // Send the value as it is
+                    };
+                });
+            
+                // Prepare the payload including the purchase_order_id
+                const payload = {
+                    purchase_order_id: data.id,
+                    items: items,
+                };
+            
+                console.log("Sending payload:", payload); // Log the payload for debugging
+            
+                try {
+                    const response = await fetch('/submit-evaluation', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload),
+                    });
+            
+                    const result = await response.json();
+                    console.log("Response:", result); // Log the response for debugging
+            
+                    if (response.ok) {
+                        alert(result.message);
+                        evaluateModal.style.display = "none"; // Close the modal on success
+                        fetchPurchaseOrders(); // Refresh the purchase orders after closing the modal
+                    } else {
+                        alert(result.error || "Failed to submit evaluation. Please try again.");
+                    }
+                } catch (error) {
+                    console.error("Error submitting evaluation:", error);
+                    alert("Failed to submit evaluation. Please try again.");
+                }
+            }, { once: true }); // Ensures the listener is added only once
+            
+        });
+
+    }; 
     
     
 
-    
-    
-    
 
-    
-
-    // Open SKU Modal
-    // Function to open SKU modal for a specific purchase_order_id
+    // PO SKU
     function openSkuModal(purchaseOrderId) {
         const skuModal = document.getElementById("skuModal");
         const closeSkuModal = skuModal.querySelector(".close");

@@ -101,17 +101,21 @@ CREATE TABLE order_items (
     quantity INT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     total DECIMAL(10, 2) NOT NULL,
+    received INT DEFAULT 0,
+    lost INT DEFAULT 0,
+    damaged INT DEFAULT 0,
+    remaining_quantity INT DEFAULT 0,
     FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id)
 );
+UPDATE order_items oi
+SET remaining_quantity = oi.quantity - (oi.received + oi.lost + oi.damaged);
 
 CREATE TABLE evaluations (
     id SERIAL PRIMARY KEY,
     purchase_order_id INT NOT NULL,
     order_item_id INT NOT NULL,
-    received INT NOT NULL,
-    lost INT NOT NULL,
-    damaged INT NOT NULL,
     evaluation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- New column for tracking updates
     FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
     FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
 );

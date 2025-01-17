@@ -1176,7 +1176,7 @@ def get_order_items(order_id):
     """, (order_id,))
     items = cursor.fetchall()
 
-    # Close the database connection
+    # Close the database connection         
     cursor.close()
     conn.close()
 
@@ -1215,13 +1215,14 @@ def submit_evaluation():
             received = item['received']
             lost = item['lost']
             damaged = item['damaged']
+            remaining_quantity = item['remainingQuantity']  # Get remaining quantity from the item (may be unchanged)
 
             # Update the order item evaluation data in the database
             cur.execute("""
                 UPDATE order_items
-                SET received = %s, lost = %s, damaged = %s
+                SET received = %s, lost = %s, damaged = %s, remaining_quantity = COALESCE(%s, remaining_quantity)
                 WHERE id = %s AND purchase_order_id = %s
-            """, (received, lost, damaged, order_detail_id, purchase_order_id))
+            """, (received, lost, damaged, remaining_quantity, order_detail_id, purchase_order_id))
 
         # Commit the transaction
         conn.commit()
@@ -1237,6 +1238,8 @@ def submit_evaluation():
         if conn:
             conn.rollback()
         return jsonify({'error': str(e)}), 500
+
+
 
 
 @app.route('/get-sku-details/<int:purchase_order_id>', methods=['GET'])
