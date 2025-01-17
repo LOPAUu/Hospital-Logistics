@@ -561,7 +561,7 @@ table td button i {
 }
 
 .details-group h3 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #003366;
     margin-bottom: 10px;
 }
@@ -575,4 +575,9 @@ table td button i {
     font-size: 0.9rem;
     color: #003366;
     margin: 5px 0;
+}
+
+.requested-by {
+    border-bottom: 1px solid #ddd;
+    padding: 10px
 }
