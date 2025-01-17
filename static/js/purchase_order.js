@@ -539,29 +539,31 @@ document.addEventListener("DOMContentLoaded", () => {
                     event.target.classList.contains("damaged")) {
             
                     const row = event.target.closest("tr");
-                    const quantity = parseInt(row.children[1].textContent, 10) || 0;
+                    const quantity = parseInt(row.children[1].textContent, 10) || 0; // Ordered quantity
                     let received = parseInt(row.querySelector(".received").value, 10) || 0;
-                    const lost = parseInt(row.querySelector(".lost").value, 10) || 0;
-                    const damaged = parseInt(row.querySelector(".damaged").value, 10) || 0;
-                    const remainingQuantityInput = row.querySelector(".remaining-quantity");
+                    let lost = parseInt(row.querySelector(".lost").value, 10) || 0;
+                    let damaged = parseInt(row.querySelector(".damaged").value, 10) || 0;
             
-                    // Get the original remaining quantity (saved in a hidden data attribute or as initial value)
-                    const originalRemainingQuantity = parseInt(remainingQuantityInput.dataset.originalRemaining || 0, 10);
+                    // Ensure the total does not exceed the ordered quantity
+                    if ((received + lost + damaged) > quantity) {
+                        const excess = (received + lost + damaged) - quantity;
             
-                    // If lost and damaged are both zero, add the original remaining quantity to received
-                    if (lost === 0 && damaged === 0 && received < quantity) {
-                        received += originalRemainingQuantity;  // Add remaining quantity to received
-                        remainingQuantityInput.dataset.originalRemaining = "0"; // Reset the added value
+                        // Adjust the current input to prevent exceeding the ordered quantity
+                        if (event.target.classList.contains("received")) {
+                            received -= excess;
+                            row.querySelector(".received").value = received >= 0 ? received : 0;
+                        } else if (event.target.classList.contains("lost")) {
+                            lost -= excess;
+                            row.querySelector(".lost").value = lost >= 0 ? lost : 0;
+                        } else if (event.target.classList.contains("damaged")) {
+                            damaged -= excess;
+                            row.querySelector(".damaged").value = damaged >= 0 ? damaged : 0;
+                        }
                     }
             
-                    // Calculate the remaining quantity as the original quantity minus received, lost, and damaged
+                    // Update the remaining quantity
                     const remainingQuantity = quantity - (received + lost + damaged);
-            
-                    // Update the remaining quantity display dynamically
-                    remainingQuantityInput.value = remainingQuantity >= 0 ? remainingQuantity : 0; // Ensure non-negative value
-            
-                    // Update the received field (this value includes the added remaining quantity)
-                    row.querySelector(".received").value = received;
+                    row.querySelector(".remaining-quantity").value = remainingQuantity >= 0 ? remainingQuantity : 0;
                 }
             });
             
