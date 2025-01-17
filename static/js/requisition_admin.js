@@ -222,8 +222,8 @@ function viewDetails(requisitionId) {
                                 <tr>
                                     <td>${item.name || 'N/A'}</td>
                                     <td>${item.quantity || 0}</td>
-                                    <td>${item.price ? item.price : '0.00'}</td>
-                                    <td>${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00'}</td>
+                                    <td>₱${item.price ? item.price : '0.00'}</td>
+                                    <td>₱${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00'}</td>
                                 </tr>
                             `).join('')}
                         </tbody>

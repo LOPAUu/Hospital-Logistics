@@ -195,9 +195,10 @@ table tbody td { border-bottom: 1px solid #ddd; }
 
 .form-section-total { 
     margin-bottom: 15px; 
-    margin-left: 80%;
+    margin-left: 70%;
     font-weight: bold;
     font-size: 17px;
+    display: flex;
 }
 
 label { 

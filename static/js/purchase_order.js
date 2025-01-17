@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <td class="item-name">${item.name}</td>
                 <td class="item-quantity">${item.quantity}</td>
-                <td class="item-price">${item.price}</td>
-                <td class="item-total">${(item.quantity * item.price).toFixed(2)}</td>
+                <td class="item-price">₱${item.price}</td>
+                <td class="item-total">₱${(item.quantity * item.price).toFixed(2)}</td>
             `;
             tableBody.appendChild(row);
 
@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${order.supplier}</td>
                 <td>${order.status}</td>
                 <td>${order.received ? "Yes" : "No"}</td>
-                <td>${order.total_amount.toFixed(2)}</td>
+                <td>₱${order.total_amount.toFixed(2)}</td>
                 <td>${order.issue_date}</td>
                 <td>${order.ordered_by}</td>
                 <td>
@@ -378,8 +378,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <td>${item.name || "N/A"}</td>
                                     <td>${item.quantity || 0}</td>
                                     <td>${item.unit || "N/A"}</td>
-                                    <td>${itemPrice}</td>
-                                    <td>${itemTotal}</td>
+                                    <td>₱${itemPrice}</td>
+                                    <td>₱${itemTotal}</td>
                                 </tr>
                             `;
                         });
@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${order.supplier}</td>
                 <td>${order.status}</td>
                 <td>${order.received ? "Yes" : "No"}</td>
-                <td>${order.total_amount.toFixed(2)}</td>
+                <td>₱${order.total_amount.toFixed(2)}</td>
                 <td>${order.issue_date}</td>
                 <td>${order.ordered_by}</td>
                 <td>
