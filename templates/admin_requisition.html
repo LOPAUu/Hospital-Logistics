@@ -30,8 +30,6 @@
     </div>
 
     <div class="container">
-        <!-- Success Message Display -->
-        <div id="message" style="display: none; color: green; font-weight: bold;"></div>
     
         <table id="requisition-list">
             <thead>
@@ -55,7 +53,7 @@
                     <td>{{ requisition.company_name }}</td>
                     <td>{{ requisition.requested_by }}</td>
                     <td><button onclick="viewDetails({{ requisition.id }})">View Details</button></td>
-                    <td>{{ requisition.total }}</td>
+                    <td>₱{{ requisition.total }}</td>
                     <td>{{ requisition.status }}</td>
                 </tr>
                 {% endfor %}

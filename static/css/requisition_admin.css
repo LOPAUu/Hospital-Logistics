@@ -23,7 +23,8 @@
 
 table {
     width: 100%;
-    border-collapse: collapse; /* Prevents gaps between cells */
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
 th, td {
@@ -140,9 +141,9 @@ table td button i {
 .modal-content {
     background-color: #fefefe;
     margin: 9% auto;
-    padding: 13px;
+    padding: 25px;
     border: 1px solid #888;
-    width: 30%;
+    width: 35%;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
@@ -470,13 +471,14 @@ table td button i {
     font-size: 1.2rem;
     font-weight: bold;
     color: #333;
-    margin-top: 20px;
+    margin-top: 30px;
+    display: flex;
 }
 
 /* Form Action */
 .requisition-action-buttons {
     text-align: right;
-    margin-top: 20px;
+    margin-top: 30px;
     margin-bottom: -80px;
 }
 

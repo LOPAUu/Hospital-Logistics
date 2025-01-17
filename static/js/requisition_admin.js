@@ -34,7 +34,7 @@ function renderRequisition(requisitions, order = 'asc') {
             <td>${requisition.purpose}</td>
             <td>${requisition.company_name}</td>
             <td>${requisition.requested_by}</td>
-            <td>${requisition.total}</td>
+            <td>₱${requisition.total}</td>
             <td>${requisition.status}</td>
             <td>
                 <button onclick="viewDetails(${requisition.id})">View Details</button>
@@ -178,48 +178,75 @@ function viewDetails(requisitionId) {
     fetch(`/requisitions_view_details/${requisitionId}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to fetch requisition details');
+                throw new Error(`Failed to fetch requisition details: ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
+            // Validate required data before rendering
+            if (!data.requisition || !data.items) {
+                throw new Error('Incomplete requisition data received from the server.');
+            }
+
+            // Extract requisition details
+            const { id, date, purpose, company_name, requested_by } = data.requisition;
+
+            // Populate details content
             document.getElementById('details-content').innerHTML = `
                 <div class="details-group">
                     <div class="detail-pair">
-                        <p><strong>No:</strong> ${data.requisition.id}</p>
-                        <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
+                        <p><strong>No:</strong> ${id || 'N/A'}</p>
+                        <p><strong>Date:</strong> ${date ? new Date(date).toLocaleDateString() : 'N/A'}</p>
                     </div>
                     <div class="detail-pair">
-                        <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                        <p><strong>Company Name:</strong> ${data.requisition.company_name}</p>
+                        <p><strong>Purpose:</strong> ${purpose || 'N/A'}</p>
+                        <p><strong>Company Name:</strong> ${company_name || 'N/A'}</p>
                     </div>
                     <div class="requested-by">
-                    <p><strong>Requested By:</strong> ${data.requisition.requested_by}</p>
+                        <p><strong>Requested By:</strong> ${requested_by || 'N/A'}</p>
                     </div>
                 </div>
                 <div class="details-group">
                     <h3>Items Requested:</h3>
-                    <ul>
-                        ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
-                    </ul>
-                    <p><strong>Total:</strong> ₱${data.total}</p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Price (₱)</th>
+                                <th>Total (₱)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.items.map(item => `
+                                <tr>
+                                    <td>${item.name || 'N/A'}</td>
+                                    <td>${item.quantity || 0}</td>
+                                    <td>₱${item.price ? item.price : '0.00'}</td>
+                                    <td>₱${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
+                <div class="total-amount">
+                    <p><strong>Total Amount:</strong> ₱${data.total ? data.total : '0.00'}</p>
+                    </div>
                 <div class="details-group">
                     <h3>Attachments:</h3>
-                    ${data.attachments.length > 0 ? 
+                    ${data.attachments && data.attachments.length > 0 ? 
                         `<ul>
                             ${data.attachments.map(attachment => 
                                 `<li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>`
                             ).join('')}
-                        </ul>`
-                        : '<p>No attachments found.</p>'
-                    }
+                        </ul>` : '<p>No attachments found.</p>'}
                 </div>
             `;
             openDetailsModal();
         })
         .catch(error => {
-            Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
+            console.error('Error fetching requisition details:', error);
+            Swal.fire('Error', error.message || 'Failed to fetch requisition details. Please try again later.', 'error');
         });
 }
 

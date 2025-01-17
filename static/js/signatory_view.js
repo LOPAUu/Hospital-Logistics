@@ -125,15 +125,28 @@ function viewDetails(requisitionId) {
                     </div>
                 </div>
                 <div class="view-details-bottom">
-                    <h4>Items</h4>
-                    <ul>
-                        ${data.items && data.items.length > 0 ? 
-                            data.items.map(item => `
-                                <li>${item.name} - ${item.quantity}qty x ₱${item.price} = ₱${item.quantity * item.price}</li>
-                            `).join('') : '<li>No items found</li>'
-                        }
-                    </ul>
-                    <h4>Total: ₱${totalAmount.toFixed(2)}</h4>
+                    <h4>Items Requested</h4>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Price (₱)</th>
+                                <th>Total (₱)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.items.map(item => `
+                                <tr>
+                                    <td>${item.name || 'N/A'}</td>
+                                    <td>${item.quantity || 0}</td>
+                                    <td>${item.price ? item.price : '0.00'}</td>
+                                    <td>${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        </table>
+                    <h5>Total: ₱${totalAmount.toFixed(2)}</h5>
                     <h4>Attachments</h4>
                     <ul>
                         ${data.attachments && data.attachments.length > 0 ? 
