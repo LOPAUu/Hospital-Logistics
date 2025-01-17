@@ -34,7 +34,7 @@ function renderRequisition(requisitions, order = 'asc') {
             <td>${requisition.purpose}</td>
             <td>${requisition.company_name}</td>
             <td>${requisition.requested_by}</td>
-            <td>${requisition.total}</td>
+            <td>₱${requisition.total}</td>
             <td>${requisition.status}</td>
             <td>
                 <button onclick="viewDetails(${requisition.id})">View Details</button>
