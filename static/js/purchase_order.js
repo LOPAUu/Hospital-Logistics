@@ -286,21 +286,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = document.createElement("tr");
 
             row.innerHTML = `
-            <td>${index + 1}</td> <!-- Use index + 1 to display row numbers starting from 1 -->
-            <td>${order.supplier}</td>
-            <td>${order.status}</td>
-            <td>${order.received ? "Yes" : "No"}</td>
-            <td>${order.total_amount.toFixed(2)}</td>
-            <td>${order.issue_date}</td>
-            <td>${order.ordered_by}</td>
-            <td>
-                <button class="view-btn" data-id="${order.id}">View</button>
-                <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
-                <button class="delete-btn" data-id="${order.id}">Delete</button>
-                <button class="sku-btn" data-id="${order.id}">SKU</button>
-            </td>
-        `;
-
+                <td>${index + 1}</td>
+                <td>${order.supplier}</td>
+                <td>${order.status}</td>
+                <td>${order.received ? "Yes" : "No"}</td>
+                <td>${order.total_amount.toFixed(2)}</td>
+                <td>${order.issue_date}</td>
+                <td>${order.ordered_by}</td>
+                <td>
+                    <button class="view-btn" data-id="${order.id}" data-index="${index + 1}">View</button>
+                    <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
+                    <button class="delete-btn" data-id="${order.id}">Delete</button>
+                    <button class="sku-btn" data-id="${order.id}">SKU</button>
+                </td>
+            `;
             tbody.appendChild(row);
         });
 
@@ -317,34 +316,42 @@ document.addEventListener("DOMContentLoaded", () => {
     table.addEventListener("click", (e) => {
         const button = e.target;
         const orderId = button.dataset.id;
-
+        const orderIndex = button.dataset.index; // Get the index
+    
         if (button.classList.contains("view-btn")) {
-            openViewModal(orderId);  // Open View Modal and populate it
-        } else if (button.classList.contains("evaluate-btn")) {
-            console.log(`Evaluate order: ${orderId}`);
-            // Add logic for Evaluate Modal
-        } else if (button.classList.contains("delete-btn")) {
-            console.log(`Delete order: ${orderId}`);
-            // Add logic for Delete functionality
-        } else if (button.classList.contains("sku-btn")) {
-            console.log(`Manage SKU for order: ${orderId}`);
-            // Add logic for SKU management
+            openViewModal(orderId, orderIndex); // Pass the index
         }
     });
 
-    const openViewModal = (orderId) => {
+    const openViewModal = (orderId, orderIndex) => {
         const viewModal = document.getElementById("viewModal");
         const closeModal = viewModal.querySelector(".close");
     
-        // Show the modal
+        // Function to close the modal and refresh the purchase orders
+        const closeViewModal = () => {
+            viewModal.style.display = "none";
+            fetchPurchaseOrders();  // Re-fetch the purchase orders when the modal is closed
+        };
+    
+        // Close modal on click of the close button
+        closeModal.addEventListener("click", closeViewModal);
+    
+        // Close modal if the user clicks outside the modal content
+        window.addEventListener("click", (event) => {
+            if (event.target === viewModal) {
+                closeViewModal();
+            }
+        });
+    
+        // Display the modal
         viewModal.style.display = "block";
     
         fetch(`/order-details/${orderId}`)
             .then(response => response.json())
             .then(data => {
                 // Populate the modal with order details
+                document.getElementById("viewOrderNumber").textContent = orderIndex || "N/A";
                 document.getElementById("viewFromDetails").textContent = data.supplier || "N/A";
-                document.getElementById("viewOrderNumber").textContent = data.loop?.index || "N/A";
                 document.getElementById("viewOrderStatus").textContent = data.status || "N/A";
                 document.getElementById("viewIssueDate").textContent = data.issue_date || "N/A";
                 document.getElementById("viewOrderedBy").textContent = data.ordered_by || "N/A";
@@ -352,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     data.total_amount !== undefined
                         ? parseFloat(data.total_amount).toFixed(2)
                         : "0.00";
-
+    
                 // Fetch and populate the items
                 fetch(`/order-items/${orderId}`)
                     .then(response => response.json())
@@ -376,25 +383,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </tr>
                             `;
                         });
+                        
                     })
                     .catch(error => console.error("Error fetching items:", error));
             })
             .catch(error => console.error("Error fetching order details:", error));
-
-        // Close modal logic
-        closeModal.addEventListener("click", () => {
-            viewModal.style.display = "none";
-        });
-
-    
-        // Close modal if clicked outside
-        window.addEventListener("click", (e) => {
-            if (e.target === viewModal) {
-                viewModal.style.display = "none";
-            }
-        });
     };
-        
 });
 
 
@@ -433,14 +427,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${order.issue_date}</td>
                 <td>${order.ordered_by}</td>
                 <td>
-                    <button class="view-btn" data-id="${order.id}">View</button>
-                    <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
+                    <button class="view-btn" data-id="${order.id}" data-row-number="${index + 1}">View</button>
+                    <button class="evaluate-btn" data-id="${order.id}" data-row-number="${index + 1}">Evaluate</button>
                     <button class="delete-btn" data-id="${order.id}">Delete</button>
                     <button class="sku-btn" data-id="${order.id}">SKU</button>
                 </td>
             `;
             tbody.appendChild(row);
-        });
+        });        
 
         const existingTbody = table.querySelector("tbody");
         if (existingTbody) table.removeChild(existingTbody);
@@ -454,28 +448,31 @@ document.addEventListener("DOMContentLoaded", () => {
     table.addEventListener("click", (e) => {
         const button = e.target;
         const orderId = button.dataset.id;
-
+        const rowNumber = button.dataset.rowNumber;
+    
         if (button.classList.contains("evaluate-btn")) {
-            openEvaluateModal(orderId); // Handle Evaluate logic
+            openEvaluateModal(orderId, rowNumber); // Pass the row number
         } else if (button.classList.contains("sku-btn")) {
             openSkuModal(orderId); // Handle SKU logic
         }
     });
+    
 
     
 
-    const openEvaluateModal = (orderId) => {
+    const openEvaluateModal = (orderId, rowNumber) => {
         const evaluateModal = document.getElementById("evaluateModal");
         const closeModal = evaluateModal.querySelector(".close");
-
-        // Function to close the modal
+    
+        // Function to close the modal and refresh the purchase orders
         const closeEvaluateModal = () => {
             evaluateModal.style.display = "none";
+            fetchPurchaseOrders();  // Re-fetch the purchase orders when the modal is closed
         };
-
+    
         // Close modal on click of the close button
         closeModal.addEventListener("click", closeEvaluateModal);
-
+    
         // Close modal if the user clicks outside the modal content
         window.addEventListener("click", (event) => {
             if (event.target === evaluateModal) {
@@ -483,16 +480,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     
+        // Display the modal
         evaluateModal.style.display = "block";
     
         fetch(`/order-details/${orderId}`)
             .then(response => response.json())
             .then(data => {
-                // Log the full data to check if purchase_order_id exists
-                console.log("Order details:", data);
-    
-                // Populate Evaluate modal details
-                document.getElementById("evaluateOrderNumber").textContent = data.id || "N/A"; // Changed to `data.id` for correct field
+                // Display the row number and order details in the modal
+                document.getElementById("evaluateOrderNumber").textContent = rowNumber || "N/A"; // Use the row number
                 document.getElementById("createdDate").textContent = data.issue_date || "N/A";
                 document.getElementById("updatedDate").textContent = data.updated_date || "N/A";
     
@@ -551,6 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (response.ok) {
                             alert(result.message);
                             evaluateModal.style.display = "none"; // Close the modal on success
+                            fetchPurchaseOrders(); // Refresh the purchase orders after closing the modal
                         } else {
                             alert(result.error || "Failed to submit evaluation. Please try again.");
                         }
@@ -567,6 +563,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     };
     
+    
 
     
     
@@ -577,6 +574,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // Open SKU Modal
     // Function to open SKU modal for a specific purchase_order_id
     function openSkuModal(purchaseOrderId) {
+        const skuModal = document.getElementById("skuModal");
+        const closeSkuModal = skuModal.querySelector(".close");
+        const skuTableBody = document.getElementById("skuTableBody");
+
+         // Function to close the SKU modal
+        const closeSkuModalFunction = () => {
+            skuModal.style.display = "none";
+        };
+
+        // Close modal on click of the close button
+        closeSkuModal.addEventListener("click", closeSkuModalFunction);
+
+        // Close modal if the user clicks outside the modal content
+        window.addEventListener("click", (event) => {
+            if (event.target === skuModal) {
+                closeSkuModalFunction();
+            }
+        });
+
         console.log('Opening SKU modal for PO ID:', purchaseOrderId);
         skuTableBody.innerHTML = ''; // Clear previous data
 
