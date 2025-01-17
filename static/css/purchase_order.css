@@ -83,6 +83,7 @@ table thead th {
 }
 table tbody td { border-bottom: 1px solid #ddd; }
 
+
 .status-open { color: green; font-weight: bold; }
 .status-closed { color: red; font-weight: bold; }
 
@@ -232,7 +233,7 @@ input[type=number] {
 /* Layout for Modal Content */
 .modal-body {
     display: flex;
-    gap: 40px;
+    gap: 150px;
 }
 .left-section, .right-section {
     flex: 1;

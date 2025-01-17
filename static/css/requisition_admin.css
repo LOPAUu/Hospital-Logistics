@@ -23,7 +23,8 @@
 
 table {
     width: 100%;
-    border-collapse: collapse; /* Prevents gaps between cells */
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
 th, td {
