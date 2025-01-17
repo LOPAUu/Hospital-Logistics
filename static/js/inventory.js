@@ -179,3 +179,46 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial render
   renderTable(inventoryData);
 });
+
+//inventory view
+document.getElementById('generateReportBtn').addEventListener('click', () => {
+    const table = document.querySelector('.inventory-table');
+    const rows = table.querySelectorAll('tr');
+
+    let reportContent = '<table border="1" style="border-collapse: collapse; width: 100%;">';
+    reportContent += '<thead><tr>';
+    // Add table headers (excluding "Reorder Level" and "Actions")
+    const headers = [...rows[0].children];
+    headers.forEach((header, index) => {
+        if (index !== 8 && index !== 9) {
+            reportContent += `<th>${header.innerText}</th>`;
+        }
+    });
+    reportContent += '</tr></thead><tbody>';
+
+    // Add table rows
+    rows.forEach((row, rowIndex) => {
+        if (rowIndex === 0) return; // Skip headers
+        const cells = [...row.children];
+        reportContent += '<tr>';
+        cells.forEach((cell, index) => {
+            if (index !== 8 && index !== 9) {
+                reportContent += `<td>${cell.innerText}</td>`;
+            }
+        });
+        reportContent += '</tr>';
+    });
+
+    reportContent += '</tbody></table>';
+
+    // Open a new window to display the report
+    const reportWindow = window.open('', '', 'width=800,height=600');
+    reportWindow.document.write(`
+        <html>
+        <head><title>Inventory Report</title></head>
+        <body>${reportContent}</body>
+        </html>
+    `);
+    reportWindow.document.close();
+    reportWindow.print();
+});
