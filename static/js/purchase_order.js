@@ -528,7 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td><input type="number" class="received" value="${item.received || 0}" /></td>
                         <td><input type="number" class="lost" value="${item.lost || 0}" /></td>
                         <td><input type="number" class="damaged" value="${item.damaged || 0}" /></td>
-                        <td><input type="number" class="remaining-quantity" value="${remainingQuantity}" readonly /></td>
+                        <td><input type="number" class="remaining-quantity" value="${remainingQuantity}" disabled /></td>
                     </tr>
                 `;
             });
