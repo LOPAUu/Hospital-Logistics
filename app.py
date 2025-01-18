@@ -351,6 +351,16 @@ def delete_user(user_id):
     flash('User deleted successfully!', 'success')
     return redirect(url_for('user_role_management'))
 
+# Route to fetch all suppliers
+@app.route('/suppliers')
+def admin_supplier():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM suppliers")
+    suppliers = cur.fetchall()
+    close_db_connection(cur, conn)
+    return render_template('admin_supplier.html', suppliers=suppliers)
+
 
 @app.route('/suppliers/<int:supplier_id>', methods=['PUT'])
 def update_supplier(supplier_id):
