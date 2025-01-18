@@ -1,45 +1,29 @@
--- Table for users with PostgreSQL equivalent to MySQL AUTO_INCREMENT
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,  -- SERIAL is PostgreSQL's auto-incrementing integer
-    username VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    user_type VARCHAR(20) CHECK (user_type IN ('Signatory', 'Pharmacy', 'Admin')) NOT NULL  -- Use CHECK for ENUM-like behavior
-);
-
--- Insert sample users with specified user types
-INSERT INTO users (username, password, user_type)
-VALUES ('signatory', 'signatory', 'Signatory');
-
-INSERT INTO users (username, password, user_type)
-VALUES ('pharmacy', 'pharmacy', 'Pharmacy');
-
-INSERT INTO users (username, password, user_type)
-VALUES ('admin', 'admin', 'Admin');
-
-
+-- Create the 'roles' table first
 CREATE TABLE roles (
     id SERIAL PRIMARY KEY,  -- Unique identifier for each role
     role_name VARCHAR(50) NOT NULL UNIQUE  -- Role name (Admin, Manager, etc.)
 );
 
+-- Insert values into the 'roles' table
 INSERT INTO roles (role_name) VALUES
 ('Admin'),
 ('Pharmacy Manager'),
-('Inventory Clerk'),
-('Delivery Personnel');
+('Signatory');
 
+-- Create the 'users' table with the foreign key referencing 'roles'
 CREATE TABLE users (
-    staff_id SERIAL PRIMARY KEY,  -- Unique identifier for each user
-    username VARCHAR(50) NOT NULL,  -- Username for identification
-    role VARCHAR(50) NOT NULL,  -- User's role (Admin, etc.)
-    status VARCHAR(20) NOT NULL,  -- Active or Inactive status
-    email VARCHAR(100) NOT NULL,  -- Email address for communication
-    password VARCHAR(255) NOT NULL,  -- Hashed password (never store plain text passwords)
-    phone VARCHAR(15),  -- Optional: phone number for contact
-    emergency_contact VARCHAR(100),  -- Optional: emergency contact number
-    date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Record creation timestamp
-    FOREIGN KEY (role) REFERENCES roles(role_name)  -- Assuming you have a roles table
+    user_id SERIAL PRIMARY KEY,
+    full_name VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email_address VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(15),
+    role_id INT,  -- Define the role_id column
+    password VARCHAR(255) NOT NULL,  -- Add the password column
+    date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES roles(id)  -- Add foreign key constraint
 );
+
+
 
 -- Table for suppliers with PostgreSQL timestamp handling
 CREATE TABLE suppliers (
@@ -64,7 +48,6 @@ CREATE TABLE requisitions (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     purpose VARCHAR(255) NOT NULL,
-    billing VARCHAR(255) NOT NULL,
     signatory1_approved BOOLEAN DEFAULT FALSE,
     signatory2_approved BOOLEAN DEFAULT FALSE,
     signatory3_approved BOOLEAN DEFAULT FALSE
@@ -96,6 +79,58 @@ ALTER TABLE attachments
 ADD CONSTRAINT fk_requisition_id
 FOREIGN KEY (requisition_id)
 REFERENCES requisitions(id);
+
+-- Create purchase_orders table
+CREATE TABLE purchase_orders (
+    id SERIAL PRIMARY KEY,
+    requisition_id INT NOT NULL,
+    supplier VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'Ordered', -- Ordered, Partial, Completed
+    total_amount DECIMAL(10, 2) NOT NULL,
+    issue_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ordered_by VARCHAR(255) NOT NULL,
+    FOREIGN KEY (requisition_id) REFERENCES requisitions(id) ON DELETE CASCADE
+);
+
+-- Create table for storing order items (Optional, for detailed tracking)
+CREATE TABLE order_items (
+    id SERIAL PRIMARY KEY,
+    purchase_order_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    received INT DEFAULT 0,
+    lost INT DEFAULT 0,
+    damaged INT DEFAULT 0,
+    remaining_quantity INT DEFAULT 0,
+    FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id)
+);
+UPDATE order_items oi
+SET remaining_quantity = oi.quantity - (oi.received + oi.lost + oi.damaged);
+
+CREATE TABLE evaluations (
+    id SERIAL PRIMARY KEY,
+    purchase_order_id INT NOT NULL,
+    order_item_id INT NOT NULL,
+    evaluation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- New column for tracking updates
+    FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
+);
+
+CREATE TABLE sku_details (
+    id SERIAL PRIMARY KEY,
+    item_name VARCHAR(255) NOT NULL,
+    quantity_ordered INT NOT NULL,
+    sku VARCHAR(255) NOT NULL UNIQUE,
+    quantity INT NOT NULL DEFAULT 0,
+    expiration DATE NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
 
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (

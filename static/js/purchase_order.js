@@ -1,1808 +1,749 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
-import psycopg2, requests, json
-from datetime import datetime
-from werkzeug.utils import secure_filename
-import time
-import os
-from psycopg2.extras import RealDictCursor
-from werkzeug.security import generate_password_hash
-
-app = Flask(__name__)
-app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
-
-AUTH_SERVICE_URL = "https://evaluation-deployed-authentication.onrender.com"
-
-# PostgreSQL configurations
-app.config['POSTGRES_HOST'] = 'dpg-ctig2pogph6c7386aab0-a.oregon-postgres.render.com'
-app.config['POSTGRES_USER'] = 'lmsdb_user'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = '3LvON9SVyQNiM4YZ1ZwZTFi5sqxHjja7'  # Change to your PostgreSQL password
-app.config['POSTGRES_DB'] = 'lmsdb_ul3w_cy3t'  # Database name
-app.config['POSTGRES_PORT'] = '5432'  # Database name
-
-# Configure upload folder and allowed file types
-app.config['UPLOAD_FOLDER'] = 'static/requisition_files/uploads/'
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'xlsx'}
-
-def get_db_connection():
-    return psycopg2.connect(
-        host=app.config['POSTGRES_HOST'],
-        database=app.config['POSTGRES_DB'],
-        user=app.config['POSTGRES_USER'],
-        password=app.config['POSTGRES_PASSWORD'],
-        port=app.config['POSTGRES_PORT']
-    )
-
-@app.route('/')
-def index():
-    return redirect(url_for('login'))  # Redirect to the login page
-
-@app.route('/login', methods=['GET', 'POST'])
-@app.route('/login/<system>', methods=['GET', 'POST'])
-def login(system='lms'):  # Default to 'lms' system
-    auth_url = f'{AUTH_SERVICE_URL}?system={system}'  # Pass the system parameter to the auth service
-    print(f"Redirecting to authentication service: {auth_url}")  # Debugging log
-    return redirect(auth_url)
-
-# Callback route for authentication microservice
-@app.route('/auth/callback', methods=['GET'])
-def auth_callback():
-    token = request.args.get('token')  # Capture the token from the URL
-    print(f"Token received in callback: {token}")
-    
-    if token:
-        headers = {'Authorization': f'Bearer {token}'}
-        response = requests.post(f'{AUTH_SERVICE_URL}/verify-token', headers=headers)
-
-        if response.status_code == 200:
-            user_data = response.json()
-            session['username'] = user_data['username']
-            session['role'] = user_data['role']
-            print(f"Session after storing user data: {session}")
-
-            flash('Login successful!', 'success')
-
-            # Normalize role comparison (to avoid case sensitivity issues)
-            if session['role'].strip().lower() == 'lms admin':  # Case insensitive check
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Role not authorized', 'danger')
-                return redirect(url_for('login'))
-
-        else:
-            flash('Invalid token or session expired.', 'danger')
-            return redirect(url_for('login'))
-
-    flash('Authentication failed. No token received.', 'danger')
-    return redirect(url_for('login'))
-
-@app.route('/admin_dashboard')
-def admin_dashboard():
-    return render_template('admin_dashboard.html')
-
-# Routes for each user type dashboard
-@app.route('/signatory_dashboard')
-def signatory_dashboard():
-    return render_template('signatory_dashboard.html')
-
-@app.route('/pharmacy_dashboard')
-def pharmacy_dashboard():
-    return render_template('pharmacy_dashboard.html')
-
-# Utility function to close database resources
-def close_db_connection(cursor, conn):
-    cursor.close()
-    conn.close()
-
-# Ensure the upload folder exists
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
-# Function to check allowed file extensions
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-@app.route('/upload_attachments', methods=['POST'])
-def upload_attachments():
-    try:
-        # Check if the 'attachments' field is in the request
-        if 'attachments' not in request.files:
-            return jsonify({"message": "No attachments found"}), 400
-        
-        files = request.files.getlist('attachments')  # Retrieve all files
-        
-        requisition_id = request.form.get('requisition_id')  # Requisition ID from the form
-        
-        if not requisition_id:
-            return jsonify({"message": "Requisition ID is required"}), 400
-        
-        # Iterate over the files and save each one
-        attachment_paths = []
-        for file in files:
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                timestamp = str(int(time.time()))  # Use timestamp for unique filenames
-                file_path = f"{app.config['UPLOAD_FOLDER']}{timestamp}_{filename}"  # Full path including UPLOAD_FOLDER
-                
-                # Save the file (you can change the 'uploads' directory path as needed)
-                file.save(file_path)
-                
-                # Insert attachment data into the database
-                conn = get_db_connection()
-                cur = conn.cursor()
-                cur.execute(
-                    "INSERT INTO attachments (requisition_id, file_name, file_path) VALUES (%s, %s, %s)",
-                    (requisition_id, filename, file_path)
-                )
-                conn.commit()
-                cur.close()
-                conn.close()
-                
-                attachment_paths.append(file_path)  # Save the file path for reference
-        
-        return jsonify({"message": "Attachments uploaded successfully!", "attachments": attachment_paths}), 200
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-    
-    
-@app.route('/user_role_management')
-def user_role_management():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Fetch users and their roles (corrected to reference 'users' table)
-    cursor.execute('''
-        SELECT users.user_id, users.full_name, users.username, 
-               users.email_address, users.phone_number, roles.role_name 
-        FROM users
-        LEFT JOIN roles ON users.role_id = roles.id
-    ''')
-    users = cursor.fetchall()
-
-    # Fetch roles for the dropdown
-    cursor.execute('SELECT id, role_name FROM roles')
-    roles = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template('user_role_management.html', users=users, roles=roles)
-
-
-@app.route('/create_or_edit_user', methods=['POST'])
-def create_or_edit_user():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Fetch the form data
-    full_name = request.form['full-name']
-    username = request.form['username']
-    email_address = request.form['email']
-    phone_number = request.form.get('phone', '')
-    role_id = request.form['role']
-    password = request.form.get('password')  # Fetch the password from the form
-
-    hashed_password = generate_password_hash(password) if password else None
-
-    # Check if an existing user is being edited
-    employee_id = request.form.get('employee-id')
-
-    if employee_id:  # Update existing user
-        cursor.execute('''
-            UPDATE users 
-            SET full_name = %s, username = %s, email_address = %s, 
-                phone_number = %s, role_id = %s, 
-                password = COALESCE(%s, password)  -- Update password only if provided
-            WHERE user_id = %s
-        ''', (full_name, username, email_address, phone_number, role_id, hashed_password, employee_id))
-    else:  # Create new user
-        cursor.execute('''
-            INSERT INTO users (full_name, username, email_address, 
-                               phone_number, role_id, password)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (full_name, username, email_address, phone_number, role_id, hashed_password))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    # Send user data to the authentication service
-    sync_with_auth_service(username, password, role_id)
-
-    return jsonify({'success': True})
-
-def sync_with_auth_service(username, password, role_id):
-    # Fetch role name
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT role_name FROM roles WHERE id = %s', (role_id,))
-    role = cursor.fetchone()
-    cursor.close()
-    conn.close()
-
-    if role:
-        role_name = role[0]
-
-        # Prepare data
-        user_data = {
-            'username': username,
-            'password': password,
-            'role': role_name
-        }
-        print(f"Syncing user data: {user_data}")  # Debugging log
-
-        # Send to auth service
-        response = requests.post(f'{AUTH_SERVICE_URL}/sync-user', json=user_data)
-        print(f"Auth service response: {response.status_code} - {response.text}")
-
-        if response.status_code == 200:
-            print("User synced successfully with auth service")
-        else:
-            print(f"Failed to sync user with auth service: {response.text}")
-
-
-@app.route('/sync-user', methods=['POST'])
-def sync_user():
-    user_data = request.json
-
-    username = user_data['username']
-    password = user_data['password']
-    role = user_data['role']
-
-    # Hash the password before storing
-    hashed_password = generate_password_hash(password)
-
-    # Store user in the database (insert or update logic)
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Check if user already exists
-    cursor.execute('SELECT id FROM users WHERE username = %s', (username,))
-    existing_user = cursor.fetchone()
-
-    if existing_user:
-        # Update existing user
-        cursor.execute('''
-            UPDATE users
-            SET password = %s, role = %s
-            WHERE username = %s
-        ''', (hashed_password, role, username))
-    else:
-        # Insert new user
-        cursor.execute('''
-            INSERT INTO users (username, password, role)
-            VALUES (%s, %s, %s)
-        ''', (username, hashed_password, role))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return jsonify({'success': True})
-
-@app.route('/verify-token', methods=['POST'])
-def verify_token():
-    token = request.headers.get('Authorization').split(" ")[1]
-    
-    # Decode the token and fetch the user details
-    user = decode_token(token)  # Assume decode_token is a helper to validate tokens
-    
-    if user:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Fetch user details from the database
-        cursor.execute('SELECT username, role FROM users WHERE username = %s', (user['username'],))
-        user_data = cursor.fetchone()
-
-        if user_data:
-            return jsonify({
-                'username': user_data[0],
-                'role': user_data[1]
-            }), 200
-
-        cursor.close()
-        conn.close()
-
-    return jsonify({'error': 'Invalid token'}), 401
-
-
-@app.route('/get_user_data', methods=['GET'])
-def get_user_data():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Fetch user data and join with the roles table
-    cursor.execute('''
-        SELECT users.user_id, users.full_name, users.username, 
-               users.email_address, users.phone_number, roles.role_name 
-        FROM users
-        LEFT JOIN roles ON users.role_id = roles.id
-    ''')
-    
-    users = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    # Prepare the data to return as JSON
-    users_data = [{
-        'user_id': user[0],
-        'full_name': user[1],
-        'username': user[2],
-        'email_address': user[3],
-        'phone_number': user[4],
-        'role_name': user[5],
-    } for user in users]
-
-    return jsonify({'success': True, 'users': users_data})
-
-
-# Delete a user
-@app.route('/delete_user/<int:user_id>', methods=['POST'])
-def delete_user(user_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM users WHERE user_id = %s', (user_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    flash('User deleted successfully!', 'success')
-    return redirect(url_for('user_role_management'))
-
-
-
-# Route to fetch all suppliers
-@app.route('/suppliers')
-def admin_supplier():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM suppliers")
-    suppliers = cur.fetchall()
-    close_db_connection(cur, conn)
-    return render_template('admin_supplier.html', suppliers=suppliers)
-
-
-@app.route('/suppliers/<int:supplier_id>', methods=['GET'])
-def get_supplier(supplier_id):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Fetch supplier details
-        cursor.execute("""
-            SELECT company_name, contact_person, email, phone, address 
-            FROM suppliers 
-            WHERE id = %s
-        """, (supplier_id,))
-        supplier = cursor.fetchone()
-
-        if not supplier:
-            return jsonify({'message': 'Supplier not found'}), 404
-
-        # Fetch supplier items
-        cursor.execute("""
-            SELECT item_name 
-            FROM supplier_items 
-            WHERE supplier_id = %s
-        """, (supplier_id,))
-        items = [row['item_name'] for row in cursor.fetchall()]
-
-        # Add items to the supplier data
-        supplier['items'] = items
-
-        return jsonify(supplier)
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-# Route to handle adding suppliers
-@app.route('/add-supplier', methods=['POST'])
-def add_supplier():
-    data = request.json
-    company_name = data.get('company_name')
-    contact_person = data.get('contact_person')
-    email = data.get('email')
-    phone = data.get('phone')
-    address = data.get('address')
-    items = data.get('items', [])  # List of items supplied
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    try:
-        # Insert supplier information
-        cursor.execute(
-            """
-            INSERT INTO suppliers (company_name, contact_person, email, phone, address)
-            VALUES (%s, %s, %s, %s, %s) RETURNING id
-            """,
-            (company_name, contact_person, email, phone, address)
-        )
-        supplier_id = cursor.fetchone()[0]
-
-        # Insert supplier items
-        for item in items:
-            cursor.execute(
-                """
-                INSERT INTO supplier_items (supplier_id, item_name)
-                VALUES (%s, %s)
-                """,
-                (supplier_id, item)
-            )
-
-        conn.commit()
-        return jsonify({'message': 'Supplier added successfully!', 'supplier_id': supplier_id}), 201
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/suppliers/<int:supplier_id>', methods=['PUT'])
-def update_supplier(supplier_id):
-    updated_supplier = request.json
-
-    # Update supplier information
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Check if supplier exists
-        cursor.execute("SELECT * FROM suppliers WHERE id = %s", (supplier_id,))
-        supplier = cursor.fetchone()
-
-        if not supplier:
-            return jsonify({"error": "Supplier not found"}), 404
-
-        # Update supplier details
-        cursor.execute("""
-            UPDATE suppliers
-            SET company_name = %s,
-                contact_person = %s,
-                email = %s,
-                phone = %s,
-                address = %s
-            WHERE id = %s
-        """, (
-            updated_supplier['companyName'],
-            updated_supplier['contactPerson'],
-            updated_supplier['email'],
-            updated_supplier['phone'],
-            updated_supplier['address'],
-            supplier_id
-        ))
-
-        # Update supplier items
-        if 'items' in updated_supplier:
-            # Delete existing items first
-            cursor.execute("DELETE FROM supplier_items WHERE supplier_id = %s", (supplier_id,))
-            # Add new items
-            for item in updated_supplier['items']:
-                cursor.execute("INSERT INTO supplier_items (supplier_id, item_name) VALUES (%s, %s)", (supplier_id, item))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return jsonify({"message": "Supplier and items updated successfully"}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/suppliers/<int:supplier_id>', methods=['DELETE'])
-def delete_supplier(supplier_id):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT * FROM suppliers WHERE id = %s", (supplier_id,))
-        supplier = cursor.fetchone()
-
-        if not supplier:
-            return jsonify({"error": "Supplier not found"}), 404
-
-        cursor.execute("DELETE FROM suppliers WHERE id = %s", (supplier_id,))
-        conn.commit()
-
-        return jsonify({"message": "Supplier deleted successfully"}), 200
-
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/supplier-items/<string:item_name>', methods=['DELETE'])
-def delete_supplier_item(item_name):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Delete the item from the database
-        cursor.execute("""
-            DELETE FROM supplier_items 
-            WHERE item_name = %s
-            RETURNING id;
-        """, (item_name,))
-        
-        # Check if the item was deleted
-        deleted_item = cursor.fetchone()
-        
-        if not deleted_item:
-            return jsonify({'message': 'Item not found'}), 404
-
-        # Commit the transaction
-        conn.commit()
-
-        return jsonify({'message': 'Item deleted successfully'}), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
-@app.route('/admin_requisition')
-def admin_requisition():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    
-    # Fetch requisitions with their associated total from requisition_items
-    cur.execute("""
-        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by,
-               COALESCE(SUM(ri.total), 0) AS total,
-               r.status
-        FROM requisitions r
-        LEFT JOIN requisition_items ri ON r.id = ri.requisition_id
-        GROUP BY r.id
-    """)
-    requisitions = cur.fetchall()
-
-    # Fetch suppliers for company_name dropdown
-    cur.execute("SELECT company_name FROM suppliers")
-    suppliers = cur.fetchall()
-
-    cur.close()
-    conn.close()
-    
-    return render_template('admin_requisition.html', requisitions=requisitions, suppliers=suppliers)
-
-
-@app.route('/requisition', methods=['POST'])
-def user_requisition():
-    data = request.get_json()  # Get JSON data from the request
-    date = data['date']
-    purpose = data['purpose']
-    company_name = data['company_name']  # Using company_name from dropdown
-    requested_by = data['requested_by']  # New field for who requested
-    items = data['items']  # Items come as a list of dictionaries
-    attachments = data.get('attachments', [])  # Attachments if present in the request
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    try:
-        # Step 1: Insert requisition details into the requisitions table and get the generated requisition_id
-        cur.execute(
-            "INSERT INTO requisitions (date, purpose, company_name, requested_by) VALUES (%s, %s, %s, %s) RETURNING id",
-            (date, purpose, company_name, requested_by)
-        )
-        requisition_id = cur.fetchone()[0]  # Get the generated requisition_id
-
-        # Commit after inserting the requisition to ensure the requisition_id is in the database
-        conn.commit()
-
-        # Step 2: Insert items associated with the requisition into the requisition_items table
-        for item in items:
-            quantity = item['quantity']
-            price = item['price']
-            total = item['total']
-
-            cur.execute(
-                "INSERT INTO requisition_items (requisition_id, name, quantity, price, total) VALUES (%s, %s, %s, %s, %s)",
-                (requisition_id, item['name'], quantity, price, total)
-            )
-
-        # Commit after inserting items to ensure everything is saved
-        conn.commit()
-
-        # Step 3: Insert attachments related to the requisition into the attachments table
-        for file in attachments:
-            filename = file['filename']
-            file_path = file['path']
-
-            cur.execute(
-                "INSERT INTO attachments (requisition_id, file_name, file_path) VALUES (%s, %s, %s)",
-                (requisition_id, filename, file_path)
-            )
-
-        # Commit after inserting attachments to finalize the operation
-        conn.commit()
-
-        # Success response
-        return jsonify({"message": "Requisition, items, and attachments saved successfully!", "requisition_id": requisition_id}), 200
-
-    except Exception as e:
-        # Rollback in case of an error
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        cur.close()
-        conn.close()
-
-
-
-@app.route('/requisition', methods=['GET'])
-def get_requisitions():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""
-        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.total
-        FROM requisitions r
-        ORDER BY r.id ASC  -- This orders the requisitions by id in ascending order
-    """)
-    requisitions = cur.fetchall()
-    
-    # Format the total as currency in the backend before rendering the template
-    for requisition in requisitions:
-        requisition['total'] = format_currency(requisition['total'])
-
-    # Close the database connection and cursor
-    cur.close()
-    conn.close()
-
-    return render_template('requisition_list.html', requisitions=requisitions)
-
-
-
-
-def format_currency(amount):
-    return f"₱{amount:,.2f}"  # Format the total with two decimal places and currency symbol
-
-
-# to show view details
-@app.route('/requisitions_view_details/<int:id>', methods=['GET'])
-def get_requisition(id):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-
-    try:
-        # Fetch the requisition
-        cur.execute("SELECT * FROM requisitions WHERE id = %s", (id,))
-        requisition = cur.fetchone()
-
-        if requisition:
-            # Fetch associated items
-            cur.execute("SELECT * FROM requisition_items WHERE requisition_id = %s", (id,))
-            items = cur.fetchall()
-
-            # Fetch associated attachments
-            cur.execute("SELECT file_name, file_path FROM attachments WHERE requisition_id = %s", (id,))
-            attachments = cur.fetchall()
-
-            # Calculate total price from the items
-            total = sum(item['quantity'] * item['price'] for item in items)
-
-            # Include items, total, and attachments in the response
-            response = {
-                "requisition": requisition,
-                "items": items,
-                "total": total,
-                "attachments": attachments  # Add the attachments here
-            }
-            return jsonify(response), 200
-        else:
-            return jsonify({"message": "Requisition not found"}), 404
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-    finally:
-        cur.close()
-        conn.close()
-
-
-
-@app.route('/get_current_requisition_id', methods=['GET'])
-def get_current_requisition_id():
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-
-        # Query to get the highest current requisition ID
-        cur.execute("""
-            SELECT MAX(id) AS current_id FROM requisitions
-        """)
-        result = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        # If no requisitions exist, return 1001 as the starting ID
-        if result['current_id'] is None:
-            next_id = 1001
-        else:
-            next_id = result['current_id'] + 1  # Increment by 1 for the next ID
-
-        return jsonify({'next_requisition_id': next_id}), 200
-
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-
-
-# to show requisition from signatory
-@app.route('/get_requisitions', methods=['GET'])
-def get_signatory_requisitions():
-    status = request.args.get('status', 'all')  # Default to 'all' if no status is passed
-    
-    # Construct the query based on the status
-    query = """
-        SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.status, 
-               ri.name, ri.quantity, ri.price, ri.total, a.file_name, a.file_path
-        FROM requisitions r
-        LEFT JOIN requisition_items ri ON r.id = ri.requisition_id
-        LEFT JOIN attachments a ON r.id = a.requisition_id
-    """
-    
-    if status != 'all':
-        query += f" WHERE r.status = %s"
-    
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    if status == 'all':
-        cur.execute(query)
-        
-    else:
-        cur.execute(query, (status,))
-    
-    requisitions = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    requisition_dict = {}
-    
-    # Iterate over the result set and group by requisition ID
-    for req in requisitions:
-        req_id = req[0]  # Requisition ID
-        if req_id not in requisition_dict:
-            requisition_dict[req_id] = {
-                "id": req_id,
-                "date": req[1],
-                "purpose": req[2],
-                "company_name": req[3],
-                "requested_by": req[4],
-                "status": req[5],
-                "items": [],
-                "attachments": []
-            }
-        
-        # Add item to the items list if available
-        if req[6]:  # Check if there is an item (name is not None)
-            requisition_dict[req_id]["items"].append({
-                "name": req[6],
-                "quantity": req[7],
-                "price": req[8],
-                "total": req[9]
-            })
-        
-        # Add attachment to the attachments list if available
-        if req[10]:  # Check if there is an attachment (file_name is not None)
-            requisition_dict[req_id]["attachments"].append({
-                "file_name": req[10],
-                "file_path": req[11]
-            })
-    
-    # Convert the dictionary to a list for JSON response
-    requisition_list = list(requisition_dict.values())
-    
-    return jsonify(requisition_list)
-
-
-# to show the details from signatory
-@app.route('/get_requisition_details_modal', methods=['GET'])
-def get_requisition_details():
-    requisition_id = request.args.get('id')  # Get requisition ID from query parameters
-    
-    if not requisition_id:
-        return jsonify({'error': 'Requisition ID is required'}), 400
-
-    try:
-        connection = get_db_connection()
-        cursor = connection.cursor(cursor_factory=RealDictCursor)
-
-        # Query to get the requisition details
-        cursor.execute("""
-            SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.status
-            FROM requisitions r
-            WHERE r.id = %s
-        """, (requisition_id,))
-        
-        requisition = cursor.fetchone()
-
-        if not requisition:
-            return jsonify({'error': 'Requisition not found'}), 404
-        
-        # Query to get items associated with the requisition
-        cursor.execute("""
-            SELECT name, quantity, price, total
-            FROM requisition_items
-            WHERE requisition_id = %s
-        """, (requisition_id,))
-        
-        items = cursor.fetchall()
-
-        # Query to get attachments associated with the requisition
-        cursor.execute("""
-            SELECT file_name, file_path
-            FROM attachments
-            WHERE requisition_id = %s
-        """, (requisition_id,))
-        
-        attachments = cursor.fetchall()
-
-        # Close the cursor and connection
-        cursor.close()
-        connection.close()
-
-        # Prepare the response data
-        response_data = {
-            'id': requisition['id'],
-            'date': requisition['date'],
-            'purpose': requisition['purpose'],
-            'company_name': requisition['company_name'],
-            'requested_by': requisition['requested_by'],
-            'status': requisition['status'],
-            'items': items,
-            'attachments': attachments
-        }
-
-        return jsonify(response_data)
-
-    except Exception as e:
-        print(f"Error occurred: {e}")  # Print the error to the Flask console
-        return jsonify({'error': 'An error occurred while fetching requisition details.'}), 500
-
-    
-@app.route('/approve_requisition', methods=['POST'])
-def approve_requisition():
-    requisition_id = request.args.get('id')
-    if not requisition_id:
-        return jsonify({'error': 'Requisition ID is required'}), 400
-
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        # Update requisition status to 'Approved'
-        cur.execute("""
-            UPDATE requisitions
-            SET status = 'Approved'
-            WHERE id = %s
-        """, (requisition_id,))
-
-        conn.commit()
-        cur.close()
-        conn.close()
-        return jsonify({'message': f'Requisition #{requisition_id} approved successfully!'})
-    except Exception as e:
-        print(f"Error approving requisition: {e}")
-        return jsonify({'error': 'An error occurred while approving the requisition.'}), 500
-
-
-@app.route('/reject_requisition', methods=['POST'])
-def reject_requisition():
-    requisition_id = request.args.get('id')
-    if not requisition_id:
-        return jsonify({'error': 'Requisition ID is required'}), 400
-
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        # Update requisition status to 'Rejected'
-        cur.execute("""
-            UPDATE requisitions
-            SET status = 'Rejected'
-            WHERE id = %s
-        """, (requisition_id,))
-
-        conn.commit()
-        cur.close()
-        conn.close()
-        return jsonify({'message': f'Requisition #{requisition_id} rejected successfully!'})
-    except Exception as e:
-        print(f"Error rejecting requisition: {e}")
-        return jsonify({'error': 'An error occurred while rejecting the requisition.'}), 500
-
-
-
-@app.route('/get_approved_requisitions', methods=['GET'])
-def get_approved_requisitions():
-    try:
-        connection = get_db_connection()
-        cursor = connection.cursor(cursor_factory=RealDictCursor)
-
-        # Query to fetch all approved requisitions
-        cursor.execute("""
-            SELECT id, company_name, requested_by, date
-            FROM requisitions
-            WHERE status = 'Approved'
-        """)
-        
-        approved_requisitions = cursor.fetchall()
-
-        # Close the cursor and connection
-        cursor.close()
-        connection.close()
-
-        return jsonify(approved_requisitions)
-
-    except Exception as e:
-        print(f"Error fetching approved requisitions: {e}")  # Print the error for debugging
-        return jsonify({'error': 'An error occurred while fetching approved requisitions.'}), 500
-
-# to get the details show in the create dropdown
-@app.route('/get_requisition_items', methods=['GET'])
-def get_requisition_items():
-    requisition_id = request.args.get('id')
-    if not requisition_id:
-        return jsonify({'error': 'Requisition ID is required'}), 400
-
-    try:
-        connection = get_db_connection()
-        cursor = connection.cursor(cursor_factory=RealDictCursor)
-
-        # Query to fetch items for the given requisition ID
-        cursor.execute("""
-            SELECT name, quantity, price, (quantity * price) AS total
-            FROM requisition_items
-            WHERE requisition_id = %s
-        """, (requisition_id,))
-
-        items = cursor.fetchall()
-
-        # Close the cursor and connection
-        cursor.close()
-        connection.close()
-
-        return jsonify(items)
-
-    except Exception as e:
-        print(f"Error fetching requisition items: {e}")  # Print the error for debugging
-        return jsonify({'error': 'An error occurred while fetching requisition items.'}), 500
-
-# route for submit button
-@app.route('/submit_purchase_order', methods=['POST'])
-def submit_purchase_order():
-    data = request.json
-
-    # Extract data from the request
-    order_number = data.get('orderNumber')
-    supplier_name = data.get('supplierName')
-    requested_by = data.get('requestedBy')
-    order_status = data.get('orderStatus')
-    issue_date = data.get('issueDate')
-    total_amount = data.get('totalAmount')
-    items = data.get('items', [])
-
-    # Validate required fields
-    missing_fields = []
-    for field, value in [
-        ('orderNumber', order_number),
-        ('supplierName', supplier_name),
-        ('requestedBy', requested_by),
-        ('orderStatus', order_status),
-        ('issueDate', issue_date),
-        ('totalAmount', total_amount),
-        ('items', items)
-    ]:
-        if not value:
-            missing_fields.append(field)
-
-    if missing_fields:
-        return jsonify({'error': f'Missing required fields: {", ".join(missing_fields)}'}), 400
-
-    try:
-        # Connect to the database
-        connection = get_db_connection()
-        cursor = connection.cursor()
-
-        # Insert purchase order into the database
-        cursor.execute("""
-            INSERT INTO purchase_orders (requisition_id, supplier, status, total_amount, issue_date, ordered_by)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
-        """, (order_number, supplier_name, order_status, total_amount, issue_date, requested_by))
-
-        purchase_order_id = cursor.fetchone()[0]
-
-        # Insert items into the database
-        for item in items:
-            cursor.execute("""
-                INSERT INTO order_items (purchase_order_id, name, quantity, price, total)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (purchase_order_id, item['name'], item['quantity'], item['price'], item['total']))
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-
-        return jsonify({'message': 'Purchase order and items submitted successfully'}), 200
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({'error': 'An error occurred while submitting the purchase order.'}), 500
-
-
-# to show the submitted purchase orders
-@app.route('/purchase-orders', methods=['GET'])
-def get_purchase_orders():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT 
-            po.id, po.supplier, po.status, po.total_amount, po.issue_date, po.ordered_by,
-            COALESCE(SUM(oi.quantity), 0) AS received
-        FROM purchase_orders po
-        LEFT JOIN order_items oi ON po.id = oi.purchase_order_id
-        GROUP BY po.id
-    """)
-    purchase_orders = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    
-    result = [
-        {
-            "id": po[0],
-            "supplier": po[1],
-            "status": po[2],
-            "received": po[6],
-            "total_amount": float(po[3]),
-            "issue_date": po[4].strftime('%Y-%m-%d'),
-            "ordered_by": po[5],
-        }
-        for po in purchase_orders
-    ]
-    return jsonify(result)
-
-
-
-# Route to fetch purchase order details
-@app.route('/purchase_order/<int:order_id>', methods=['GET'])
-def get_purchase_order(order_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Fetch the purchase order details
-    cur.execute("""
-        SELECT id, supplier, status, received, total_amount, issue_date, ordered_by 
-        FROM purchase_orders WHERE id = %s
-    """, (order_id,))
-    order = cur.fetchone()
-
-    if not order:
-        conn.close()
-        return jsonify({'error': 'Purchase order not found'}), 404
-
-    # Fetch the order items
-    cur.execute("""
-        SELECT name, quantity, unit, price 
-        FROM order_items WHERE purchase_order_id = %s
-    """, (order_id,))
-    items = cur.fetchall()
-
-    conn.close()
-
-    # Structure the response
-    order_data = {
-        "id": order[0],
-        "supplier": order[1],
-        "status": order[2],
-        "received": order[3],
-        "total_amount": float(order[4]),  # Convert Decimal to float if necessary
-        "issue_date": order[5].strftime("%Y-%m-%d"),  # Format date as a string
-        "ordered_by": order[6],
-        "items": [
-            {
-                "name": item[0],
-                "quantity": item[1],
-                "unit": item[2],
-                "price": float(item[3]),  # Convert Decimal to float if necessary
-                "total": float(item[1] * item[3])  # Calculate the total for each item
-            }
-            for item in items
-        ]
+document.addEventListener('DOMContentLoaded', () => {
+    const createOrderBtn = document.getElementById('createOrderBtn');
+    const purchaseOrderModal = document.getElementById('purchaseOrderModal');
+    const orderDetailsModal = document.getElementById('orderDetailsModal');
+    const closePurchaseModalBtn = document.querySelector('.close');
+    const closeOrderDetailsModalBtn = document.querySelector('#orderDetailsModal .close');
+    const itemList = document.getElementById('itemList');
+    const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+    const orderNumberDropdown = document.getElementById('orderNumberDropdown');
+    const purchaseOrdersTable = document.getElementById('purchaseOrdersTable');
+    const evaluateModal = document.getElementById("evaluateModal");
+    const evaluateCloseBtn = evaluateModal.querySelector(".close");
+    const submitEvaluationBtn = document.getElementById("submitEvaluationBtn");
+    const skuModal = document.getElementById('skuModal');
+    const skuTableBody = document.getElementById('skuTableBody');
+
+    // Initialize available orders
+    const availableOrders = ['#PO4', '#PO5', '#PO6', '#PO7', '#PO8', '#PO9'];
+
+    // Function to open the purchase order modal and reset it
+    function openPurchaseOrderModal() {
+        resetDropdownOptions();
+        document.getElementById('fromDetails').value = "";
+        document.getElementById('fromDetails').setAttribute('readonly', true);
+        document.getElementById('orderStatus').value = "Ordered";
+        document.getElementById('orderStatus').setAttribute('readonly', true);
+        document.getElementById('issueDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('orderedBy').value = "";
+        itemList.innerHTML = '';
+        document.getElementById('total').value = "";
+
+        // Show the purchase order modal
+        purchaseOrderModal.style.display = 'block';
     }
 
-    return jsonify(order_data)
+    // Function to open the order details modal with relevant data
+    function openOrderDetailsModal(orderData) {
+        const detailsContent = `
+            <p><strong>Purchase Order:</strong> ${orderData.orderNumber}</p>
+            <p><strong>From:</strong> ${orderData.fromDetails}</p>
+            <p><strong>Issue Date:</strong> ${orderData.issueDate}</p>
+            <p><strong>Total:</strong> ${orderData.total}</p>
+            <p><strong>Status:</strong> <span class="status-ordered">${orderData.status}</span></p>
+            <p><strong>Received:</strong> ${orderData.receivedCount} of ${orderData.uniqueItemCount}</p>
+            <p><strong>Ordered By:</strong> ${orderData.orderedBy}</p>
+        `;
+        document.querySelector('#orderDetailsModal .modal-body').innerHTML = detailsContent;
 
-
-@app.route('/order-details/<int:order_id>', methods=['GET'])
-def get_order_details(order_id):
-    # Establish DB connection
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Query to get the main order details
-    cursor.execute("""
-        SELECT id, requisition_id, supplier, status, total_amount, issue_date, ordered_by
-        FROM purchase_orders
-        WHERE id = %s
-    """, (order_id,))
-    order = cursor.fetchone()
-
-    if not order:
-        return jsonify({"error": "Order not found"}), 404
-
-    # Query to get the items for the order
-    cursor.execute("""
-        SELECT id, name, quantity, price, total, received, lost, damaged
-        FROM order_items
-        WHERE purchase_order_id = %s
-    """, (order_id,))
-    items = cursor.fetchall()
-
-    # Close the database connection
-    cursor.close()
-    conn.close()
-
-    # Prepare order details data to be sent back
-    order_data = {
-        'id': order[0],
-        'requisition_id': order[1],
-        'supplier': order[2],
-        'status': order[3],
-        'total_amount': order[4],
-        'issue_date': order[5].strftime('%Y-%m-%d'),  # Convert date to string if necessary
-        'ordered_by': order[6],
-        'items': [{'id': item[0], 'name': item[1], 'quantity': item[2], 'price': item[3], 'total': item[4], 'received': item[5], 'lost': item[6], 'damaged': item[7]} for item in items]
+        // Show the order details modal
+        orderDetailsModal.style.display = 'block';
     }
-    return jsonify(order_data)
 
-@app.route('/order-items/<int:order_id>', methods=['GET'])
-def get_order_items(order_id):
-    # Establish DB connection
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    // Function to reset dropdown options based on available orders
+    function resetDropdownOptions() {
+        orderNumberDropdown.innerHTML = `<option value="" disabled selected>Select an Order</option>`;
+        availableOrders.forEach(order => {
+            const opt = document.createElement('option');
+            opt.value = order;
+            opt.textContent = order;
+            orderNumberDropdown.appendChild(opt);
+        });
+    }
 
-    # Query to get the items for the given purchase_order_id (from the purchase_orders table)
-    cursor.execute("""
-        SELECT name, quantity, price, total
-        FROM order_items
-        WHERE purchase_order_id = %s
-    """, (order_id,))
-    items = cursor.fetchall()
-
-    # Close the database connection         
-    cursor.close()
-    conn.close()
-
-    if not items:
-        return jsonify({"error": "No items found for this order"}), 404
-
-    # Return the items data
-    items_data = [{'name': item[0], 'quantity': item[1], 'price': item[2], 'total': item[3]} for item in items]
-    return jsonify(items_data)
-
-
-
-@app.route('/submit-evaluation', methods=['POST'])
-def submit_evaluation():
-    data = request.get_json()  # Get the JSON payload from the frontend
-    print("Received data:", data)  # Print the data to check the structure
-
-    # Check for the existence of purchase_order_id and items
-    if not data or not data.get('purchase_order_id') or not data.get('items'):
-        return jsonify({'error': 'Invalid data'}), 400
-
-    purchase_order_id = data['purchase_order_id']
-    print(f"Purchase Order ID: {purchase_order_id}")  # Log to verify
-
-    items = data['items']
-    print(f"Items: {items}")  # Log the items to verify
-
-    try:
-        # Connect to the database
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        # Update the evaluation data for each item
-        for item in items:
-            order_detail_id = item['order_detail_id']
-            received = item['received']
-            lost = item['lost']
-            damaged = item['damaged']
-            remaining_quantity = item['remainingQuantity']  # Get remaining quantity from the item (may be unchanged)
-
-            # Update the order item evaluation data in the database
-            cur.execute("""
-                UPDATE order_items
-                SET received = %s, lost = %s, damaged = %s, remaining_quantity = COALESCE(%s, remaining_quantity)
-                WHERE id = %s AND purchase_order_id = %s
-            """, (received, lost, damaged, remaining_quantity, order_detail_id, purchase_order_id))
-
-        # Commit the transaction
-        conn.commit()
-
-        # Close the cursor and connection
-        cur.close()
-        conn.close()
-
-        return jsonify({'message': 'Evaluation submitted successfully'}), 200
-
-    except Exception as e:
-        # Rollback in case of error
-        if conn:
-            conn.rollback()
-        return jsonify({'error': str(e)}), 500
-
-
-
-
-@app.route('/get-sku-details/<int:purchase_order_id>', methods=['GET'])
-def fetch_sku_details(purchase_order_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Fetch item names and quantities from the order_items table for the specific purchase_order_id
-    cursor.execute("""
-        SELECT oi.name AS item_name, oi.quantity AS ordered_quantity
-        FROM order_items oi
-        WHERE oi.purchase_order_id = %s
-    """, (purchase_order_id,))
-
-    items = cursor.fetchall()
-    conn.close()
-
-    return jsonify([
-        {
-            "item_name": item[0],
-            "ordered_quantity": item[1]
-        }
-        for item in items
-    ])
-
-
-
-
-@app.route('/save-sku-details', methods=['POST'])
-def save_sku_details():
-    data = request.get_json()
-    if not data or 'skus' not in data:
-        return jsonify({'success': False, 'message': 'Invalid data format.'}), 400
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    try:
-        for sku in data['skus']:
-            cursor.execute("""
-                INSERT INTO sku_details (item_name, quantity_ordered, sku, quantity, expiration)
-                VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (sku) DO UPDATE 
-                SET quantity = EXCLUDED.quantity,
-                    expiration = EXCLUDED.expiration,
-                    updated_at = CURRENT_TIMESTAMP
-            """, (
-                sku['item_name'], sku['ordered_quantity'], sku['sku'],
-                sku['quantity'], sku['expiration']
-            ))
-
-        conn.commit()
-        return jsonify({'success': True}), 200
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
-
-
-
-@app.route('/inventory')
-def inventory():
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    # Query to fetch all medicines
-    query = """
-        SELECT * FROM medicines ORDER BY medicine_id
-    """
-    cursor.execute(query)
-    medicines = cursor.fetchall()
-
-    # Convert data into a list of dictionaries for easier access in the template
-    medicines_list = [
-        {
-            'medicine_id': row[0],  # The first column is medicine_id
-            'sku': row[1],           # The second column is sku
-            'medicine_name': row[2], # The third column is medicine_name
-            'quantity': row[3],      # The fourth column is quantity
-            'status': row[4],        # The fifth column is status
-            'unit_cost': row[5],     # The sixth column is unit_cost
-            'unit_price': row[6],    # The seventh column is unit_price
-            'category': row[7],      # The eighth column is category
-            'base_unit': row[8],     # The ninth column is base_unit
-            'created_at': row[9],    # The tenth column is created_at
-            'updated_at': row[10],   # The eleventh column is updated_at
-            'po_number': row[11],    # The twelfth column is po_number
-            'description': row[12],  # The thirteenth column is description
-            'expiration_date': row[13], # The fourteenth column is expiration_date
-            'lot_position': row[14],    # The fifteenth column is lot_position
-        }
-        for row in medicines
-    ]
-
-    cursor.close()
-    connection.close()
-
-    # Pass medicines_list to the template
-    return render_template('inventory.html', medicines=medicines_list)
-
-@app.route('/pos')
-def pos():
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    # Query to fetch all medicines for POS
-    query = """
-        SELECT * FROM medicines
-    """
-    cursor.execute(query)
-    medicines = cursor.fetchall()
-
-    # Convert data into a list of dictionaries for easier access in the template
-    medicines_list = [
-        {
-            'medicine_id': row[0],
-            'sku': row[1],          
-            'medicine_name': row[2],
-            'unit_price': row[6]
-        }
-        for row in medicines
-    ]
-
-    cursor.close()
-    connection.close()
-
-    # Pass medicines_list to the pos template
-    return render_template('pos.html', medicines=medicines_list)
-
-@app.route('/send_to_billing', methods=['POST'])
-def send_to_billing():
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    try:
-        # Step 1: Save data to your database
-        customer_data = {
-            'full_name': request.form['full_name'],
-            'contact_number': request.form.get('contact_number'),
-            'date_of_birth': request.form.get('date_of_birth'),
-            'senior_or_pwd': request.form.get('senior_or_pwd'),
-        }
-        medicines_data = json.loads(request.form['medicines_data'])  # Parse JSON string
-
-        # Insert customer data into `pharmacy_customers`
-        cur.execute("""
-            INSERT INTO pharmacy_customers (full_name, contact_number, date_of_birth, senior_or_pwd)
-            VALUES (%s, %s, %s, %s)
-            RETURNING customer_id
-        """, (customer_data['full_name'], customer_data['contact_number'],
-              customer_data['date_of_birth'], customer_data['senior_or_pwd']))
-        customer_id = cur.fetchone()[0]
-
-        # Insert medicines into `medicine_bought` and update `medicines` stock
-        purchase_data = {}  # To aggregate data
-
-        for medicine in medicines_data:
-            cur.execute("""
-                INSERT INTO medicine_bought (customer_id, medicine_id, quantity)
-                VALUES (%s, %s, %s)
-                RETURNING purchase_id, medicine_id, quantity
-            """, (customer_id, medicine['medicine_id'], medicine['quantity']))
-            purchase_id, medicine_id, quantity = cur.fetchone()
-
-            # Subtract the quantity from the `medicines` table
-            cur.execute("""
-                UPDATE medicines
-                SET quantity = quantity - %s
-                WHERE medicine_id = %s AND quantity >= %s
-            """, (quantity, medicine_id, quantity))
-
-            # Check if the update was successful (enough stock available)
-            if cur.rowcount == 0:
-                conn.rollback()
-                flash(f"Not enough stock for medicine ID {medicine_id}.", "danger")
-                return redirect(url_for('pos'))
-
-            # Aggregating purchase data
-            if (customer_id, purchase_id) not in purchase_data:
-                purchase_data[(customer_id, purchase_id)] = {
-                    'purchase_id': purchase_id,
-                    'customer_id': customer_id,
-                    'medicines': [],
-                    'total_cost': 0
-                }
-
-            purchase_data[(customer_id, purchase_id)]['medicines'].append({
-                'medicine_id': medicine_id,
-                'quantity': quantity,
-                'medicine_cost': medicine.get('medicine_cost', 0)
-            })
-
-        # Send aggregated data to FMS
-        fms_api_url = "https://fms-w1la.onrender.com/api/lms_purchase"
-        for data in purchase_data.values():
-            for medicine in data['medicines']:
-                purchase_payload = {
-                    'purchase_id': data['purchase_id'],
-                    'customer_id': data['customer_id'],
-                    'medicine_id': medicine['medicine_id'],
-                    'quantity': medicine['quantity'],
-                    'medicine_cost': medicine['medicine_cost']
-                }
-                try:
-                    response = requests.post(fms_api_url, json=purchase_payload)
-                    if response.status_code != 200:
-                        app.logger.error(f"Failed to send purchase {data['purchase_id']} to FMS: {response.text}")
-                        flash("Error occurred while sending data to billing.", "danger")
-                        return redirect(url_for('pos'))
-                except Exception as e:
-                    app.logger.error(f"Exception while sending purchase {data['purchase_id']} to FMS: {e}")
-                    flash("Error occurred while sending data to billing.", "danger")
-                    return redirect(url_for('pos'))
-
-        # Commit to the local database
-        conn.commit()
-
-    except Exception as e:
-        conn.rollback()
-        app.logger.error(f"Error: {e}")
-        flash("An error occurred during the transaction. Please try again.", "danger")
+    // Open modal when clicking the create order button
+    createOrderBtn.addEventListener('click', () => {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        document.getElementById('issueDate').value = today; // Set it in the issue date field
     
-    finally:
-        cur.close()
-        conn.close()
-
-    return redirect(url_for('pos'))
-
-@app.route('/api/customers/<int:customer_id>', methods=['GET'])
-def get_customer_details(customer_id):
-    try:
-        conn_lms = get_db_connection()
-        cur_lms = conn_lms.cursor()
-
-        # Query to fetch customer details, including date_of_birth
-        cur_lms.execute("""
-            SELECT customer_id, full_name, contact_number, date_of_birth
-            FROM pharmacy_customers
-            WHERE customer_id = %s
-        """, (customer_id,))
-
-        customer = cur_lms.fetchone()
-
-        if not customer:
-            return jsonify({"error": "Customer not found"}), 404
-
-        customer_data = {
-            "customer_id": customer[0],
-            "full_name": customer[1],
-            "contact_number": customer[2],
-            "date_of_birth": customer[3] 
-        }
-
-        cur_lms.close()
-        conn_lms.close()
-
-        return jsonify(customer_data), 200
-
-    except Exception as e:
-        print(f"Error retrieving customer details: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
-
-
-@app.route('/api/medicines/<int:medicine_id>', methods=['GET'])
-def get_medicine_details(medicine_id):
-    try:
-        conn_lms = get_db_connection()
-        cur_lms = conn_lms.cursor()
-
-        # Query to fetch medicine details
-        cur_lms.execute("SELECT medicine_id, medicine_name, unit_price FROM medicines WHERE medicine_id = %s", (medicine_id,))
-        medicine = cur_lms.fetchone()
-
-        if not medicine:
-            return jsonify({"error": "Medicine not found"}), 404
-
-        medicine_data = {
-            "medicine_id": medicine[0],
-            "medicine_name": medicine[1],
-            "unit_price": float(medicine[2])  
-        }
-
-        cur_lms.close()
-        conn_lms.close()
-
-        return jsonify(medicine_data), 200
-
-    except Exception as e:
-        print(f"Error retrieving medicine details: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
+        // Reset the modal fields
+        document.getElementById('fromDetails').value = '';
+        document.getElementById('orderNumberDropdown').value = '';
+        document.getElementById('total').value = '';
+    
+        // Set the modal to visible
+        const purchaseOrderModal = document.getElementById('purchaseOrderModal');
+        purchaseOrderModal.style.display = 'block';
+    });
     
 
-@app.route('/medicine/<int:medicine_id>', methods=['GET'])
-def fetch_medicine_details_route(medicine_id):
-    try:
-        conn_lms = get_db_connection()
-        cur_lms = conn_lms.cursor()
-        
-        query = """
-        SELECT evaluated_on, entry_type, po_number, item_no, description, expiration_date, lot_position
-        FROM medicines
-        WHERE id = %s
-        """
-        cur_lms.execute(query, (medicine_id,))
-        rows = cur_lms.fetchall()
-        
-        if rows:
-            details = [
-                {
-                    "evaluated_on": row[0],
-                    "entry_type": row[1],
-                    "po_number": row[2],
-                    "item_no": row[3],
-                    "description": row[4],
-                    "expiration_date": row[5],
-                    "lot_position": row[6],
+    // Close purchase order modal functionality
+    closePurchaseModalBtn.addEventListener('click', () => {
+        purchaseOrderModal.style.display = 'none';
+    });
+
+    // Close order details modal functionality
+    closeOrderDetailsModalBtn.addEventListener('click', () => {
+        orderDetailsModal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside of modal
+    window.addEventListener('click', (event) => {
+        if (event.target === purchaseOrderModal) {
+            purchaseOrderModal.style.display = 'none';
+        } else if (event.target === orderDetailsModal) {
+            orderDetailsModal.style.display = 'none';
+        }
+    });
+
+    // Add event listener for order number dropdown
+    orderNumberDropdown.addEventListener('change', () => {
+        const selectedOrder = orderNumberDropdown.value;
+        itemList.innerHTML = '';
+        let items = [];
+        let fromDetails = '';
+        let orderedBy = '';
+
+        if (selectedOrder === "#PO4") {
+            items = [
+                { name: "Item X", quantity: 100, price: 20.00 },
+                { name: "Item Y", quantity: 200, price: 15.00 },
+                { name: "Item Z", quantity: 50, price: 30.00 }
+            ];
+            fromDetails = "Supplier A, Address 1";
+            orderedBy = "Sangreo";
+        } else if (selectedOrder === "#PO5") {
+            items = [
+                { name: "Item A", quantity: 150, price: 30.00 },
+                { name: "Item B", quantity: 100, price: 40.00 },
+                { name: "Item C", quantity: 80, price: 50.00 }
+            ];
+            fromDetails = "Supplier B, Address 3";
+            orderedBy = "Mariel";
+        } else if (selectedOrder === "#PO6") {
+            items = [
+                { name: "Item C", quantity: 300, price: 25.00 },
+                { name: "Item D", quantity: 250, price: 10.00 },
+                { name: "Item E", quantity: 150, price: 5.00 }
+            ];
+            fromDetails = "Supplier C, Address 5";
+            orderedBy = "Rene";
+        } else if (selectedOrder === "#PO7") {
+            items = [
+                { name: "Item F", quantity: 100, price: 45.00 },
+                { name: "Item G", quantity: 60, price: 70.00 },
+                { name: "Item H", quantity: 200, price: 12.00 }
+            ];
+            fromDetails = "Supplier D, Address 7";
+            orderedBy = "Richard";
+        } else if (selectedOrder === "#PO8") {
+            items = [
+                { name: "Item I", quantity: 150, price: 20.00 },
+                { name: "Item J", quantity: 50, price: 25.00 },
+                { name: "Item K", quantity: 30, price: 55.00 }
+            ];
+            fromDetails = "Supplier E, Address 9";
+            orderedBy = "Mavs";
+        } else if (selectedOrder === "#PO9") {
+            items = [
+                { name: "Item L", quantity: 90, price: 35.00 },
+                { name: "Item M", quantity: 80, price: 40.00 },
+                { name: "Item N", quantity: 200, price: 10.00 }
+            ];
+            fromDetails = "Supplier F, Address 11";
+            orderedBy = "Kyle";
+        }
+
+        items.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${item.name}</td><td>${item.quantity}</td><td>pcs</td><td>₱${item.price.toFixed(2)}</td><td>₱${(item.price * item.quantity).toFixed(2)}</td>`;
+            itemList.appendChild(row);
+        });
+
+        document.getElementById('fromDetails').value = fromDetails;
+        document.getElementById('orderedBy').value = orderedBy;
+
+        const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        document.getElementById('total').value = `₱${total.toFixed(2)}`;
+    });
+
+    // Event listener for creating a new purchase order
+confirmOrderBtn.addEventListener('click', () => {
+    const orderNumber = orderNumberDropdown.value;
+    const fromDetails = document.getElementById('fromDetails').value;
+    const issueDate = document.getElementById('issueDate').value;
+    const total = document.getElementById('total').value;
+
+    // Define "Ordered By" values for specific purchase orders
+    let orderedBy = "";
+    if (orderNumber === "#PO4") {
+        orderedBy = "Sangreo";
+    } else if (orderNumber === "#PO5") {
+        orderedBy = "Mariel";
+    } else if (orderNumber === "#PO6") {
+        orderedBy = "Rene";
+    } else if (orderNumber === "#PO7") {
+        orderedBy = "Richard";
+    } else if (orderNumber === "#PO8") {
+        orderedBy = "Mavs";
+    } else if (orderNumber === "#PO9") {
+        orderedBy = "Kyle";
+    }
+
+    // Create a new row in the purchase orders table
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+        <td>${orderNumber}</td>
+        <td>${fromDetails.split(',')[0]}</td>
+        <td><span class="status-ordered">Ordered</span></td>
+        <td>None</td>
+        <td>${total}</td>
+        <td>${issueDate}</td>
+        <td>${orderedBy}</td> <!-- Automatically populate "Ordered By" -->
+        <td>
+            <button class="viewBtn">View</button>
+            <button class="deleteBtn">Delete</button>
+            <button class="evaluateBtn">Evaluate</button>
+        </td>
+    `;
+    newRow.classList.add('clickable-row'); // Add class to new row for click functionality
+    newRow.setAttribute('data-status', "ordered"); // Set data-status attribute for filtering
+    newRow.setAttribute('data-created-date', new Date().toISOString().split('T')[0]); // Set created date
+    purchaseOrdersTable.appendChild(newRow);
+
+    // Remove the selected order from dropdown
+    removeOrderFromDropdown(orderNumber);
+
+    // Reset the modal
+    purchaseOrderModal.style.display = 'none'; // Close the modal after confirmation
+});
+
+
+    // Remove selected order from dropdown
+    function removeOrderFromDropdown(selectedOrder) {
+        const index = availableOrders.indexOf(selectedOrder);
+        if (index > -1) {
+            availableOrders.splice(index, 1);
+        }
+        resetDropdownOptions();
+    }
+
+    // Attach event listener to action buttons (View, Delete, Evaluate)
+    purchaseOrdersTable.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.classList.contains('viewBtn')) {
+            // Handle view button
+            const row = target.closest('tr');
+            openOrderDetailsModal({
+                orderNumber: row.cells[0].textContent,    // Purchase Order Number
+                fromDetails: row.cells[1].textContent,    // From
+                issueDate: row.cells[5].textContent,      // Issue Date
+                total: row.cells[4].textContent,          // Total
+                status: row.cells[2].textContent,         // Status
+                receivedCount: row.cells[3].textContent.split(' ')[0],   // Received Count
+                uniqueItemCount: row.cells[3].textContent.split(' ')[2], // Unique Item Count
+                orderedBy: row.cells[6].textContent       // Ordered By
+            });
+        } else if (target.classList.contains('deleteBtn')) {
+            // Handle delete button
+            const row = target.closest('tr');
+            row.remove();
+        } else if (target.classList.contains('evaluateBtn')) {
+            // Handle evaluate button
+            const row = target.closest('tr');
+            const orderNumber = row.cells[0].textContent;
+            const createdDate = row.getAttribute('data-created-date');
+            const updatedDate = new Date().toISOString().split('T')[0]; // Get the current date
+
+            document.getElementById('evaluateOrderNumber').value = orderNumber;
+            document.getElementById('createdDate').value = createdDate;
+            document.getElementById('updatedDate').value = updatedDate;
+
+            // Populate evaluate modal
+            populateEvaluateModal(row);
+        }
+    });
+
+    // Function to filter rows based on the selected tab
+    function filterRows(filter) {
+        const rows = document.querySelectorAll("#purchaseOrdersTable tr"); // Get all rows in the table
+        rows.forEach((row) => {
+            const rowStatus = row.getAttribute("data-status"); // Get the row's data-status attribute
+
+            // Show row if it matches the filter or if "all" is selected
+            if (filter === "all" || rowStatus === filter) {
+                row.style.display = ""; // Show the row
+            } else {
+                row.style.display = "none"; // Hide the row
+            }
+        });
+    }
+
+    // Add event listeners to the tab links
+    const tabLinks = document.querySelectorAll(".tab__nav a"); // Select all filter tabs
+    tabLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent default link behavior
+
+            const filter = link.getAttribute("data-filter"); // Get the filter type (all, ordered, partial, completed)
+
+            // Highlight the active tab
+            tabLinks.forEach((tab) => tab.classList.remove("is-activated")); // Remove active class from all tabs
+            link.classList.add("is-activated"); // Add active class to the clicked tab
+
+            // Filter the rows based on the selected filter
+            filterRows(filter);
+        });
+    });
+
+    // Make the existing rows non-clickable (no need for `clickable-row` class anymore)
+    const existingRows = document.querySelectorAll('tbody tr');
+    existingRows.forEach(row => {
+        row.classList.remove('clickable-row');
+    });
+
+    // Function to populate evaluate modal
+    function populateEvaluateModal(orderRow) {
+        const orderNumber = orderRow.cells[0].textContent;
+        const items = getOrderItems(orderNumber); // Get items based on the order number
+        const evaluateItemList = document.getElementById("evaluateItemList");
+
+        evaluateItemList.innerHTML = ""; // Clear the previous content
+
+        items.forEach((item) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${item.name}</td>
+                <td><in>${item.quantity}</td>
+                <tdput type="number" min="0" max="${item.quantity}" value="0" class="received-input"></td>
+                <td><input type="number" min="0" max="${item.quantity}" value="0" class="lost-input"></td>
+                <td><input type="number" min="0" max="${item.quantity}" value="0" class="damaged-input"></td>
+            `;
+            evaluateItemList.appendChild(row);
+        });
+
+        // Populate order number
+        document.getElementById("evaluateOrderNumber").value = orderNumber;
+
+        // Open Modal
+        evaluateModal.style.display = "block";
+    }
+
+    // Function to get order items (example data for demonstration purposes)
+    function getOrderItems(orderNumber) {
+        const mockData = {
+            "#PO4": [
+                { name: "Item X", quantity: 100 },
+                { name: "Item Y", quantity: 200 },
+                { name: "Item Z", quantity: 50 },
+            ],
+            "#PO5": [
+                { name: "Item A", quantity: 150 },
+                { name: "Item B", quantity: 100 },
+                { name: "Item C", quantity: 80 },
+            ],
+            "#PO6": [
+                { name: "Item C", quantity: 300 },
+                { name: "Item D", quantity: 250 },
+                { name: "Item E", quantity: 150 },
+            ],
+            "#PO7": [
+                { name: "Item F", quantity: 100 },
+                { name: "Item G", quantity: 60 },
+                { name: "Item H", quantity: 200 },
+            ],
+            "#PO8": [
+                { name: "Item I", quantity: 150 },
+                { name: "Item J", quantity: 50 },
+                { name: "Item K", quantity: 30 },
+            ],
+            "#PO9": [
+                { name: "Item L", quantity: 90 },
+                { name: "Item M", quantity: 80 },
+                { name: "Item N", quantity: 200 },
+            ],
+            // Add more mock data as needed
+        };
+        return mockData[orderNumber] || [];
+    }
+
+    // Attach event listener to evaluate buttons
+    purchaseOrdersTable.addEventListener("click", (event) => {
+        if (event.target.classList.contains("evaluateBtn")) {
+            const orderRow = event.target.closest("tr");
+            const orderNumber = orderRow.cells[0].textContent.trim();
+            const evaluateItemList = document.getElementById("evaluateItemList");
+
+            // Clear previous modal content
+            evaluateItemList.innerHTML = "";
+
+            // Check if saved data exists
+            const savedData = evaluations[orderNumber] || [];
+
+            // Populate modal with saved or default data
+            if (savedData.length > 0) {
+                savedData.forEach((item) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.itemName}</td>
+                        <td>${item.orderedQuantity}</td>
+                        <td><input type="number" class="received-input" value="${item.receivedQuantity}" /></td>
+                        <td><input type="number" class="lost-input" value="${item.lostQuantity}" /></td>
+                        <td><input type="number" class="damaged-input" value="${item.damagedQuantity}" /></td>
+                    `;
+                    evaluateItemList.appendChild(row);
+                });
+            } else {
+                // Load default data if no evaluation exists
+                const items = getOrderItems(orderNumber); // Assume `getOrderItems` provides the original items
+                items.forEach((item) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td><input type="number" class="received-input" value="0" /></td>
+                        <td><input type="number" class="lost-input" value="0" /></td>
+                        <td><input type="number" class="damaged-input" value="0" /></td>
+
+                    `;
+                    evaluateItemList.appendChild(row);
+                });
+            }
+
+            // Set order number in the modal
+            document.getElementById("evaluateOrderNumber").value = orderNumber;
+
+            // Open modal
+            evaluateModal.style.display = "block";
+        }
+    });
+
+    // Close modal functionality
+    evaluateCloseBtn.addEventListener("click", () => {
+        evaluateModal.style.display = "none";
+    });
+
+    // Global object to store evaluations by order number
+    const evaluations = {};
+
+    submitEvaluationBtn.addEventListener("click", () => {
+        const orderNumber = document.getElementById("evaluateOrderNumber").value;
+        const evaluateItemList = document.querySelectorAll("#evaluateItemList tr");
+    
+        let isComplete = true; // Assume the order is complete initially
+        let totalReceived = 0;
+        let totalLost = 0;
+        let totalDamaged = 0;
+    
+        let isValid = true;
+        const evaluationData = []; // Store evaluation data for this order
+    
+        evaluateItemList.forEach((row, index) => {
+            const itemName = row.cells[0].textContent.trim(); // Item name
+            const orderedQuantity = parseInt(row.cells[1].textContent.trim(), 10);
+            const receivedQuantity = parseInt(row.querySelector(".received-input").value.trim(), 10) || 0;
+            const lostQuantity = parseInt(row.querySelector(".lost-input").value.trim(), 10) || 0;
+            const damagedQuantity = parseInt(row.querySelector(".damaged-input").value.trim(), 10) || 0;
+    
+            // Validation: Check total does not exceed ordered quantity
+            if (receivedQuantity + lostQuantity + damagedQuantity !== orderedQuantity) {
+                alert(
+                    `Row ${index + 1}: Received (${receivedQuantity}), Lost (${lostQuantity}), and Damaged (${damagedQuantity}) must equal Ordered (${orderedQuantity}).`
+                );
+                isValid = false;
+                return;
+            }
+    
+            // Update completeness
+            if (receivedQuantity < orderedQuantity || lostQuantity > 0 || damagedQuantity > 0) {
+                isComplete = false;
+            }
+    
+            // Update totals
+            totalReceived += receivedQuantity;
+            totalLost += lostQuantity;
+            totalDamaged += damagedQuantity;
+    
+            // Save data for this item
+            evaluationData.push({
+                itemName,
+                orderedQuantity,
+                receivedQuantity,
+                lostQuantity,
+                damagedQuantity,
+            });
+        });
+    
+        if (!isValid) return; // Stop submission if validation fails
+    
+        // Save evaluation data for the order
+        evaluations[orderNumber] = evaluationData;
+    
+        // Update table with status
+        const rows = purchaseOrdersTable.querySelectorAll("tr");
+        rows.forEach((row) => {
+            if (row.cells[0].textContent === orderNumber) {
+                const statusCell = row.querySelector(".status-ordered");
+                const receivedCell = row.cells[3]; // "Received" column
+                const totalCell = row.cells[4];    // "Total" column
+                
+                let newStatus = "Partial"; // Default to Partial
+    
+                if (isComplete) {
+                    statusCell.textContent = "Completed";
+                    statusCell.classList.remove("partial");
+                    statusCell.classList.add("completed");
+                    row.setAttribute("data-status", "completed");
+                    newStatus = "Received"; // Set to Received if complete
+                } else {
+                    statusCell.textContent = "Partial";
+                    statusCell.classList.remove("completed");
+                    statusCell.classList.add("partial");
+                    row.setAttribute("data-status", "partial");
                 }
-                for row in rows
-            ]
-            return jsonify({'details': details}), 200
-        else:
-            return jsonify({'error': 'Medicine not found'}), 404
-    except Exception as e:
-        return jsonify({'error': 'An error occurred', 'message': str(e)}), 500
-    finally:
-        if 'cur_lms' in locals():
-            cur_lms.close()
-        if 'conn_lms' in locals():
-            conn_lms.close()
+    
+                // Update "Received" column
+                receivedCell.textContent = `Received: ${totalReceived}, Lost: ${totalLost}, Damaged: ${totalDamaged}`;
+    
+                // Refresh actions (add SKU button if needed)
+                updateActionButtons(row, newStatus, orderNumber);
+            }
+        });
+    
+        // Update the "updated date" field in the modal
+        document.getElementById('updatedDate').value = new Date().toISOString().split('T')[0];
+    
+        // Close modal
+        evaluateModal.style.display = "none";
+        Swal.fire({
+            icon: "success",
+            title: `Evaluation for order ${orderNumber} saved successfully.`,
+            showConfirmButton: false,
+            timer: 1500
+          });
+        });
+    
+
+    // Update the "Received" column in the table
+    const orderRow = Array.from(purchaseOrdersTable.rows).find(
+        (row) => row.cells[0].textContent === orderNumber
+    );
+    if (orderRow) {
+        orderRow.cells[4].textContent = `${totalReceived} of ${orderRow.cells[4].textContent.split(' ')[2]} (Lost: ${totalLost}, Damaged: ${totalDamaged})`;
+    }
+
+    // Close and reset the modal
+    resetEvaluateModal();
+    evaluateModal.style.display = "none";
+
+    alert(`Evaluation submitted for Order ${orderNumber}. Total items received: ${totalReceived}`);
+
+    // Reset evaluation modal
+    function resetEvaluateModal() {
+        document.getElementById("evaluateOrderNumber").value = "";
+        const evaluateItemList = document.getElementById("evaluateItemList");
+        evaluateItemList.innerHTML = ""; // Clear the item list
+    }
+
+    // Close modal on clicking outside the modal
+    window.addEventListener("click", (event) => {
+        if (event.target === evaluateModal) {
+            evaluateModal.style.display = "none";
+        }
+    });
+
+    //SSSSSSSSSSKKKKKKKKKKKKKKKKKKKKKKKKUUUUUUUUUUUUUUUUUU
+
+   // Function to open the SKU modal
+   function openSkuModal(orderNumber) {
+    console.log(`Opening SKU modal for order: ${orderNumber}`);
+
+    skuTableBody.innerHTML = ''; // Clear previous data
+
+    // Fetch SKU data for the given orderNumber (mock data for demonstration)
+    const items = getOrderItems(orderNumber); // Replace with your real data
+    items.forEach(item => {
+        addItemRow(item.name, item.quantity);
+    });
+
+    // Hide other modals and show the SKU modal
+    evaluateModal.style.display = 'none';
+    skuModal.style.display = 'block';
+}
+
+// Function to add a new item row
+function addItemRow(itemName, itemQuantity) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${itemName}</td>
+        <td>${itemQuantity}</td>
+        <td><input type="text" class="sku-input" placeholder="Enter SKU" /></td>
+        <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
+        <td><input type="date" class="expiration-input" /></td>
+        <td>
+            <button class="deleteRowBtn">Delete</button>
+            <button class="addSkuBtn">Add SKU</button>
+        </td>
+    `;
+    document.getElementById('skuTableBody').appendChild(row);
+
+    // Add event listener for the delete button
+    row.querySelector('.deleteRowBtn').addEventListener('click', () => {
+        row.remove();
+    });
+
+    // Add event listener for the add SKU button
+    row.querySelector('.addSkuBtn').addEventListener('click', () => {
+        addSkuRow(row);
+    });
+}
+
+// Function to add a new SKU row below an existing item row
+function addSkuRow(itemRow) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td></td>
+        <td></td>
+        <td><input type="text" class="sku-input" placeholder="Enter SKU" /></td>
+        <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
+        <td><input type="date" class="expiration-input" /></td>
+        <td><button class="deleteRowBtn">Delete</button></td>
+    `;
+    itemRow.insertAdjacentElement('afterend', row);
+
+    // Add event listener for the delete button
+    row.querySelector('.deleteRowBtn').addEventListener('click', () => {
+        row.remove();
+    });
+}
+
+// Attach event listener to the SKU button
+document.querySelectorAll('.skuBtn').forEach(button => {
+    button.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent triggering other events
+        const orderNumber = button.getAttribute('data-order'); // Assume orderNumber is set as a data attribute
+        openSkuModal(orderNumber);
+    });
+});
+
+// Close SKU modal functionality
+document.querySelector('#skuModal .close').addEventListener('click', () => {
+    skuModal.style.display = 'none';
+});
+
+// Ensure modal closes when clicking outside of it
+window.addEventListener('click', (event) => {
+    if (event.target === skuModal) {
+        skuModal.style.display = 'none';
+    }
+});
+
+// Save SKU functionality
+document.getElementById('saveSkuBtn').addEventListener('click', () => {
+    const rows = document.querySelectorAll('#skuTableBody tr');
+    const skuData = Array.from(rows).map(row => ({
+        item: row.cells[0].textContent,
+        quantityOrdered: row.cells[1].textContent,
+        sku: row.querySelector('.sku-input').value,
+        quantity: row.querySelector('.quantity-input').value,
+        expiration: row.querySelector('.expiration-input').value
+    }));
+    console.log('Saved SKU data:', skuData); // Replace with save functionality
+    document.getElementById('skuModal').style.display = 'none';
+});
+
+// Function to create SKU button with event listener
+function createSkuButton(orderNumber) {
+    console.log(`Creating SKU button for order: ${orderNumber}`);
+    const skuButton = document.createElement('button');
+    skuButton.textContent = 'SKU';
+    skuButton.classList.add('skuBtn');
+    
+    // Add the click event listener for opening the modal
+    skuButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent propagation if needed
+        console.log(`SKU button clicked for order: ${orderNumber}`);
+        openSkuModal(orderNumber);  // This will open the SKU modal
+    });
+
+    // Return the SKU button to be appended
+    return skuButton;
+}
 
 
+// Update action buttons
+function updateActionButtons(row, status, orderNumber) {
+    console.log(`Updating actions for order ${orderNumber} with status ${status}`);
+    const actionCell = row.querySelector('td:last-child'); // Actions column
+    actionCell.innerHTML = ''; // Clear existing buttons
+
+    // Add View button
+    const viewButton = document.createElement('button');
+    viewButton.textContent = 'View';
+    viewButton.classList.add('viewBtn');
+    actionCell.appendChild(viewButton);
+
+    // Add Delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.classList.add('deleteBtn');
+    actionCell.appendChild(deleteButton);
+
+    // Add Evaluate button for Ordered or Partial
+    const evaluateButton = document.createElement('button');
+    evaluateButton.textContent = 'Evaluate';
+    evaluateButton.classList.add('evaluateBtn');
+    actionCell.appendChild(evaluateButton);
+
+    // Add SKU button for Partial, Received, or Completed
+    if (status === "Partial" || status === "Received" || status === "Completed") {
+        const skuButton = createSkuButton(orderNumber); // Create SKU button
+        actionCell.appendChild(skuButton); // Append to actions column
+    }
+}
+
+// Update row actions based on order number and new status
+function updateRowActions(orderNumber, newStatus) {
+    if (!orderNumber) {
+        console.error('Order number is undefined!');
+        return;
+    }
+
+    const orderRow = Array.from(purchaseOrdersTable.rows).find(
+        (row) => row.cells[0].textContent === orderNumber
+    );
+
+    if (!orderRow) {
+        console.error(`No row found for order number: ${orderNumber}`);
+        return;
+    }
+
+    // Update status and actions
+    orderRow.setAttribute('data-status', newStatus.toLowerCase());
+    updateActionButtons(orderRow, newStatus, orderNumber);
+}
+
+const orderNumber = document.getElementById('evaluateOrderNumber').value;
+updateRowActions(orderNumber, isComplete ? 'Received' : 'Partial');
+
+// Event listener for close button in modal
+document.querySelector('.close').addEventListener('click', () => {
+    document.getElementById('skuModal').style.display = 'none';
+});
+
+// Ensure modal closes when clicking outside of it
+window.addEventListener('click', (event) => {
+    const skuModal = document.getElementById('skuModal');
+    if (event.target === skuModal) {
+        skuModal.style.display = 'none';
+    }
+});
 
 
-
-@app.route('/signatory_view')
-def signatory_view():
-    return render_template('signatory_view.html')
-
-@app.route('/purchase_order')
-def purchase_order():
-    return render_template('purchase_order.html')
-
-@app.route('/medicine_request', methods=['GET', 'POST'])
-def medicine_request():
-    try:
-        # Establish database connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        if request.method == 'GET':
-            # Fetch all medicine requests
-            cursor.execute("""
-                SELECT medicine_request_id, request_status, medicine_name, quantity, 
-                       request_date, approved_by, approval_date 
-                FROM medicine_requests;
-            """)
-            medicine_requests = cursor.fetchall()
-
-            # Format the data for template rendering
-            formatted_requests = [
-                {
-                    "medicine_request_id": row[0],
-                    "request_status": row[1],
-                    "medicine_name": row[2],
-                    "quantity": row[3],
-                    "request_date": row[4],
-                    "approved_by": row[5],
-                    "approval_date": row[6]
-                } 
-                for row in medicine_requests
-            ]
-
-            return render_template('medicine_request.html', medicine_requests=formatted_requests)
-
-        elif request.method == 'POST':
-            # Add a new medicine request
-            data = request.get_json()
-
-            if not data or not all(key in data for key in ['medicine_name', 'quantity']):
-                return jsonify({"error": "Missing required fields"}), 400
-
-            request_status = data.get('request_status', 'Pending')
-            medicine_name = data['medicine_name']
-            quantity = data['quantity']
-            request_date = data.get('request_date', None)
-            approved_by = data.get('approved_by', None)
-            approval_date = data.get('approval_date', None)
-
-            cursor.execute("""
-                INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING medicine_request_id;
-            """, (request_status, medicine_name, quantity, request_date, approved_by, approval_date))
-            new_request_id = cursor.fetchone()[0]
-            conn.commit()
-
-            return jsonify({"message": "Request added successfully", "medicine_request_id": new_request_id})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        # Close the connection
-        if 'conn' in locals():
-            cursor.close()
-            conn.close()
 
             
-@app.route('/medicines-info')
-def medicines_info():
-    connection = get_db_connection()  # Function to connect to the database
-    cursor = connection.cursor()
-
-    # Query to fetch the required columns
-    query = """
-        SELECT medicine_id, medicine_name, unit_price FROM medicines ORDER BY medicine_id
-    """
-    cursor.execute(query)
-    medicines = cursor.fetchall()
-
-    # Convert data into a list of dictionaries
-    medicines_list = [
-        {
-            'medicine_id': row[0],  # The first column is medicine_id
-            'medicine_name': row[1], # The second column is medicine_name
-            'unit_price': row[2],    # The third column is unit_price
-        }
-        for row in medicines
-    ]
-
-    # Close the connection
-    cursor.close()
-    connection.close()
-
-    # Return the data as JSON
-    return jsonify(medicines_list)
-
-@app.route('/api/care-plan-request/update', methods=['POST'])
-def update_care_plan_request():
-    try:
-        # Establish database connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Parse JSON data from the request
-        data = request.get_json()
-        if not data or 'medicine_request_id' not in data or 'action' not in data:
-            return jsonify({"error": "Missing required fields"}), 400
-
-        medicine_request_id = data['medicine_request_id']
-        action = data['action'].lower()  # Expecting 'accept' or 'reject'
-        approved_by = data.get('approved_by', 'System')  # Optional: default to 'System'
-
-        if action not in ['accept', 'reject']:
-            return jsonify({"error": "Invalid action. Use 'accept' or 'reject'."}), 400
-
-        # Update the request_status and approval_date
-        request_status = 'Approved' if action == 'accept' else 'Rejected'
-        approval_date = datetime.now()  # Automatically set the approval/rejection date
-
-        cursor.execute("""
-            UPDATE medicine_requests
-            SET request_status = %s, approved_by = %s, approval_date = %s
-            WHERE medicine_request_id = %s;
-        """, (request_status, approved_by, approval_date, medicine_request_id))
-        conn.commit()
-
-        return jsonify({
-            "message": f"Request {request_status.lower()} successfully.",
-            "medicine_request_id": medicine_request_id
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        # Close the connection
-        if 'conn' in locals():
-            cursor.close()
-            conn.close()
-
-@app.route('/medicine-requests/<int:request_id>/approve', methods=['PUT'])
-def approve_medicine_request(request_id):
-    try:
-        # Establish database connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Set the request status to "Approved" and update the approval date
-        approved_by = 'Dr. Smith'  # Replace this with actual approver's name
-        approval_date = datetime.now()  # Current datetime
-
-        # Print statements for debugging
-        print(f"Received approval request for medicine_request_id: {request_id}")
-        
-        cursor.execute("""
-            UPDATE medicine_requests
-            SET request_status = %s, approved_by = %s, approval_date = %s
-            WHERE medicine_request_id = %s;
-        """, ('Approved', approved_by, approval_date, request_id))
-
-        # Check if any rows were updated
-        if cursor.rowcount == 0:
-            print(f"No request found with ID {request_id}")
-            return jsonify({"error": "Request not found"}), 404
-        
-        # Commit the changes to the database
-        conn.commit()
-        print(f"Request {request_id} successfully approved.")
-
-        return jsonify({"message": "Request approved successfully", "medicine_request_id": request_id}), 200
-
-    except Exception as e:
-        # Print error message for debugging
-        print(f"Error during approval: {e}")
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        # Close the connection
-        if 'conn' in locals():
-            cursor.close()
-            conn.close()
-
-@app.route('/api/care-plan-request/update', methods=['POST'])
-def update_medicine_request():
-    try:
-        # Parse JSON data from the request
-        data = request.get_json()
-        if not data or 'medicine_request_id' not in data or 'action' not in data:
-            return jsonify({'error': 'Missing required fields'}), 400
-        
-        medicine_request_id = data['medicine_request_id']
-        action = data['action'].lower()
-
-        # Validate the action
-        if action not in ['accept', 'reject']:
-            return jsonify({'error': 'Invalid action. Use "accept" or "reject".'}), 400
-
-        # Determine the new status
-        new_status = 'Approved' if action == 'accept' else 'Rejected'
-
-        # Assuming you have a model called MedicineRequest
-        medicine_request = MedicineRequest.query.get(medicine_request_id)
-        if medicine_request:
-            # Update the status in the database
-            medicine_request.status = new_status
-            db.session.commit()
-            return jsonify({'message': f'Request {new_status} successfully'}), 200
-        else:
-            return jsonify({'error': 'Request not found'}), 404
     
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    
+});
 
 
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=8000)
