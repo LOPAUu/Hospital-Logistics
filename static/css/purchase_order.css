@@ -153,7 +153,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
 .modal-evaluate {
     background-color: white;
     border-radius: 8px;
-    max-width: 50%;
+    max-width: 53%;
     margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
@@ -328,4 +328,12 @@ button:hover {
     margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
+}
+
+
+.swal-popup {
+    z-index: 3000 !important; /* Higher than modal */
+}
+.swal2-container {
+    z-index: 3000 !important; /* For SweetAlert container */
 }

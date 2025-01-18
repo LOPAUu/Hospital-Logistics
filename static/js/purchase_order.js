@@ -612,20 +612,36 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
             
                     const result = await response.json();
-                    console.log("Response:", result); // Log the response for debugging
             
                     if (response.ok) {
-                        alert(result.message);
-                        evaluateModal.style.display = "none"; // Close the modal on success
-                        fetchPurchaseOrders(); // Refresh the purchase orders after closing the modal
+                        Swal.fire({
+                            title: "Success!",
+                            text: result.message || "Evaluation updated successfully.",
+                            icon: "success",
+                            confirmButtonText: "OK",
+                        }).then(() => {
+                            evaluateModal.style.display = "none"; // Close the modal
+                            fetchPurchaseOrders(); // Refresh the purchase orders after closing the modal
+                        });
                     } else {
-                        alert(result.error || "Failed to submit evaluation. Please try again.");
+                        Swal.fire({
+                            title: "Error",
+                            text: result.error || "Failed to submit evaluation. Please try again.",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
                     }
                 } catch (error) {
                     console.error("Error submitting evaluation:", error);
-                    alert("Failed to submit evaluation. Please try again.");
+                    Swal.fire({
+                        title: "Error",
+                        text: "An error occurred while submitting the evaluation. Please try again.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
                 }
             }, { once: true }); // Ensures the listener is added only once
+            
             
         });
 
