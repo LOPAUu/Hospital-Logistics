@@ -48,7 +48,6 @@ CREATE TABLE requisitions (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     purpose VARCHAR(255) NOT NULL,
-    billing VARCHAR(255) NOT NULL,
     signatory1_approved BOOLEAN DEFAULT FALSE,
     signatory2_approved BOOLEAN DEFAULT FALSE,
     signatory3_approved BOOLEAN DEFAULT FALSE

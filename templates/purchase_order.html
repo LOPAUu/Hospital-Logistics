@@ -178,16 +178,21 @@
                 <div class="modal-evaluate">
                     <span class="close">&times;</span>
                     <h3>Evaluate Received Items</h3>
-                    <div id="modalEvaluateDetails"></div>
-                    <div class="modal-evaluate-body">
-                        <div class="form-display">
-                            <label>Order Number</label>
-                            <span id="evaluateOrderNumber" class="modal-span"></span>
-                            <label>Created Date</label>
-                            <span id="createdDate" class="modal-span"></span>
-                            <label>Updated Date</label>
-                            <span id="updatedDate" class="modal-span"></span>
+                    <div class="form-display">
+                        <div>
+                            <label>Order Number:</label>
+                            <span id="evaluateOrderNumber" class="modal-span">12345</span>
                         </div>
+                        <div>
+                            <label>Created Date:</label>
+                            <span id="createdDate" class="modal-span">2025-01-15</span>
+                        </div>
+                        <div>
+                            <label>Updated Date:</label>
+                            <span id="updatedDate" class="modal-span">2025-01-17</span>
+                        </div>
+                    </div>
+                    <div class="modal-evaluate-body">
                         <div class="form-section">
                             <table>
                                 <thead>
@@ -197,10 +202,11 @@
                                         <th>Received</th>
                                         <th>Lost</th>
                                         <th>Damaged</th>
-                                        <th>Remaining Quantity</th> <!-- Added remaining_quantity column -->
+                                        <th>Remaining Quantity</th>
                                     </tr>
                                 </thead>
                                 <tbody id="evaluateItemList">
+                                    <!-- Rows will go here -->
                                 </tbody>
                             </table>
                         </div>
@@ -208,6 +214,7 @@
                     </div>
                 </div>
             </div>
+            
 
 
             <!-- SKU Modal --> 

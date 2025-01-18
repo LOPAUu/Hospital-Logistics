@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
+// PO TABLE 
 document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.getElementById('approvedRequisitionsDropdown');
     const tableBody = document.querySelector('#itemList'); // Table body for items
@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <td class="item-name">${item.name}</td>
                 <td class="item-quantity">${item.quantity}</td>
-                <td class="item-price">₱${item.price}</td>
-                <td class="item-total">₱${(item.quantity * item.price).toFixed(2)}</td>
+                <td class="item-price">${item.price}</td>
+                <td class="item-total">${(item.quantity * item.price).toFixed(2)}</td>
             `;
             tableBody.appendChild(row);
 

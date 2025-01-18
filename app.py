@@ -647,6 +647,7 @@ def get_requisitions():
     cur.execute("""
         SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.total
         FROM requisitions r
+        ORDER BY r.id ASC  -- This orders the requisitions by id in ascending order
     """)
     requisitions = cur.fetchall()
     
@@ -659,6 +660,7 @@ def get_requisitions():
     conn.close()
 
     return render_template('requisition_list.html', requisitions=requisitions)
+
 
 
 

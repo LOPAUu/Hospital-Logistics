@@ -11,40 +11,6 @@ async function fetchRequisition() {
     }
 }
 
-// Render requisitions to the table
-function renderRequisition(requisitions, order = 'asc') {
-    const requisitionList = document.getElementById('requisition-list');
-
-    // Sort the requisitions based on the order (ascending or descending)
-    const sortedRequisitions = [...requisitions].sort((a, b) => {
-        return order === 'asc' ? a.id - b.id : b.id - a.id;
-    });
-
-    // Create a numbering system based on the sorted order
-    const numberedRequisitions = sortedRequisitions.map((requisition, index) => ({
-        ...requisition,
-        displayNumber: order === 'asc' ? index + 1 : sortedRequisitions.length - index,
-    }));
-
-    // Render the table rows with the new numbering system
-    requisitionList.innerHTML = numberedRequisitions.map(requisition => `
-        <tr>
-            <td>${requisition.displayNumber}</td>
-            <td>${requisition.date}</td>
-            <td>${requisition.purpose}</td>
-            <td>${requisition.company_name}</td>
-            <td>${requisition.requested_by}</td>
-            <td>₱${requisition.total}</td>
-            <td>${requisition.status}</td>
-            <td>
-                <button onclick="viewDetails(${requisition.id})">View Details</button>
-                <button onclick="approveRequisition(${requisition.id})">Approve</button>
-                <button onclick="rejectRequisition(${requisition.id})">Reject</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
 
 
 
