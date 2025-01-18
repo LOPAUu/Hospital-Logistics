@@ -14,61 +14,64 @@
         </div>
     </div>
     
-    <div class="container">
-        <h1>Requisitions Pending Approval</h1>
+</div>
+    
+ 
+<h1>Requisitions Pending Approval</h1>
 
-        <!-- Tab Navigation -->
-        <div class="tabs--secondary">
-            <nav class="tab__nav">
-                <ul>
-                    <li class="tab__item">
-                        <a href="#all" class="is-activated" onclick="filterByStatus('all')">All</a>
-                    </li>
-                    <li class="tab__item">
-                        <a href="#pending" onclick="filterByStatus('pending')">Pending</a>
-                    </li>
-                    <li class="tab__item">
-                        <a href="#approved" onclick="filterByStatus('approved')">Approved</a>
-                    </li>
-                    <li class="tab__item">
-                        <a href="#rejected" onclick="filterByStatus('rejected')">Rejected</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+<div class="container">
+<!-- Tab Navigation -->
+<div class="tabs--secondary">
+    <nav class="tab__nav">
+        <ul>
+            <li class="tab__item">
+                <a href="#all" class="is-activated" onclick="filterByStatus('all')">All</a>
+            </li>
+            <li class="tab__item">
+                <a href="#pending" onclick="filterByStatus('pending')">Pending</a>
+            </li>
+            <li class="tab__item">
+                <a href="#approved" onclick="filterByStatus('approved')">Approved</a>
+            </li>
+            <li class="tab__item">
+                <a href="#rejected" onclick="filterByStatus('rejected')">Rejected</a>
+            </li>
+        </ul>
+    </nav>
+</div>
 
-        <!-- Requisition Cards Container -->
-        <div id="requisition-cards" class="cards-container">
-            <!-- Requisition cards will be populated here -->
-        </div>
+<!-- Requisition Cards Container -->
+<div id="requisition-cards" class="cards-container">
+    <!-- Requisition cards will be populated here -->
+</div>
 
 
 
-        <!-- Modal for displaying additional details (new modal for View Details button) -->
-        <div id="view-details-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" onclick="closeViewDetailsModal()">&times;</span>
-                <h2>View Requisition Details</h2>
-                <div id="view-details-content">
-                    <!-- The content will be populated dynamically -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal for additional actions -->
-        <div id="action-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" onclick="closeActionModal()">&times;</span>
-                <h2>Perform an Action</h2>
-                <div id="action-content">
-                    <!-- The content will be populated dynamically -->
-                    <p>Would you like to approve or reject this requisition?</p>
-                    <button onclick="approveRequisition()">Approve</button>
-                    <button onclick="rejectRequisition()">Reject</button>
-                </div>
-            </div>
+<!-- Modal for displaying additional details (new modal for View Details button) -->
+<div id="view-details-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeViewDetailsModal()">&times;</span>
+        <h2>View Requisition Details</h2>
+        <div id="view-details-content">
+            <!-- The content will be populated dynamically -->
         </div>
     </div>
-    
-    <script src="{{ url_for('static', filename='js/signatory_view.js') }}"></script>
+</div>
+
+<!-- Modal for additional actions -->
+<div id="action-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeActionModal()">&times;</span>
+        <h2>Perform an Action</h2>
+        <div id="action-content">
+            <!-- The content will be populated dynamically -->
+            <p>Would you like to approve or reject this requisition?</p>
+            <button onclick="approveRequisition()">Approve</button>
+            <button onclick="rejectRequisition()">Reject</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<script src="{{ url_for('static', filename='js/signatory_view.js') }}"></script>
 {% endblock %}

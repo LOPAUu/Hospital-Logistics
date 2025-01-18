@@ -61,13 +61,9 @@ def auth_callback():
 
             flash('Login successful!', 'success')
 
-            # Redirect based on the user role
-            if session['role'] == 'LMS Admin':
+            # Normalize role comparison (to avoid case sensitivity issues)
+            if session['role'].strip().lower() == 'lms admin':  # Case insensitive check
                 return redirect(url_for('admin_dashboard'))
-            elif session['role'] == 'LMS Signatory':
-                return redirect(url_for('signatory_dashboard'))
-            elif session['role'] == 'LMS Pharmacy':
-                return redirect(url_for('pharmacy_dashboard'))
             else:
                 flash('Role not authorized', 'danger')
                 return redirect(url_for('login'))
@@ -146,6 +142,7 @@ def upload_attachments():
         return jsonify({"message": "Attachments uploaded successfully!", "attachments": attachment_paths}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+    
     
 @app.route('/user_role_management')
 def user_role_management():
@@ -650,6 +647,7 @@ def get_requisitions():
     cur.execute("""
         SELECT r.id, r.date, r.purpose, r.company_name, r.requested_by, r.total
         FROM requisitions r
+        ORDER BY r.id ASC  -- This orders the requisitions by id in ascending order
     """)
     requisitions = cur.fetchall()
     
@@ -662,6 +660,7 @@ def get_requisitions():
     conn.close()
 
     return render_template('requisition_list.html', requisitions=requisitions)
+
 
 
 
@@ -922,13 +921,393 @@ def reject_requisition():
         return jsonify({'error': 'An error occurred while rejecting the requisition.'}), 500
 
 
-@app.route('/signatory_view')
-def signatory_view():
-    return render_template('signatory_view.html')
 
-@app.route('/purchase_order')
-def purchase_order():
-    return render_template('purchase_order.html')
+@app.route('/get_approved_requisitions', methods=['GET'])
+def get_approved_requisitions():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        # Query to fetch all approved requisitions
+        cursor.execute("""
+            SELECT id, company_name, requested_by, date
+            FROM requisitions
+            WHERE status = 'Approved'
+        """)
+        
+        approved_requisitions = cursor.fetchall()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        return jsonify(approved_requisitions)
+
+    except Exception as e:
+        print(f"Error fetching approved requisitions: {e}")  # Print the error for debugging
+        return jsonify({'error': 'An error occurred while fetching approved requisitions.'}), 500
+
+# to get the details show in the create dropdown
+@app.route('/get_requisition_items', methods=['GET'])
+def get_requisition_items():
+    requisition_id = request.args.get('id')
+    if not requisition_id:
+        return jsonify({'error': 'Requisition ID is required'}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        # Query to fetch items for the given requisition ID
+        cursor.execute("""
+            SELECT name, quantity, price, (quantity * price) AS total
+            FROM requisition_items
+            WHERE requisition_id = %s
+        """, (requisition_id,))
+
+        items = cursor.fetchall()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        return jsonify(items)
+
+    except Exception as e:
+        print(f"Error fetching requisition items: {e}")  # Print the error for debugging
+        return jsonify({'error': 'An error occurred while fetching requisition items.'}), 500
+
+# route for submit button
+@app.route('/submit_purchase_order', methods=['POST'])
+def submit_purchase_order():
+    data = request.json
+
+    # Extract data from the request
+    order_number = data.get('orderNumber')
+    supplier_name = data.get('supplierName')
+    requested_by = data.get('requestedBy')
+    order_status = data.get('orderStatus')
+    issue_date = data.get('issueDate')
+    total_amount = data.get('totalAmount')
+    items = data.get('items', [])
+
+    # Validate required fields
+    missing_fields = []
+    for field, value in [
+        ('orderNumber', order_number),
+        ('supplierName', supplier_name),
+        ('requestedBy', requested_by),
+        ('orderStatus', order_status),
+        ('issueDate', issue_date),
+        ('totalAmount', total_amount),
+        ('items', items)
+    ]:
+        if not value:
+            missing_fields.append(field)
+
+    if missing_fields:
+        return jsonify({'error': f'Missing required fields: {", ".join(missing_fields)}'}), 400
+
+    try:
+        # Connect to the database
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # Insert purchase order into the database
+        cursor.execute("""
+            INSERT INTO purchase_orders (requisition_id, supplier, status, total_amount, issue_date, ordered_by)
+            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+        """, (order_number, supplier_name, order_status, total_amount, issue_date, requested_by))
+
+        purchase_order_id = cursor.fetchone()[0]
+
+        # Insert items into the database
+        for item in items:
+            cursor.execute("""
+                INSERT INTO order_items (purchase_order_id, name, quantity, price, total)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (purchase_order_id, item['name'], item['quantity'], item['price'], item['total']))
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return jsonify({'message': 'Purchase order and items submitted successfully'}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': 'An error occurred while submitting the purchase order.'}), 500
+
+
+# to show the submitted purchase orders
+@app.route('/purchase-orders', methods=['GET'])
+def get_purchase_orders():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            po.id, po.supplier, po.status, po.total_amount, po.issue_date, po.ordered_by,
+            COALESCE(SUM(oi.quantity), 0) AS received
+        FROM purchase_orders po
+        LEFT JOIN order_items oi ON po.id = oi.purchase_order_id
+        GROUP BY po.id
+    """)
+    purchase_orders = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    result = [
+        {
+            "id": po[0],
+            "supplier": po[1],
+            "status": po[2],
+            "received": po[6],
+            "total_amount": float(po[3]),
+            "issue_date": po[4].strftime('%Y-%m-%d'),
+            "ordered_by": po[5],
+        }
+        for po in purchase_orders
+    ]
+    return jsonify(result)
+
+
+
+# Route to fetch purchase order details
+@app.route('/purchase_order/<int:order_id>', methods=['GET'])
+def get_purchase_order(order_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Fetch the purchase order details
+    cur.execute("""
+        SELECT id, supplier, status, received, total_amount, issue_date, ordered_by 
+        FROM purchase_orders WHERE id = %s
+    """, (order_id,))
+    order = cur.fetchone()
+
+    if not order:
+        conn.close()
+        return jsonify({'error': 'Purchase order not found'}), 404
+
+    # Fetch the order items
+    cur.execute("""
+        SELECT name, quantity, unit, price 
+        FROM order_items WHERE purchase_order_id = %s
+    """, (order_id,))
+    items = cur.fetchall()
+
+    conn.close()
+
+    # Structure the response
+    order_data = {
+        "id": order[0],
+        "supplier": order[1],
+        "status": order[2],
+        "received": order[3],
+        "total_amount": float(order[4]),  # Convert Decimal to float if necessary
+        "issue_date": order[5].strftime("%Y-%m-%d"),  # Format date as a string
+        "ordered_by": order[6],
+        "items": [
+            {
+                "name": item[0],
+                "quantity": item[1],
+                "unit": item[2],
+                "price": float(item[3]),  # Convert Decimal to float if necessary
+                "total": float(item[1] * item[3])  # Calculate the total for each item
+            }
+            for item in items
+        ]
+    }
+
+    return jsonify(order_data)
+
+
+@app.route('/order-details/<int:order_id>', methods=['GET'])
+def get_order_details(order_id):
+    # Establish DB connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Query to get the main order details
+    cursor.execute("""
+        SELECT id, requisition_id, supplier, status, total_amount, issue_date, ordered_by
+        FROM purchase_orders
+        WHERE id = %s
+    """, (order_id,))
+    order = cursor.fetchone()
+
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+
+    # Query to get the items for the order
+    cursor.execute("""
+        SELECT id, name, quantity, price, total, received, lost, damaged
+        FROM order_items
+        WHERE purchase_order_id = %s
+    """, (order_id,))
+    items = cursor.fetchall()
+
+    # Close the database connection
+    cursor.close()
+    conn.close()
+
+    # Prepare order details data to be sent back
+    order_data = {
+        'id': order[0],
+        'requisition_id': order[1],
+        'supplier': order[2],
+        'status': order[3],
+        'total_amount': order[4],
+        'issue_date': order[5].strftime('%Y-%m-%d'),  # Convert date to string if necessary
+        'ordered_by': order[6],
+        'items': [{'id': item[0], 'name': item[1], 'quantity': item[2], 'price': item[3], 'total': item[4], 'received': item[5], 'lost': item[6], 'damaged': item[7]} for item in items]
+    }
+    return jsonify(order_data)
+
+@app.route('/order-items/<int:order_id>', methods=['GET'])
+def get_order_items(order_id):
+    # Establish DB connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Query to get the items for the given purchase_order_id (from the purchase_orders table)
+    cursor.execute("""
+        SELECT name, quantity, price, total
+        FROM order_items
+        WHERE purchase_order_id = %s
+    """, (order_id,))
+    items = cursor.fetchall()
+
+    # Close the database connection         
+    cursor.close()
+    conn.close()
+
+    if not items:
+        return jsonify({"error": "No items found for this order"}), 404
+
+    # Return the items data
+    items_data = [{'name': item[0], 'quantity': item[1], 'price': item[2], 'total': item[3]} for item in items]
+    return jsonify(items_data)
+
+
+
+@app.route('/submit-evaluation', methods=['POST'])
+def submit_evaluation():
+    data = request.get_json()  # Get the JSON payload from the frontend
+    print("Received data:", data)  # Print the data to check the structure
+
+    # Check for the existence of purchase_order_id and items
+    if not data or not data.get('purchase_order_id') or not data.get('items'):
+        return jsonify({'error': 'Invalid data'}), 400
+
+    purchase_order_id = data['purchase_order_id']
+    print(f"Purchase Order ID: {purchase_order_id}")  # Log to verify
+
+    items = data['items']
+    print(f"Items: {items}")  # Log the items to verify
+
+    try:
+        # Connect to the database
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update the evaluation data for each item
+        for item in items:
+            order_detail_id = item['order_detail_id']
+            received = item['received']
+            lost = item['lost']
+            damaged = item['damaged']
+            remaining_quantity = item['remainingQuantity']  # Get remaining quantity from the item (may be unchanged)
+
+            # Update the order item evaluation data in the database
+            cur.execute("""
+                UPDATE order_items
+                SET received = %s, lost = %s, damaged = %s, remaining_quantity = COALESCE(%s, remaining_quantity)
+                WHERE id = %s AND purchase_order_id = %s
+            """, (received, lost, damaged, remaining_quantity, order_detail_id, purchase_order_id))
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close the cursor and connection
+        cur.close()
+        conn.close()
+
+        return jsonify({'message': 'Evaluation submitted successfully'}), 200
+
+    except Exception as e:
+        # Rollback in case of error
+        if conn:
+            conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+@app.route('/get-sku-details/<int:purchase_order_id>', methods=['GET'])
+def fetch_sku_details(purchase_order_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Fetch item names and quantities from the order_items table for the specific purchase_order_id
+    cursor.execute("""
+        SELECT oi.name AS item_name, oi.quantity AS ordered_quantity
+        FROM order_items oi
+        WHERE oi.purchase_order_id = %s
+    """, (purchase_order_id,))
+
+    items = cursor.fetchall()
+    conn.close()
+
+    return jsonify([
+        {
+            "item_name": item[0],
+            "ordered_quantity": item[1]
+        }
+        for item in items
+    ])
+
+
+
+
+@app.route('/save-sku-details', methods=['POST'])
+def save_sku_details():
+    data = request.get_json()
+    if not data or 'skus' not in data:
+        return jsonify({'success': False, 'message': 'Invalid data format.'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        for sku in data['skus']:
+            cursor.execute("""
+                INSERT INTO sku_details (item_name, quantity_ordered, sku, quantity, expiration)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (sku) DO UPDATE 
+                SET quantity = EXCLUDED.quantity,
+                    expiration = EXCLUDED.expiration,
+                    updated_at = CURRENT_TIMESTAMP
+            """, (
+                sku['item_name'], sku['ordered_quantity'], sku['sku'],
+                sku['quantity'], sku['expiration']
+            ))
+
+        conn.commit()
+        return jsonify({'success': True}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+
+
 
 @app.route('/inventory')
 def inventory():
@@ -1063,7 +1442,7 @@ def send_to_billing():
             })
 
         # Send aggregated data to FMS
-        fms_api_url = "https://finance-management-system-eval.onrender.com/api/lms_purchase"
+        fms_api_url = "https://fms-w1la.onrender.com/api/lms_purchase"
         for data in purchase_data.values():
             for medicine in data['medicines']:
                 purchase_payload = {
@@ -1106,7 +1485,7 @@ def get_customer_details(customer_id):
 
         # Query to fetch customer details, including date_of_birth
         cur_lms.execute("""
-            SELECT customer_id, full_name, contact_number, date_of_birth, senior_or_pwd
+            SELECT customer_id, full_name, contact_number, date_of_birth
             FROM pharmacy_customers
             WHERE customer_id = %s
         """, (customer_id,))
@@ -1120,8 +1499,7 @@ def get_customer_details(customer_id):
             "customer_id": customer[0],
             "full_name": customer[1],
             "contact_number": customer[2],
-            "date_of_birth": customer[3],
-            "senior_or_pwd": customer[4] 
+            "date_of_birth": customer[3] 
         }
 
         cur_lms.close()
@@ -1132,6 +1510,7 @@ def get_customer_details(customer_id):
     except Exception as e:
         print(f"Error retrieving customer details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+
 
 @app.route('/api/medicines/<int:medicine_id>', methods=['GET'])
 def get_medicine_details(medicine_id):
@@ -1160,6 +1539,57 @@ def get_medicine_details(medicine_id):
     except Exception as e:
         print(f"Error retrieving medicine details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+
+@app.route('/medicine/<int:medicine_id>', methods=['GET'])
+def fetch_medicine_details_route(medicine_id):
+    try:
+        conn_lms = get_db_connection()
+        cur_lms = conn_lms.cursor()
+        
+        query = """
+        SELECT evaluated_on, entry_type, po_number, item_no, description, expiration_date, lot_position
+        FROM medicines
+        WHERE id = %s
+        """
+        cur_lms.execute(query, (medicine_id,))
+        rows = cur_lms.fetchall()
+        
+        if rows:
+            details = [
+                {
+                    "evaluated_on": row[0],
+                    "entry_type": row[1],
+                    "po_number": row[2],
+                    "item_no": row[3],
+                    "description": row[4],
+                    "expiration_date": row[5],
+                    "lot_position": row[6],
+                }
+                for row in rows
+            ]
+            return jsonify({'details': details}), 200
+        else:
+            return jsonify({'error': 'Medicine not found'}), 404
+    except Exception as e:
+        return jsonify({'error': 'An error occurred', 'message': str(e)}), 500
+    finally:
+        if 'cur_lms' in locals():
+            cur_lms.close()
+        if 'conn_lms' in locals():
+            conn_lms.close()
+
+
+
+
+
+@app.route('/signatory_view')
+def signatory_view():
+    return render_template('signatory_view.html')
+
+@app.route('/purchase_order')
+def purchase_order():
+    return render_template('purchase_order.html')
 
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
@@ -1373,66 +1803,6 @@ def update_medicine_request():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/update_medicine_quantity', methods=['POST'])
-def update_medicine_quantity():
-    try:
-        print("Received request to update medicine quantity")  # Log when the request is received
-        data = request.get_json()
-        if not data:
-            print("No JSON data received")  # Log when no data is sent
-            return jsonify({"error": "No data provided"}), 400
-
-        medicines = data.get('medicines', [])
-        if not medicines:
-            print("No medicines data provided")  # Log when data is empty
-            return jsonify({"error": "No medicines data provided"}), 400
-
-        print(f"Received medicines data: {medicines}")  # Log the received data
-
-        with get_db_connection() as conn_lms:
-            with conn_lms.cursor() as cursor_lms:
-                for medicine in medicines:
-                    # Corrected query to use medicine_name
-                    cursor_lms.execute("""
-                        SELECT medicine_id
-                        FROM medicines
-                        WHERE medicine_name = %s
-                    """, (medicine['medicine_name'],))
-                    result = cursor_lms.fetchone()
-
-                    if not result:
-                        print(f"Medicine '{medicine['medicine_name']}' not found in database.")
-                        return jsonify({"error": f"Medicine '{medicine['medicine_name']}' not found."}), 404
-                    
-                    medicine_id = result[0]
-
-                    # Update the stock using the found medicine_id
-                    cursor_lms.execute("""
-                        UPDATE medicines
-                        SET quantity = quantity + %s
-                        WHERE medicine_id = %s
-                    """, (medicine['quantity'], medicine_id))
-
-                conn_lms.commit()
-
-        print("Stock updated successfully")
-        return jsonify({"message": "Stock updated successfully"}), 200
-
-    except Exception as e:
-        print(f"Error updating stock: {e}")  # Log any errors
-        app.logger.error(f"Error updating stock: {e}")
-        return jsonify({"error": "An error occurred while updating stock"}), 500
-    
-# Logout route to clear the session
-@app.route('/logout', methods=['GET'])
-def logout():
-    # Clear the session
-    session.pop('username', None)
-    session.pop('role', None)
-    session.clear()
-    
-    # Redirect to the authentication service (without any query parameters)
-    return redirect(AUTH_SERVICE_URL)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8000)

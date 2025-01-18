@@ -11,57 +11,46 @@ async function fetchRequisition() {
     }
 }
 
-// Render requisitions to the table
-function renderRequisition(requisitions) {
-    const requisitionList = document.getElementById('requisition-list');
-    requisitionList.innerHTML = requisitions.map(requisition => `
-        <tr>
-            <td>${requisition.id}</td>
-            <td>${requisition.date}</td>
-            <td>${requisition.purpose}</td>
-            <td>${requisition.company_name}</td>
-            <td>${requisition.requested_by}</td>
-            <td>${requisition.total}</td>
-            <td>${requisition.status}</td>
-            <td>
-                <button onclick="viewDetails(${requisition.id})">View Details</button>
-                <button onclick="approveRequisition(${requisition.id})">Approve</button>
-                <button onclick="rejectRequisition(${requisition.id})">Reject</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
 
 
 
 
 async function saveRequisition(event) {
-    event.preventDefault();  // Prevent the default form submission behavior
-    
+    event.preventDefault(); // Prevent default form submission behavior
+
     const form = document.getElementById('requisition-form');
-    const requisitionId = document.getElementById('requisition-id').value;  // Get requisition ID
-    
+    const requisitionId = document.getElementById('requisition-id').value;
+
     // Collect requisition data from form fields
     const requisitionData = {
         date: form.date.value,
         purpose: form.purpose.value,
         company_name: form.company_name.value,
-        requested_by: form.requested_by.value, // Include requested_by field
+        requested_by: form.requested_by.value,
         items: getItemsFromForm(form)
     };
 
+    // Check if attachments are provided
+    const files = document.getElementById('attachments').files;
+    if (files.length === 0) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Attachment is required. Please upload at least one file.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return; // Exit the function if no files are attached
+    }
+
     // Create FormData object for attachments
     let formData = new FormData();
-    formData.append('requisition_id', requisitionId);  // Append requisition ID
-    formData.append('requisition_data', JSON.stringify(requisitionData)); // Append requisition data
+    formData.append('requisition_id', requisitionId);
+    formData.append('requisition_data', JSON.stringify(requisitionData));
 
-    const files = document.getElementById('attachments').files;
     for (let i = 0; i < files.length; i++) {
         formData.append('attachments', files[i]);
     }
 
-    // Perform the API requests as described in your code
     try {
         const requisitionResponse = await fetch('/requisition', {
             method: 'POST',
@@ -89,10 +78,20 @@ async function saveRequisition(event) {
                     window.location.reload();
                 });
             } else {
-                throw new Error('Error uploading attachments');
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Error uploading attachments.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
             }
         } else {
-            throw new Error('Failed to save requisition');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to save requisition.',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
         }
     } catch (error) {
         Swal.fire({
@@ -103,6 +102,8 @@ async function saveRequisition(event) {
         });
     }
 }
+
+
 
 
 
@@ -143,46 +144,75 @@ function viewDetails(requisitionId) {
     fetch(`/requisitions_view_details/${requisitionId}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to fetch requisition details');
+                throw new Error(`Failed to fetch requisition details: ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
+            // Validate required data before rendering
+            if (!data.requisition || !data.items) {
+                throw new Error('Incomplete requisition data received from the server.');
+            }
+
+            // Extract requisition details
+            const { id, date, purpose, company_name, requested_by } = data.requisition;
+
+            // Populate details content
             document.getElementById('details-content').innerHTML = `
                 <div class="details-group">
                     <div class="detail-pair">
-                        <p><strong>No.:</strong> ${data.requisition.id}</p>
-                        <p><strong>Date:</strong> ${new Date(data.requisition.date).toLocaleDateString()}</p>
+                        <p><strong>No:</strong> ${id || 'N/A'}</p>
+                        <p><strong>Date:</strong> ${date ? new Date(date).toLocaleDateString() : 'N/A'}</p>
                     </div>
                     <div class="detail-pair">
-                        <p><strong>Purpose:</strong> ${data.requisition.purpose}</p>
-                        <p><strong>Company Name:</strong> ${data.requisition.company_name}</p>
+                        <p><strong>Purpose:</strong> ${purpose || 'N/A'}</p>
+                        <p><strong>Company Name:</strong> ${company_name || 'N/A'}</p>
                     </div>
-                    <p><strong>Requested By:</strong> ${data.requisition.requested_by}</p>
-                    <p><strong>Total:</strong> ₱${data.total}</p>
+                    <div class="requested-by">
+                        <p><strong>Requested By:</strong> ${requested_by || 'N/A'}</p>
+                    </div>
                 </div>
                 <div class="details-group">
+                    <h3>Items Requested:</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Price (₱)</th>
+                                <th>Total (₱)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.items.map(item => `
+                                <tr>
+                                    <td>${item.name || 'N/A'}</td>
+                                    <td>${item.quantity || 0}</td>
+                                    <td>₱${item.price ? item.price : '0.00'}</td>
+                                    <td>₱${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="total-amount">
+                    <p><strong>Total Amount:</strong> ₱${data.total ? data.total : '0.00'}</p>
+                    </div>
+                <div class="details-group">
                     <h3>Attachments:</h3>
-                    ${data.attachments.length > 0 ? 
+                    ${data.attachments && data.attachments.length > 0 ? 
                         `<ul>
                             ${data.attachments.map(attachment => 
                                 `<li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>`
                             ).join('')}
-                        </ul>`
-                        : '<p>No attachments found.</p>'
-                    }
-                </div>
-                <div class="details-group">
-                    <h3>Items Requested:</h3>
-                    <ul>
-                        ${data.items.map(item => `<li>${item.name} - Qty: ${item.quantity}, Price: ₱${item.price}</li>`).join('')}
-                    </ul>
+                        </ul>` : '<p>No attachments found.</p>'}
                 </div>
             `;
             openDetailsModal();
         })
         .catch(error => {
-            Swal.fire('Error', 'Failed to fetch requisition details. Please try again later.', 'error');
+            console.error('Error fetching requisition details:', error);
+            Swal.fire('Error', error.message || 'Failed to fetch requisition details. Please try again later.', 'error');
         });
 }
 
