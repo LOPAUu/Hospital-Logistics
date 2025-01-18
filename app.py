@@ -351,6 +351,8 @@ def delete_user(user_id):
     flash('User deleted successfully!', 'success')
     return redirect(url_for('user_role_management'))
 
+
+
 # Route to fetch all suppliers
 @app.route('/suppliers')
 def admin_supplier():
@@ -361,6 +363,89 @@ def admin_supplier():
     close_db_connection(cur, conn)
     return render_template('admin_supplier.html', suppliers=suppliers)
 
+
+@app.route('/suppliers/<int:supplier_id>', methods=['GET'])
+def get_supplier(supplier_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Fetch supplier details
+        cursor.execute("""
+            SELECT company_name, contact_person, email, phone, address 
+            FROM suppliers 
+            WHERE id = %s
+        """, (supplier_id,))
+        supplier = cursor.fetchone()
+
+        if not supplier:
+            return jsonify({'message': 'Supplier not found'}), 404
+
+        # Fetch supplier items
+        cursor.execute("""
+            SELECT item_name 
+            FROM supplier_items 
+            WHERE supplier_id = %s
+        """, (supplier_id,))
+        items = [row['item_name'] for row in cursor.fetchall()]
+
+        # Add items to the supplier data
+        supplier['items'] = items
+
+        return jsonify(supplier)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+# Route to handle adding suppliers
+@app.route('/add-supplier', methods=['POST'])
+def add_supplier():
+    data = request.json
+    company_name = data.get('company_name')
+    contact_person = data.get('contact_person')
+    email = data.get('email')
+    phone = data.get('phone')
+    address = data.get('address')
+    items = data.get('items', [])  # List of items supplied
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Insert supplier information
+        cursor.execute(
+            """
+            INSERT INTO suppliers (company_name, contact_person, email, phone, address)
+            VALUES (%s, %s, %s, %s, %s) RETURNING id
+            """,
+            (company_name, contact_person, email, phone, address)
+        )
+        supplier_id = cursor.fetchone()[0]
+
+        # Insert supplier items
+        for item in items:
+            cursor.execute(
+                """
+                INSERT INTO supplier_items (supplier_id, item_name)
+                VALUES (%s, %s)
+                """,
+                (supplier_id, item)
+            )
+
+        conn.commit()
+        return jsonify({'message': 'Supplier added successfully!', 'supplier_id': supplier_id}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.route('/suppliers/<int:supplier_id>', methods=['PUT'])
 def update_supplier(supplier_id):
