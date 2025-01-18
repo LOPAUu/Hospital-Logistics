@@ -23,7 +23,8 @@
 
 table {
     width: 100%;
-    border-collapse: collapse; /* Prevents gaps between cells */
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
 th, td {
@@ -47,6 +48,11 @@ h1 {
 #requisition-list tbody tr:hover {
     background-color: #f0f0f0;
 }
+
+.swal2-container {
+    z-index: 2500 !important; /* Ensure it appears above other modals */
+}
+
 
 /* Button styles */
 button {
@@ -135,9 +141,9 @@ table td button i {
 .modal-content {
     background-color: #fefefe;
     margin: 9% auto;
-    padding: 13px;
+    padding: 25px;
     border: 1px solid #888;
-    width: 30%;
+    width: 35%;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
@@ -173,7 +179,38 @@ table td button i {
     box-sizing: border-box;
 }
 
-#date, #search-bar {
+#date {
+    width: 42%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+}
+
+/* Specific Styling for Requisition No. Input */
+#requisition-id {
+    width: 50%; /* Reduce the width */
+    max-width: 250px; /* Limit maximum width */
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+}
+
+#requisition-id:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+
+#search-bar {
     width: 50%;
     margin-bottom: 20px;
 }
@@ -236,28 +273,27 @@ table td button i {
 
 /* Modal Content */
 .requisition-modal-content {
-    background-color: #fff;
+    background-color: #ffffff;
     margin: 2% auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     width: 80%;
-    max-width: 800px;
+    max-width: 900px;
     animation: fadeIn 0.3s ease-in-out;
     position: relative;
-    max-height: 834px; /* Set max height for the modal */
-    overflow: hidden; /* Prevent scrolling for the modal overall */
-    z-index: 100;
+    overflow: hidden;
 }
 
 /* Scrollable Items Section */
 .requisition-items-scrollable {
-    max-height: 300px; /* Set the height for the scrollable section */
-    overflow-y: auto; /* Add vertical scrolling if needed */
-    border: 1px solid #ddd; /* Optional: Add a border for clarity */
-    border-radius: 4px;
+    max-height: 350px;
+    overflow-y: auto;
+    margin-top: 10px;
     padding: 10px;
-    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f9fa;
 }
 
 
@@ -265,7 +301,7 @@ table td button i {
     display: flex;
     justify-content: space-between;
     margin-bottom: -20px;
-    gap: 150px;
+    gap: 365px;
 }
 
 .requisition-id-group,
@@ -298,14 +334,15 @@ table td button i {
 
 /* Close Button */
 .requisition-close-button {
-    font-size: 1.5rem;
-    color: #555;
+    font-size: 1.8rem;
+    color: #333;
     position: absolute;
-    right: 20px;
     top: 15px;
-    cursor: pointer;
-    border: none;
+    right: 20px;
     background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
 }
 
 .requisition-close-button:hover {
@@ -327,22 +364,22 @@ table td button i {
 }
 
 .form-group label {
-    display: block;
-    font-weight: 500;
-    color: #555;
-    margin-bottom: 5px;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 8px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 85%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     font-size: 1rem;
-    color: #333;
-    transition: border-color 0.2s;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
 }
 
 .requisition-total-price-group {
@@ -358,7 +395,7 @@ table td button i {
 .form-group textarea:focus {
     border-color: #007bff;
     outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    background-color: #fff;
 }
 
 /* Items Table */
@@ -374,21 +411,17 @@ table td button i {
 .requisition-items-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.9rem;
 }
 
 .requisition-items-table th,
 .requisition-items-table td {
     padding: 10px;
-    text-align: left;
     border: 1px solid #ddd;
-    font-size: 0.9rem;
-    color: #555;
+    text-align: center;
 }
 
-.requisition-items-table th {
-    background-color: #f7f7f7;
-    font-weight: bold;
-}
 
 .requisition-items-table td input {
     width: 95%;
@@ -399,39 +432,34 @@ table td button i {
 
 /* Buttons */
 
+.btn-add-item,
 .btn-remove-item,
 .requisition-submit-button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 6px;
     transition: background-color 0.3s ease;
 }
 
-.btn-add-item {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.3s ease;
-    margin-left: 670px;
+.requisition-submit-button {
+    background-color: #28a745;
+    color: white;
 }
 
 
-.btn-add-item:hover,
-.btn-remove-item:hover,
 .requisition-submit-button:hover {
-    background-color: #0056b3;
+    background-color: #218838;
 }
+
+.btn-remove-item:hover {
+    background-color: #b02a37;
+}
+
+
 
 .btn-remove-item {
     background-color: #dc3545;
+    color: white;
 }
 
 .btn-remove-item:hover {
@@ -443,13 +471,14 @@ table td button i {
     font-size: 1.2rem;
     font-weight: bold;
     color: #333;
-    margin-top: 20px;
+    margin-top: 30px;
+    display: flex;
 }
 
 /* Form Action */
 .requisition-action-buttons {
     text-align: right;
-    margin-top: 20px;
+    margin-top: 30px;
     margin-bottom: -80px;
 }
 
@@ -488,7 +517,7 @@ table td button i {
 /* Input and Select Styling */
 .requisition-company-group select,
 .requisition-attachments-group input[type="file"] {
-    width: 95%;
+    width: 89%;
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -534,7 +563,7 @@ table td button i {
 }
 
 .details-group h3 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #003366;
     margin-bottom: 10px;
 }
@@ -548,4 +577,9 @@ table td button i {
     font-size: 0.9rem;
     color: #003366;
     margin: 5px 0;
+}
+
+.requested-by {
+    border-bottom: 1px solid #ddd;
+    padding: 10px
 }
