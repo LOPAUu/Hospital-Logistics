@@ -61,9 +61,13 @@ def auth_callback():
 
             flash('Login successful!', 'success')
 
-            # Normalize role comparison (to avoid case sensitivity issues)
-            if session['role'].strip().lower() == 'lms admin':  # Case insensitive check
+            # Redirect based on the user role
+            if session['role'] == 'LMS Admin':
                 return redirect(url_for('admin_dashboard'))
+            elif session['role'] == 'LMS Signatory':
+                return redirect(url_for('signatory_dashboard'))
+            elif session['role'] == 'LMS Pharmacy':
+                return redirect(url_for('pharmacy_dashboard'))
             else:
                 flash('Role not authorized', 'danger')
                 return redirect(url_for('login'))
@@ -142,7 +146,6 @@ def upload_attachments():
         return jsonify({"message": "Attachments uploaded successfully!", "attachments": attachment_paths}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 500
-    
     
 @app.route('/user_role_management')
 def user_role_management():
@@ -348,101 +351,6 @@ def delete_user(user_id):
     flash('User deleted successfully!', 'success')
     return redirect(url_for('user_role_management'))
 
-
-
-# Route to fetch all suppliers
-@app.route('/suppliers')
-def admin_supplier():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM suppliers")
-    suppliers = cur.fetchall()
-    close_db_connection(cur, conn)
-    return render_template('admin_supplier.html', suppliers=suppliers)
-
-
-@app.route('/suppliers/<int:supplier_id>', methods=['GET'])
-def get_supplier(supplier_id):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Fetch supplier details
-        cursor.execute("""
-            SELECT company_name, contact_person, email, phone, address 
-            FROM suppliers 
-            WHERE id = %s
-        """, (supplier_id,))
-        supplier = cursor.fetchone()
-
-        if not supplier:
-            return jsonify({'message': 'Supplier not found'}), 404
-
-        # Fetch supplier items
-        cursor.execute("""
-            SELECT item_name 
-            FROM supplier_items 
-            WHERE supplier_id = %s
-        """, (supplier_id,))
-        items = [row['item_name'] for row in cursor.fetchall()]
-
-        # Add items to the supplier data
-        supplier['items'] = items
-
-        return jsonify(supplier)
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-# Route to handle adding suppliers
-@app.route('/add-supplier', methods=['POST'])
-def add_supplier():
-    data = request.json
-    company_name = data.get('company_name')
-    contact_person = data.get('contact_person')
-    email = data.get('email')
-    phone = data.get('phone')
-    address = data.get('address')
-    items = data.get('items', [])  # List of items supplied
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    try:
-        # Insert supplier information
-        cursor.execute(
-            """
-            INSERT INTO suppliers (company_name, contact_person, email, phone, address)
-            VALUES (%s, %s, %s, %s, %s) RETURNING id
-            """,
-            (company_name, contact_person, email, phone, address)
-        )
-        supplier_id = cursor.fetchone()[0]
-
-        # Insert supplier items
-        for item in items:
-            cursor.execute(
-                """
-                INSERT INTO supplier_items (supplier_id, item_name)
-                VALUES (%s, %s)
-                """,
-                (supplier_id, item)
-            )
-
-        conn.commit()
-        return jsonify({'message': 'Supplier added successfully!', 'supplier_id': supplier_id}), 201
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
 
 @app.route('/suppliers/<int:supplier_id>', methods=['PUT'])
 def update_supplier(supplier_id):
@@ -1306,8 +1214,13 @@ def save_sku_details():
 
 
 
+@app.route('/signatory_view')
+def signatory_view():
+    return render_template('signatory_view.html')
 
-
+@app.route('/purchase_order')
+def purchase_order():
+    return render_template('purchase_order.html')
 
 @app.route('/inventory')
 def inventory():
@@ -1442,7 +1355,7 @@ def send_to_billing():
             })
 
         # Send aggregated data to FMS
-        fms_api_url = "https://fms-w1la.onrender.com/api/lms_purchase"
+        fms_api_url = "https://finance-management-system-eval.onrender.com/api/lms_purchase"
         for data in purchase_data.values():
             for medicine in data['medicines']:
                 purchase_payload = {
@@ -1485,7 +1398,7 @@ def get_customer_details(customer_id):
 
         # Query to fetch customer details, including date_of_birth
         cur_lms.execute("""
-            SELECT customer_id, full_name, contact_number, date_of_birth
+            SELECT customer_id, full_name, contact_number, date_of_birth, senior_or_pwd
             FROM pharmacy_customers
             WHERE customer_id = %s
         """, (customer_id,))
@@ -1499,7 +1412,8 @@ def get_customer_details(customer_id):
             "customer_id": customer[0],
             "full_name": customer[1],
             "contact_number": customer[2],
-            "date_of_birth": customer[3] 
+            "date_of_birth": customer[3],
+            "senior_or_pwd": customer[4] 
         }
 
         cur_lms.close()
@@ -1510,7 +1424,6 @@ def get_customer_details(customer_id):
     except Exception as e:
         print(f"Error retrieving customer details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
-
 
 @app.route('/api/medicines/<int:medicine_id>', methods=['GET'])
 def get_medicine_details(medicine_id):
@@ -1539,57 +1452,6 @@ def get_medicine_details(medicine_id):
     except Exception as e:
         print(f"Error retrieving medicine details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
-    
-
-@app.route('/medicine/<int:medicine_id>', methods=['GET'])
-def fetch_medicine_details_route(medicine_id):
-    try:
-        conn_lms = get_db_connection()
-        cur_lms = conn_lms.cursor()
-        
-        query = """
-        SELECT evaluated_on, entry_type, po_number, item_no, description, expiration_date, lot_position
-        FROM medicines
-        WHERE id = %s
-        """
-        cur_lms.execute(query, (medicine_id,))
-        rows = cur_lms.fetchall()
-        
-        if rows:
-            details = [
-                {
-                    "evaluated_on": row[0],
-                    "entry_type": row[1],
-                    "po_number": row[2],
-                    "item_no": row[3],
-                    "description": row[4],
-                    "expiration_date": row[5],
-                    "lot_position": row[6],
-                }
-                for row in rows
-            ]
-            return jsonify({'details': details}), 200
-        else:
-            return jsonify({'error': 'Medicine not found'}), 404
-    except Exception as e:
-        return jsonify({'error': 'An error occurred', 'message': str(e)}), 500
-    finally:
-        if 'cur_lms' in locals():
-            cur_lms.close()
-        if 'conn_lms' in locals():
-            conn_lms.close()
-
-
-
-
-
-@app.route('/signatory_view')
-def signatory_view():
-    return render_template('signatory_view.html')
-
-@app.route('/purchase_order')
-def purchase_order():
-    return render_template('purchase_order.html')
 
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
@@ -1803,6 +1665,66 @@ def update_medicine_request():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/update_medicine_quantity', methods=['POST'])
+def update_medicine_quantity():
+    try:
+        print("Received request to update medicine quantity")  # Log when the request is received
+        data = request.get_json()
+        if not data:
+            print("No JSON data received")  # Log when no data is sent
+            return jsonify({"error": "No data provided"}), 400
+
+        medicines = data.get('medicines', [])
+        if not medicines:
+            print("No medicines data provided")  # Log when data is empty
+            return jsonify({"error": "No medicines data provided"}), 400
+
+        print(f"Received medicines data: {medicines}")  # Log the received data
+
+        with get_db_connection() as conn_lms:
+            with conn_lms.cursor() as cursor_lms:
+                for medicine in medicines:
+                    # Corrected query to use medicine_name
+                    cursor_lms.execute("""
+                        SELECT medicine_id
+                        FROM medicines
+                        WHERE medicine_name = %s
+                    """, (medicine['medicine_name'],))
+                    result = cursor_lms.fetchone()
+
+                    if not result:
+                        print(f"Medicine '{medicine['medicine_name']}' not found in database.")
+                        return jsonify({"error": f"Medicine '{medicine['medicine_name']}' not found."}), 404
+                    
+                    medicine_id = result[0]
+
+                    # Update the stock using the found medicine_id
+                    cursor_lms.execute("""
+                        UPDATE medicines
+                        SET quantity = quantity + %s
+                        WHERE medicine_id = %s
+                    """, (medicine['quantity'], medicine_id))
+
+                conn_lms.commit()
+
+        print("Stock updated successfully")
+        return jsonify({"message": "Stock updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Error updating stock: {e}")  # Log any errors
+        app.logger.error(f"Error updating stock: {e}")
+        return jsonify({"error": "An error occurred while updating stock"}), 500
+    
+# Logout route to clear the session
+@app.route('/logout', methods=['GET'])
+def logout():
+    # Clear the session
+    session.pop('username', None)
+    session.pop('role', None)
+    session.clear()
+    
+    # Redirect to the authentication service (without any query parameters)
+    return redirect(AUTH_SERVICE_URL)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8000)
