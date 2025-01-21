@@ -132,24 +132,6 @@ CREATE TABLE sku_details (
 
 
 
--- Create the medicine_requests table (if not already created)
-CREATE TABLE medicine_requests (
-    medicine_request_id SERIAL PRIMARY KEY,
-    request_status VARCHAR(50) NOT NULL,
-    medicine_name INT NOT NULL,
-    quantity INT NOT NULL,
-    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    approved_by VARCHAR(100),
-    approval_date TIMESTAMP
-);
-
--- Insert sample data
-INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
-VALUES 
-    ('Pending', 101, 5, '2024-12-01 10:00:00', NULL, NULL),
-    ('Approved', 102, 10, '2024-11-30 09:00:00', 'Dr. Smith', '2024-11-30 11:00:00'),
-    ('Rejected', 103, 2, '2024-11-29 08:30:00', 'Dr. Johnson', '2024-11-29 12:30:00'),
-    ('Pending', 104, 7, '2024-12-01 11:30:00', NULL, NULL);
 
 
 --
@@ -171,6 +153,7 @@ CREATE TABLE medicines (
     expiration_date DATE,                   -- Expiry date
     lot_position VARCHAR(50)                -- Shelf or storage location (e.g., A1, B2)
 );
+
 
 -- Trigger function to automatically update date 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -214,6 +197,25 @@ VALUES
     ('MED022', 'Tamsulosin', 50, 'Active', 35.00, 50.00, 'Prostate Health', 'pcs', 'PO12366', 'Improves urinary flow', '2025-01-31', 'D4'),
     ('MED023', 'Levocetirizine', 80, 'Active', 12.00, 18.00, 'Antihistamine', 'pcs', 'PO12367', 'Used for allergy relief', '2025-06-30', 'E4'),
     ('MED024', 'Lidocaine', 70, 'Active', 30.00, 40.00, 'Local Anesthetic', 'pcs', 'PO12368', 'Relieves pain locally', '2025-08-31', 'F4');
+
+-- Create the medicine_requests table (if not already created)
+CREATE TABLE medicine_requests (
+    medicine_request_id SERIAL PRIMARY KEY,
+    request_status VARCHAR(50) NOT NULL,
+    medicine_name INT NOT NULL,
+    quantity INT NOT NULL,
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved_by VARCHAR(100),
+    approval_date TIMESTAMP
+);
+
+-- Insert sample data
+INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
+VALUES 
+    ('Pending', 101, 5, '2024-12-01 10:00:00', NULL, NULL),
+    ('Approved', 102, 10, '2024-11-30 09:00:00', 'Dr. Smith', '2024-11-30 11:00:00'),
+    ('Rejected', 103, 2, '2024-11-29 08:30:00', 'Dr. Johnson', '2024-11-29 12:30:00'),
+    ('Pending', 104, 7, '2024-12-01 11:30:00', NULL, NULL);
 
 CREATE TABLE pharmacy_customers (
     customer_id SERIAL PRIMARY KEY,        -- Unique ID for each customer
