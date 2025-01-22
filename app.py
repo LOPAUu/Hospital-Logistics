@@ -13,10 +13,10 @@ app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
 AUTH_SERVICE_URL = "https://evaluation-deployed-authentication.onrender.com"
 
 # PostgreSQL configurations
-app.config['POSTGRES_HOST'] = 'dpg-ctig2pogph6c7386aab0-a.oregon-postgres.render.com'
+app.config['POSTGRES_HOST'] = 'dpg-cu760o23esus73fgj220-a.oregon-postgres.render.com'
 app.config['POSTGRES_USER'] = 'lmsdb_user'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = '3LvON9SVyQNiM4YZ1ZwZTFi5sqxHjja7'  # Change to your PostgreSQL password
-app.config['POSTGRES_DB'] = 'lmsdb_ul3w_cy3t'  # Database name
+app.config['POSTGRES_PASSWORD'] = 'OzwMwTTuPx7LXjZyDsJeIiGa1T5W2qjM'  # Change to your PostgreSQL password
+app.config['POSTGRES_DB'] = 'lmsdb_ul3w_cy3t_h2dm'  # Database name
 app.config['POSTGRES_PORT'] = '5432'  # Database name
 
 # Configure upload folder and allowed file types
