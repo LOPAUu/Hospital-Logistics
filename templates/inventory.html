@@ -32,70 +32,74 @@
                     <option value="Inactive">Inactive</option>
                 </select>
                 <input type="text" id="search-category" placeholder="Search by Category">
+                <div class="report-container">
+                    <button id="generateReportBtn">Generate Report</button>
+                </div>                
             </div>
             
             
+            <!-- Inventory Table -->
             <table class="inventory-table">
                 <thead>
-                    <tr>
-                        <th>SKU</th>
-                        <th>Item Name</th>
-                        <th>Quantity</th>
-                        <th>Status</th>
-                        <th>Unit Cost</th>
-                        <th>Unit Price</th>
-                        <th>Category</th>
-                        <th>Base Unit of Measure</th>
-                        <th>Reorder Level</th>
-                        <th>Actions</th>
-                    </tr>
+                <tr>
+                    <th>SKU</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Unit Cost</th>
+                    <th>Unit Price</th>
+                    <th>Category</th>
+                    <th>Base Unit of Measure</th>
+                    <th>Reorder Level</th>
+                    <th>Actions</th>
+                </tr>
                 </thead>
                 <tbody id="inventory-table-body">
-                    {% for medicine in medicines %}
-                        <tr>
-                            <td>{{ medicine.sku }}</td>
-                            <td>{{ medicine.medicine_name }}</td>
-                            <td>{{ medicine.quantity }}</td>
-                            <td>{{ medicine.status }}</td>
-                            <td>{{ medicine.unit_cost }}</td>
-                            <td>{{ medicine.unit_price }}</td>
-                            <td>{{ medicine.category }}</td>
-                            <td>{{ medicine.base_unit }}</td>
-                            <td>{{ medicine.quantity | int * 0.2 | round(0) }}</td> 
-                            <td>
-                                <button class="action-btn view" onclick="viewItem({{ medicine.id }})"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn edit" onclick="editItem({{ medicine.id }})"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn delete" onclick="deleteItem({{ medicine.id }})"><i class="fas fa-trash-alt"></i></button>
-                            </td>                            
-                        </tr>
-                    {% endfor %}
+                {% for medicine in medicines %}
+                    <tr>
+                    <td>{{ medicine.sku }}</td>
+                    <td>{{ medicine.medicine_name }}</td>
+                    <td>{{ medicine.quantity }}</td>
+                    <td>{{ medicine.status }}</td>
+                    <td>{{ medicine.unit_cost }}</td>
+                    <td>{{ medicine.unit_price }}</td>
+                    <td>{{ medicine.category }}</td>
+                    <td>{{ medicine.base_unit }}</td>
+                    <td>{{ medicine.quantity | int * 0.2 | round(0) }}</td> 
+                    <td>
+                        <button class="action-btn view" onclick="viewItem({{ medicine.id }})"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn edit" onclick="editItem({{ medicine.id }})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete" onclick="deleteItem({{ medicine.id }})"><i class="fas fa-trash-alt"></i></button>
+                    </td>                            
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
-        </div>
 
         <!-- Modal for View Item Details -->
-        <div id="view-modal" class="modal">
+        <div id="itemModal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeViewModal()">&times;</span>
-                <h3>Item Details</h3>
-                <table class="details-table">
-                    <thead>
-                        <tr>
-                            <th>Evaluated On</th>
-                            <th>Entry Type</th>
-                            <th>PO Number</th>
-                            <th>Item No.</th>
-                            <th>Description</th>
-                            <th>Expiration Date</th>
-                            <th>Lot Position</th>
-                        </tr>
-                    </thead>
-                    <tbody id="view-details-table-body">
-                        <!-- Details will be dynamically added here -->
-                    </tbody>
-                </table>
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Item Details</h3>
+            <table class="details-table">
+                <thead>
+                <tr>
+                    <th>Evaluated On</th>
+                    <th>Entry Type</th>
+                    <th>PO Number</th>
+                    <th>Item No.</th>
+                    <th>Description</th>
+                    <th>Expiration Date</th>
+                    <th>Lot Position</th>
+                </tr>
+                </thead>
+                <tbody id="view-details-table-body">
+                <!-- Details will be dynamically added here -->
+                </tbody>
+            </table>
             </div>
         </div>
+
 
         <!-- Modal for Edit Item Details -->
         <div id="edit-modal" class="modal">
