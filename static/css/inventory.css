@@ -58,6 +58,7 @@ h2 {
 
 /* Action buttons */
 .action-btn {
+    pointer-events: auto;
     padding: 6px 12px;
     margin: 0 2px;
     font-size: 12px;

@@ -15,7 +15,7 @@ AUTH_SERVICE_URL = "https://evaluation-deployed-authentication.onrender.com"
 # PostgreSQL configurations
 app.config['POSTGRES_HOST'] = 'dpg-cu760o23esus73fgj220-a.oregon-postgres.render.com'
 app.config['POSTGRES_USER'] = 'lmsdb_user'  # Change to your PostgreSQL username
-app.config['POSTGRES_PASSWORD'] = ' OzwMwTTuPx7LXjZyDsJeIiGa1T5W2qjM'  # Change to your PostgreSQL password
+app.config['POSTGRES_PASSWORD'] = 'OzwMwTTuPx7LXjZyDsJeIiGa1T5W2qjM'  # Change to your PostgreSQL password
 app.config['POSTGRES_DB'] = 'lmsdb_ul3w_cy3t_h2dm'  # Database name
 app.config['POSTGRES_PORT'] = '5432'  # Database name
 
@@ -1282,15 +1282,15 @@ def save_sku_details():
     try:
         for sku in data['skus']:
             cursor.execute("""
-                INSERT INTO sku_details (item_name, quantity_ordered, sku, quantity, expiration)
+                INSERT INTO sku_details (item_name, quantity_ordered, sku, unit_quantity, expiration)
                 VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (sku) DO UPDATE 
-                SET quantity = EXCLUDED.quantity,
+                SET unit_quantity = EXCLUDED.unit_quantity,
                     expiration = EXCLUDED.expiration,
                     updated_at = CURRENT_TIMESTAMP
             """, (
                 sku['item_name'], sku['ordered_quantity'], sku['sku'],
-                sku['quantity'], sku['expiration']
+                sku['unit_quantity'], sku['expiration']
             ))
 
         conn.commit()
@@ -1303,6 +1303,7 @@ def save_sku_details():
     finally:
         cursor.close()
         conn.close()
+
 
 
 

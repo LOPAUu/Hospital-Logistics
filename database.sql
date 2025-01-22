@@ -48,10 +48,18 @@ CREATE TABLE requisitions (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     purpose VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    requested_by VARCHAR(255) NOT NULL,
+    total NUMERIC(10, 2) DEFAULT 0.0, -- Default to 0.0 if needed
+    status VARCHAR(50) DEFAULT 'Pending', -- Default status
     signatory1_approved BOOLEAN DEFAULT FALSE,
     signatory2_approved BOOLEAN DEFAULT FALSE,
-    signatory3_approved BOOLEAN DEFAULT FALSE
+    signatory3_approved BOOLEAN DEFAULT FALSE,
+    supplier_id INT REFERENCES suppliers(id) -- Foreign key to suppliers
 );
+
+
+
 
 -- Table for requisition items with PostgreSQL equivalent to MySQL's ON DELETE CASCADE
 CREATE TABLE requisition_items (
@@ -66,6 +74,7 @@ CREATE TABLE requisition_items (
 ALTER TABLE requisitions
 ADD COLUMN supplier_id INT REFERENCES suppliers(id);
 
+
 CREATE TABLE attachments (
     id SERIAL PRIMARY KEY,
     requisition_id INTEGER NOT NULL REFERENCES requisitions(id) ON DELETE CASCADE,
@@ -74,11 +83,17 @@ CREATE TABLE attachments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
 -- Create 'attachments' tableALTER TABLE attachments
 ALTER TABLE attachments
 ADD CONSTRAINT fk_requisition_id
 FOREIGN KEY (requisition_id)
 REFERENCES requisitions(id);
+
+CREATE INDEX idx_supplier_id ON requisitions(supplier_id);
+CREATE INDEX idx_requisition_id ON requisition_items(requisition_id);
+CREATE INDEX idx_requisition_id_attachments ON attachments(requisition_id);
+
 
 -- Create purchase_orders table
 CREATE TABLE purchase_orders (
@@ -124,18 +139,12 @@ CREATE TABLE sku_details (
     item_name VARCHAR(255) NOT NULL,
     quantity_ordered INT NOT NULL,
     sku VARCHAR(255) NOT NULL UNIQUE,
-    quantity INT NOT NULL DEFAULT 0,
+    unit_quantity INT NOT NULL DEFAULT 0,
     expiration DATE NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
-
-
-
-
---
-select * from medicines
 CREATE TABLE medicines (
     medicine_id SERIAL PRIMARY KEY,         -- Unique ID for each medicine
     sku VARCHAR(50) UNIQUE NOT NULL,        -- Stock Keeping Unit for tracking

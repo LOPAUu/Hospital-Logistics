@@ -655,25 +655,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const skuModal = document.getElementById("skuModal");
         const closeSkuModal = skuModal.querySelector(".close");
         const skuTableBody = document.getElementById("skuTableBody");
-
-         // Function to close the SKU modal
+    
+        // Function to close the SKU modal
         const closeSkuModalFunction = () => {
             skuModal.style.display = "none";
         };
-
+    
         // Close modal on click of the close button
         closeSkuModal.addEventListener("click", closeSkuModalFunction);
-
+    
         // Close modal if the user clicks outside the modal content
         window.addEventListener("click", (event) => {
             if (event.target === skuModal) {
                 closeSkuModalFunction();
             }
         });
-
+    
         console.log('Opening SKU modal for PO ID:', purchaseOrderId);
         skuTableBody.innerHTML = ''; // Clear previous data
-
+    
         // Fetch SKU data for the specific purchase_order_id
         fetch(`/get-sku-details/${purchaseOrderId}`)
             .then(response => response.json())
@@ -682,7 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.error('No items found:', items.error);
                     return;
                 }
-
+    
                 items.forEach(item => {
                     if (item.item_name && item.ordered_quantity !== undefined) {
                         addItemRow(item.item_name, item.ordered_quantity); // Ensure both fields are available
@@ -694,12 +694,12 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(error => {
                 console.error('Error fetching SKU details:', error);
             });
-
+    
         // Hide other modals and show the SKU modal
         evaluateModal.style.display = 'none';
         skuModal.style.display = 'block';
     }
-
+    
     // Attach event listener to the SKU button and pass purchase_order_id when clicked
     document.querySelectorAll('.skuBtn').forEach(button => {
         button.addEventListener('click', (event) => {
@@ -708,35 +708,33 @@ document.addEventListener("DOMContentLoaded", () => {
             openSkuModal(purchaseOrderId); // Pass the PO ID to open the SKU modal for specific items
         });
     });
-
-
+    
     // Function to add a new item row
     function addItemRow(itemName, orderedQuantity) {
         if (!itemName || orderedQuantity === undefined) {
             console.error('Item Name or Quantity is missing');
             return; // Prevent adding a row with missing data
         }
-
+    
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${itemName}</td>
             <td>${orderedQuantity}</td>
             <td><input type="text" class="sku-input" placeholder="Enter SKU" /></td>
-            <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
+            <td><input type="number" class="unit_quantity-input" placeholder="Enter Quantity" /></td>
             <td><input type="date" class="expiration-input" /></td>
             <td>
                 <button class="addSkuBtn">Add SKU</button>
             </td>
         `;
         document.getElementById('skuTableBody').appendChild(row);
-
+    
         // Add event listener for the add SKU button
         row.querySelector('.addSkuBtn').addEventListener('click', () => {
             addSkuRow(row);
         });
     }
-
-
+    
     // Function to add a new SKU row below an existing item row
     function addSkuRow(itemRow) {
         const row = document.createElement('tr');
@@ -744,19 +742,18 @@ document.addEventListener("DOMContentLoaded", () => {
             <td></td>
             <td></td>
             <td><input type="text" class="sku-input" placeholder="Enter SKU" /></td>
-            <td><input type="number" class="quantity-input" placeholder="Enter Quantity" /></td>
+            <td><input type="number" class="unit_quantity-input" placeholder="Enter Quantity" /></td>
             <td><input type="date" class="expiration-input" /></td>
             <td><button class="deleteRowBtn">Delete</button></td>
         `;
         itemRow.insertAdjacentElement('afterend', row);
-
+    
         // Add event listener for the delete button
         row.querySelector('.deleteRowBtn').addEventListener('click', () => {
             row.remove();
         });
     }
-
-
+    
     // Attach event listener to the SKU button
     document.querySelectorAll('.skuBtn').forEach(button => {
         button.addEventListener('click', (event) => {
@@ -764,7 +761,7 @@ document.addEventListener("DOMContentLoaded", () => {
             openSkuModal(); // Open the SKU modal without purchaseOrderId
         });
     });
-
+    
     // Save SKU functionality
     document.getElementById('saveSkuBtn').addEventListener('click', () => {
         const rows = document.querySelectorAll('#skuTableBody tr');
@@ -772,15 +769,15 @@ document.addEventListener("DOMContentLoaded", () => {
             item_name: row.cells[0]?.textContent.trim(),
             ordered_quantity: parseInt(row.cells[1]?.textContent.trim()) || 0,
             sku: row.querySelector('.sku-input')?.value.trim(),
-            quantity: parseInt(row.querySelector('.quantity-input')?.value.trim()) || 0,
+            unit_quantity: parseInt(row.querySelector('.unit_quantity-input')?.value.trim()) || 0,
             expiration: row.querySelector('.expiration-input')?.value
-        })).filter(sku => sku.item_name && sku.sku && sku.quantity > 0 && sku.expiration); // Filter out invalid rows
-
+        })).filter(sku => sku.item_name && sku.sku && sku.unit_quantity > 0 && sku.expiration); // Filter out invalid rows
+    
         if (skuData.length === 0) {
             console.error('No valid SKU data to save.');
             return;
         }
-
+    
         // Send the SKU data to the backend
         fetch('/save-sku-details', {
             method: 'POST',
@@ -801,5 +798,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(error => {
                 console.error('Error:', error);
             });
-    }); 
+    });
+    
 });
