@@ -1583,7 +1583,7 @@ def fetch_medicine_details_route(medicine_id):
 
 
 
-
+    
 @app.route('/signatory_view')
 def signatory_view():
     return render_template('signatory_view.html')
