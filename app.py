@@ -80,6 +80,25 @@ def auth_callback():
 def admin_dashboard():
     return render_template('admin_dashboard.html')
 
+user_profile = {
+    "employee_id": "20019",
+    "full_name": "Maverick Ko",
+    "username": "maverickko",
+    "role": "Admin",
+    "email": "maverickko@gmail.com",
+    "phone": "092905083822",
+    "date_added": "2023-01-01"
+}
+
+@app.context_processor
+def inject_user():
+    return dict(username=user_profile['username'], role=user_profile['role'])
+
+@app.route('/profile')
+def profile():
+    return render_template('profile.html', **user_profile)
+
+
 # Routes for each user type dashboard
 @app.route('/signatory_dashboard')
 def signatory_dashboard():

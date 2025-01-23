@@ -67,7 +67,7 @@ button:hover {
 .view-content-modal {
     background-color: white;
     padding: 30px;
-    margin: 200px auto;
+    margin: 150px auto;
     max-width: 600px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -77,8 +77,32 @@ button:hover {
 /* Heading for Items Supplied in Modal */
 .view-content-modal h3 {
     text-align: center;  /* Center-align the text */
-    margin-top: 50px;    /* Add space above */
+    margin-top: 25px;    /* Add space above */
 }
+
+/* Scrollable Table Container */
+.items-supplied-container {
+    max-height: 200px; /* Set maximum height for the table */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 5px; /* Optional: Add padding */
+    border-radius: 5px; /* Optional: Rounded corners */
+    margin-top: 10px; /* Optional: Space above the container */
+}
+
+/* Ensure the table inside the container takes full width */
+.items-supplied-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Style the table headers and cells */
+.items-supplied-container th,
+.items-supplied-container td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
 
 /* Supplier Details - Company Name (and similar fields) */
 #view-company-name,
@@ -88,13 +112,6 @@ button:hover {
     font-weight: normal;  /* Remove bold styling */
 }
 
-/* Supplier Logo */
-#supplier-logo {
-    max-width: 150px;
-    margin: 0 auto 20px;
-    display: block;
-    border-radius: 50%;
-}
 
 .view-button {
     background-color: #388E3C;

@@ -801,3 +801,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
 });
+
+
+function searchSuppliers() {
+    const searchBar = document.getElementById("search-bar").value.toLowerCase();
+    const table = document.querySelector("table tbody");
+    const rows = table.querySelectorAll("tr");
+
+    rows.forEach(row => {
+        const columns = row.querySelectorAll("td");
+        const rowText = Array.from(columns).map(col => col.textContent.toLowerCase()).join(" ");
+        
+        // Toggle row visibility based on match
+        if (rowText.includes(searchBar)) {
+            row.style.display = ""; // Show row
+        } else {
+            row.style.display = "none"; // Hide row
+        }
+    });
+}
