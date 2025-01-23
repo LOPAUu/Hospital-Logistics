@@ -6,6 +6,7 @@ import time
 import os
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
+import traceback
 
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
@@ -1193,53 +1194,71 @@ def get_order_items(order_id):
 
 @app.route('/submit-evaluation', methods=['POST'])
 def submit_evaluation():
-    data = request.get_json()  # Get the JSON payload from the frontend
-    print("Received data:", data)  # Print the data to check the structure
+    data = request.get_json()
+    print("Received data:", data)
 
-    # Check for the existence of purchase_order_id and items
     if not data or not data.get('purchase_order_id') or not data.get('items'):
         return jsonify({'error': 'Invalid data'}), 400
 
     purchase_order_id = data['purchase_order_id']
-    print(f"Purchase Order ID: {purchase_order_id}")  # Log to verify
-
     items = data['items']
-    print(f"Items: {items}")  # Log the items to verify
 
     try:
-        # Connect to the database
         conn = get_db_connection()
         cur = conn.cursor()
 
-        # Update the evaluation data for each item
         for item in items:
             order_detail_id = item['order_detail_id']
             received = item['received']
             lost = item['lost']
             damaged = item['damaged']
-            remaining_quantity = item['remainingQuantity']  # Get remaining quantity from the item (may be unchanged)
+            remaining_quantity = item['remainingQuantity']
 
-            # Update the order item evaluation data in the database
+            # Update the order_items table
             cur.execute("""
                 UPDATE order_items
                 SET received = %s, lost = %s, damaged = %s, remaining_quantity = COALESCE(%s, remaining_quantity)
                 WHERE id = %s AND purchase_order_id = %s
             """, (received, lost, damaged, remaining_quantity, order_detail_id, purchase_order_id))
 
-        # Commit the transaction
-        conn.commit()
+            # Fetch the medicine_id and medicine_name associated with the order_item
+            cur.execute("SELECT medicine_id, name FROM order_items WHERE id = %s", (order_detail_id,))
+            medicine_data = cur.fetchone()
+            medicine_id = medicine_data[0] if medicine_data else None
+            medicine_name = medicine_data[1] if medicine_data else f"Unknown-{order_detail_id}"
 
-        # Close the cursor and connection
+            # Generate SKU or use the provided SKU
+            sku = item.get('sku', f"SKU-{order_detail_id}")
+
+            # Check if the medicine already exists
+            if medicine_id:
+                # Update the existing medicine's quantity
+                cur.execute("""
+                    UPDATE medicines
+                    SET quantity = quantity + %s
+                    WHERE medicine_id = %s
+                """, (received, medicine_id))
+            else:
+                # Insert a new medicine into the medicines table
+                cur.execute("""
+                    INSERT INTO medicines (sku, medicine_name, quantity, status, unit_cost, unit_price, category)
+                    VALUES (%s, %s, %s, 'Active', 0, 0, 'Uncategorized')
+                """, (sku, medicine_name, received))
+
+        conn.commit()
         cur.close()
         conn.close()
 
-        return jsonify({'message': 'Evaluation submitted successfully'}), 200
+        return jsonify({'message': 'Evaluation submitted and medicines updated successfully'}), 200
 
     except Exception as e:
-        # Rollback in case of error
         if conn:
             conn.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+
+
 
 
 
@@ -1349,6 +1368,62 @@ def inventory():
 
     # Pass medicines_list to the template
     return render_template('inventory.html', medicines=medicines_list)
+
+
+@app.route('/update-inventory', methods=['POST'])
+def update_inventory():
+    data = request.get_json()  # Get JSON payload from the frontend
+    print("Received inventory update data:", data)
+
+    # Validate input
+    if not data or not data.get('items'):
+        return jsonify({'error': 'Invalid data'}), 400
+
+    items = data['items']
+
+    try:
+        # Connect to the database
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        for item in items:
+            medicine_id = item['medicine_id']
+            received_quantity = item['received']
+
+            # Check if the medicine already exists in the inventory
+            cur.execute("SELECT quantity FROM medicines WHERE medicine_id = %s", (medicine_id,))
+            result = cur.fetchone()
+
+            if result:
+                # Update existing quantity
+                cur.execute("""
+                    UPDATE medicines
+                    SET quantity = quantity + %s, updated_at = NOW()
+                    WHERE medicine_id = %s
+                """, (received_quantity, medicine_id))
+            else:
+                # Insert as a new record if it doesn't exist
+                cur.execute("""
+                    INSERT INTO medicines (medicine_id, quantity, created_at, updated_at)
+                    VALUES (%s, %s, NOW(), NOW())
+                """, (medicine_id, received_quantity))
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close connection
+        cur.close()
+        conn.close()
+
+        return jsonify({'message': 'Inventory updated successfully'}), 200
+
+    except Exception as e:
+        # Rollback on error
+        if conn:
+            conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
+    
 
 @app.route('/pos')
 def pos():

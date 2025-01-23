@@ -124,6 +124,12 @@ CREATE TABLE order_items (
 UPDATE order_items oi
 SET remaining_quantity = oi.quantity - (oi.received + oi.lost + oi.damaged);
 
+UPDATE medicines
+SET quantity = medicines.quantity + oi.remaining_quantity
+FROM order_items oi
+WHERE oi.medicine_id = medicines.medicine_id;
+
+
 CREATE TABLE evaluations (
     id SERIAL PRIMARY KEY,
     purchase_order_id INT NOT NULL,
@@ -162,6 +168,24 @@ CREATE TABLE medicines (
     expiration_date DATE,                   -- Expiry date
     lot_position VARCHAR(50)                -- Shelf or storage location (e.g., A1, B2)
 );
+
+ALTER TABLE order_items
+ADD COLUMN medicine_id INT;
+
+-- Create foreign key reference to medicines table
+ALTER TABLE order_items
+ADD CONSTRAINT fk_medicine_id FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id);
+
+SELECT * 
+FROM order_items oi 
+LEFT JOIN medicines m ON oi.medicine_id = m.medicine_id 
+WHERE m.medicine_id IS NULL;
+
+ALTER TABLE medicines ADD CONSTRAINT medicines_sku_key UNIQUE (sku);
+
+UPDATE medicines
+SET quantity = quantity + <remaining_quantity>
+WHERE medicine_id = <medicine_id>;
 
 
 -- Trigger function to automatically update date 
@@ -247,4 +271,4 @@ CREATE TABLE medicine_bought (
 );
 
 select * from pharmacy_customers;
-select * from medicine_bought;
+select * from medicine_bought;          
