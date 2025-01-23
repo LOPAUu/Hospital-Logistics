@@ -7,6 +7,7 @@ import os
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 import traceback
+import requests
 
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
@@ -93,6 +94,20 @@ def pharmacy_dashboard():
 def close_db_connection(cursor, conn):
     cursor.close()
     conn.close()
+
+
+
+
+@app.route('/care-plan-request/details/<request_id>', methods=['GET'])
+def get_care_plan_request(request_id):
+    api_url = f"https://syncore-pms.online/api/care-plan-request/details/{request_id}"
+    try:
+        response = requests.get(api_url)
+        return jsonify(response.json()), response.status_code
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    
 
 # Ensure the upload folder exists
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -1677,7 +1692,7 @@ def medicine_request():
         if request.method == 'GET':
             # Fetch all medicine requests
             cursor.execute("""
-                SELECT medicine_request_id, request_status, medicine_name, quantity, 
+                SELECT medicine_request_id, care_plan_request_id, request_status, medicine_name, quantity, 
                        request_date, approved_by, approval_date 
                 FROM medicine_requests;
             """)
@@ -1687,12 +1702,13 @@ def medicine_request():
             formatted_requests = [
                 {
                     "medicine_request_id": row[0],
-                    "request_status": row[1],
-                    "medicine_name": row[2],
-                    "quantity": row[3],
-                    "request_date": row[4],
-                    "approved_by": row[5],
-                    "approval_date": row[6]
+                    "care_plan_request_id": row[1],  # Adding care_plan_request_id to the response
+                    "request_status": row[2],
+                    "medicine_name": row[3],
+                    "quantity": row[4],
+                    "request_date": row[5],
+                    "approved_by": row[6],
+                    "approval_date": row[7]
                 } 
                 for row in medicine_requests
             ]
@@ -1703,10 +1719,11 @@ def medicine_request():
             # Add a new medicine request
             data = request.get_json()
 
-            if not data or not all(key in data for key in ['medicine_name', 'quantity']):
+            if not data or not all(key in data for key in ['medicine_name', 'quantity', 'care_plan_request_id']):
                 return jsonify({"error": "Missing required fields"}), 400
 
             request_status = data.get('request_status', 'Pending')
+            care_plan_request_id = data['care_plan_request_id']
             medicine_name = data['medicine_name']
             quantity = data['quantity']
             request_date = data.get('request_date', None)
@@ -1714,10 +1731,10 @@ def medicine_request():
             approval_date = data.get('approval_date', None)
 
             cursor.execute("""
-                INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO medicine_requests (care_plan_request_id, request_status, medicine_name, quantity, request_date, approved_by, approval_date)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING medicine_request_id;
-            """, (request_status, medicine_name, quantity, request_date, approved_by, approval_date))
+            """, (care_plan_request_id, request_status, medicine_name, quantity, request_date, approved_by, approval_date))
             new_request_id = cursor.fetchone()[0]
             conn.commit()
 
@@ -1731,6 +1748,7 @@ def medicine_request():
         if 'conn' in locals():
             cursor.close()
             conn.close()
+
 
             
 @app.route('/medicines-info')
