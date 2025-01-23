@@ -32,7 +32,7 @@
                     <option value="Inactive">Inactive</option>
                 </select>
                 <input type="text" id="search-category" placeholder="Search by Category">
-                <div class="report-container">
+                <div class="report-container"   >
                     <button id="generateReportBtn">Generate Report</button>
                 </div>                
             </div>
@@ -42,7 +42,7 @@
             <table class="inventory-table">
                 <thead>
                 <tr>
-                    <th>SKU</th>
+                    <th>No.</th>
                     <th>Item Name</th>
                     <th>Quantity</th>
                     <th>Status</th>
@@ -57,7 +57,7 @@
                 <tbody id="inventory-table-body">
                 {% for medicine in medicines %}
                     <tr>
-                    <td>{{ medicine.sku }}</td>
+                    <td>{{ loop.index }}</td>
                     <td>{{ medicine.medicine_name }}</td>
                     <td>{{ medicine.quantity }}</td>
                     <td>{{ medicine.status }}</td>
@@ -79,26 +79,27 @@
         <!-- Modal for View Item Details -->
         <div id="itemModal" class="modal">
             <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3>Item Details</h3>
-            <table class="details-table">
-                <thead>
-                <tr>
-                    <th>Evaluated On</th>
-                    <th>Entry Type</th>
-                    <th>PO Number</th>
-                    <th>Item No.</th>
-                    <th>Description</th>
-                    <th>Expiration Date</th>
-                    <th>Lot Position</th>
-                </tr>
-                </thead>
-                <tbody id="view-details-table-body">
-                <!-- Details will be dynamically added here -->
-                </tbody>
-            </table>
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3>Item Details</h3>
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Supplier</th>
+                            <th>PO Number</th>
+                            <th>Item Name</th>
+                            <th>Description</th>
+                            <th>Expiration Date</th>
+                            <th>Lot Position</th>
+                        </tr>
+                    </thead>
+                    <tbody id="view-details-table-body">
+                        <!-- Details will be dynamically added here -->
+                    </tbody>
+                </table>
             </div>
         </div>
+
 
 
         <!-- Modal for Edit Item Details -->
@@ -163,6 +164,7 @@
                 <button class="save-btn" onclick="saveChanges()">Save Changes</button>
             </div>
         </div>
+
 
         <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
 </body>
