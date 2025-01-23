@@ -37,7 +37,7 @@
                 <tr>
                     <th class="request-no">Request No.</th>
                     <th class="status">Status</th>
-                    <th class="medicine-name">Medicine Name</th>
+                    <th class="medicine-name">Medicine ID</th>
                     <th class="quantity">Quantity</th>
                     <th class="request-date">Request Date</th>
                     <th class="approved-by">Approved By</th>
@@ -54,7 +54,7 @@
                         class="{{ 'approved-status' if request.request_status == 'Approved' else 'rejected-status' if request.request_status == 'Rejected' else '' }}">
                         {{ request.request_status }}
                     </td>
-                    <td>{{ request.medicine_name }}</td>
+                    <td>{{ request.medicine_id }}</td>
                     <td class="quantity">{{ request.quantity }}</td>
                     <td>{{ request.request_date }}</td>
                     <td>{{ request.approved_by or 'N/A' }}</td>
