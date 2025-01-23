@@ -126,6 +126,7 @@ function viewDetails(requisitionId) {
                 </div>
                 <div class="view-details-bottom">
                     <h4>Items Requested</h4>
+                    <div class="scrollable-table">
                     <table class="table">
                         <thead>
                             <tr>
@@ -146,6 +147,7 @@ function viewDetails(requisitionId) {
                             `).join('')}
                         </tbody>
                         </table>
+                    </div>
                     <h5>Total: ₱${totalAmount.toFixed(2)}</h5>
                     <h4>Attachments</h4>
                     <ul>

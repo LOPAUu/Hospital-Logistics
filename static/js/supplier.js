@@ -490,9 +490,6 @@ function openViewSupplierModal(supplierId) {
             return response.json();
         })
         .then(supplier => {
-            // Set supplier logo (if available)
-            const logo = supplier.logo || '';
-            document.getElementById('supplier-logo').src = logo;
 
             // Populate supplier details
             document.getElementById('view-company-name').textContent = supplier.company_name;
