@@ -28,8 +28,8 @@ function approveRequest(medicineRequestId) {
                 action: 'accept'
             };
 
-            fetch('/api/care-plan-request/update', {
-                method: 'POST',
+            fetch(`/medicine_request/${medicineRequestId}/approve`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -91,26 +91,26 @@ function approveRequest(medicineRequestId) {
 
 
 
-// Reject a medicine request
-function rejectRequest(medicineRequestId) {
+// Deny a medicine request
+function denyRequest(medicineRequestId) {
     // Show confirmation alert
     Swal.fire({
-        title: 'Are you sure you want to decline it?',
-        text: "You won't be able to revert this action!",
+        title: 'Are you certain you want to deny the request?',
+        text: "This action cannot be undone!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Yes, Reject it!',
-        cancelButtonText: 'No, Keep it'
+        confirmButtonText: 'Yes, Deny it!',
+        cancelButtonText: 'No, Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Proceed with the rejection if the user confirms
+            // Proceed with the denial if the user confirms
             const data = {
                 medicine_request_id: medicineRequestId,
-                action: 'reject'
+                action: 'deny'
             };
 
-            fetch('/api/care-plan-request/update', {
-                method: 'POST',
+            fetch(`/medicine_request/${medicineRequestId}/deny`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -122,14 +122,14 @@ function rejectRequest(medicineRequestId) {
                     const statusCell = document.getElementById(`status-${medicineRequestId}`);
                     const actionsCell = document.getElementById(`actions-${medicineRequestId}`);
                     
-                    // Update status to 'Rejected'
-                    statusCell.textContent = 'Rejected';
-                    statusCell.className = 'status-rejected'; // Add class for rejected status
+                    // Update status to 'Denied'
+                    statusCell.textContent = 'Denied';
+                    statusCell.className = 'status-denied'; // Add class for denied status
 
                     // Store the status in localStorage
-                    localStorage.setItem(`status-${medicineRequestId}`, 'rejected');
+                    localStorage.setItem(`status-${medicineRequestId}`, 'denied');
 
-                    actionsCell.innerHTML = '<span class="approved-label">No further actions available</span>';
+                    actionsCell.innerHTML = '<span class="denied-label">No further actions available</span>';
                     
                     Swal.fire({
                         title: 'Success!',
@@ -153,7 +153,7 @@ function rejectRequest(medicineRequestId) {
                 console.error('Error:', error);
                 Swal.fire({
                     title: 'Error!',
-                    text: 'An error occurred while rejecting the request.',
+                    text: 'An error occurred while denying the request.',
                     icon: 'error',
                     confirmButtonText: 'Try Again',
                 });
@@ -162,7 +162,7 @@ function rejectRequest(medicineRequestId) {
             // If the user cancels, show a message or do nothing
             Swal.fire({
                 title: 'Cancelled',
-                text: 'The action was not performed.',
+                text: 'The denial action was not performed.',
                 icon: 'info',
                 confirmButtonText: 'OK',
             });

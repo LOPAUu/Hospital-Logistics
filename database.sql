@@ -149,7 +149,7 @@ CREATE TABLE sku_details (
     expiration DATE NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
+    
 
 CREATE TABLE medicines (
     medicine_id SERIAL PRIMARY KEY,         -- Unique ID for each medicine
@@ -234,8 +234,9 @@ VALUES
 -- Create the medicine_requests table (if not already created)
 CREATE TABLE medicine_requests (
     medicine_request_id SERIAL PRIMARY KEY,
+    care_plan_request_id INT NOT NULL,  -- New column for care plan request ID
     request_status VARCHAR(50) NOT NULL,
-    medicine_name INT NOT NULL,
+    medicine_id INT NOT NULL,  -- Changed to medicine_id
     quantity INT NOT NULL,
     request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     approved_by VARCHAR(100),

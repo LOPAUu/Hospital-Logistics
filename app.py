@@ -1690,11 +1690,12 @@ def medicine_request():
         cursor = conn.cursor()
 
         if request.method == 'GET':
-            # Fetch all medicine requests
+            # Fetch all medicine requests with medicine names
             cursor.execute("""
-                SELECT medicine_request_id, care_plan_request_id, request_status, medicine_id, quantity, 
-                       request_date, approved_by, approval_date 
-                FROM medicine_requests;
+                SELECT mr.medicine_request_id, mr.care_plan_request_id, mr.request_status, i.medicine_name, mr.quantity, 
+                       mr.request_date, mr.approved_by, mr.approval_date 
+                FROM medicine_requests mr
+                JOIN medicines i ON mr.medicine_id = i.medicine_id;
             """)
             medicine_requests = cursor.fetchall()
 
@@ -1704,7 +1705,7 @@ def medicine_request():
                     "medicine_request_id": row[0],
                     "care_plan_request_id": row[1],
                     "request_status": row[2],
-                    "medicine_id": row[3],  # Changed to medicine_id
+                    "medicine_name": row[3],  # Changed to medicine_name
                     "quantity": row[4],
                     "request_date": row[5],
                     "approved_by": row[6],
@@ -1724,7 +1725,7 @@ def medicine_request():
 
             request_status = data.get('request_status', 'Pending')
             care_plan_request_id = data['care_plan_request_id']
-            medicine_id = data['medicine_id']  # Changed to medicine_id
+            medicine_id = data['medicine_id']
             quantity = data['quantity']
             request_date = data.get('request_date', None)
             approved_by = data.get('approved_by', None)
@@ -1748,7 +1749,6 @@ def medicine_request():
         if 'conn' in locals():
             cursor.close()
             conn.close()
-
 
             
 @app.route('/medicines-info')
@@ -1780,49 +1780,6 @@ def medicines_info():
     # Return the data as JSON
     return jsonify(medicines_list)
 
-@app.route('/api/care-plan-request/update', methods=['POST'])
-def update_care_plan_request():
-    try:
-        # Establish database connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Parse JSON data from the request
-        data = request.get_json()
-        if not data or 'medicine_request_id' not in data or 'action' not in data:
-            return jsonify({"error": "Missing required fields"}), 400
-
-        medicine_request_id = data['medicine_request_id']
-        action = data['action'].lower()  # Expecting 'accept' or 'reject'
-        approved_by = data.get('approved_by', 'System')  # Optional: default to 'System'
-
-        if action not in ['accept', 'reject']:
-            return jsonify({"error": "Invalid action. Use 'accept' or 'reject'."}), 400
-
-        # Update the request_status and approval_date
-        request_status = 'Approved' if action == 'accept' else 'Rejected'
-        approval_date = datetime.now()  # Automatically set the approval/rejection date
-
-        cursor.execute("""
-            UPDATE medicine_requests
-            SET request_status = %s, approved_by = %s, approval_date = %s
-            WHERE medicine_request_id = %s;
-        """, (request_status, approved_by, approval_date, medicine_request_id))
-        conn.commit()
-
-        return jsonify({
-            "message": f"Request {request_status.lower()} successfully.",
-            "medicine_request_id": medicine_request_id
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        # Close the connection
-        if 'conn' in locals():
-            cursor.close()
-            conn.close()
 
 @app.route('/medicine_request/<int:request_id>/approve', methods=['PUT'])
 def approve_medicine_request(request_id):
@@ -1832,7 +1789,7 @@ def approve_medicine_request(request_id):
         cursor = conn.cursor()
 
         # Set the request status to "Approved" and update the approval date
-        approved_by = 'Dr. Smith'  # You can replace this with an actual approver's name
+        approved_by = 'system'  # You can replace this with an actual approver's name
         approval_date = datetime.now()
 
         cursor.execute("""
@@ -1844,11 +1801,37 @@ def approve_medicine_request(request_id):
         if cursor.rowcount == 0:
             return jsonify({"error": "Request not found"}), 404
 
+        # Fetch the care_plan_request_id associated with the medicine_request_id
+        cursor.execute("""
+            SELECT care_plan_request_id
+            FROM medicine_requests
+            WHERE medicine_request_id = %s;
+        """, (request_id,))
+        care_plan_request = cursor.fetchone()
+
+        if not care_plan_request:
+            return jsonify({"error": "Care plan request not found"}), 404
+
+        care_plan_request_id = care_plan_request[0]
+
+        # Make the POST request to update the care-plan-request
+        response = requests.post(
+            'https://peru-seahorse-921810.hostingersite.com/api/care-plan-request/update',
+            json={
+                "care_plan_request_id": f"{care_plan_request_id}",  # Ensure the ID is inside quotation marks
+                "care_plan_status": "Approved"
+            }
+        )
+
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to update care plan request", "details": response.text}), response.status_code
+
         conn.commit()
         return jsonify({"message": "Request approved successfully", "medicine_request_id": request_id}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Error: {e}")
+        return jsonify({"error": "An error occurred while approving the request.", "details": str(e)}), 500
 
     finally:
         if 'conn' in locals():
@@ -1856,49 +1839,62 @@ def approve_medicine_request(request_id):
             conn.close()
 
 
-@app.route('/medicine_request/update', methods=['POST'])
-def update_medicine_request():
+@app.route('/medicine_request/<int:request_id>/deny', methods=['PUT'])
+def deny_medicine_request(request_id):
     try:
         # Establish database connection
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Parse JSON data from the request
-        data = request.get_json()
-        if not data or 'medicine_request_id' not in data or 'action' not in data:
-            return jsonify({"error": "Missing required fields"}), 400
-
-        medicine_request_id = data['medicine_request_id']
-        action = data['action'].lower()
-
-        # Validate action
-        if action not in ['accept', 'reject']:
-            return jsonify({"error": "Invalid action. Use 'accept' or 'reject'."}), 400
-
-        # Update request status and approval date
-        request_status = 'Approved' if action == 'accept' else 'Rejected'
-        approval_date = datetime.now()
+        # Set the request status to "Denied" and update the denial date
+        denied_by = 'system'  # You can replace this with an actual denier's name
+        denial_date = datetime.now()
 
         cursor.execute("""
             UPDATE medicine_requests
             SET request_status = %s, approved_by = %s, approval_date = %s
             WHERE medicine_request_id = %s;
-        """, (request_status, data.get('approved_by', 'System'), approval_date, medicine_request_id))
-        conn.commit()
+        """, ('Denied', denied_by, denial_date, request_id))
 
-        return jsonify({
-            "message": f"Request {request_status.lower()} successfully.",
-            "medicine_request_id": medicine_request_id
-        })
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Request not found"}), 404
+
+        # Fetch the care_plan_request_id associated with the medicine_request_id
+        cursor.execute("""
+            SELECT care_plan_request_id
+            FROM medicine_requests
+            WHERE medicine_request_id = %s;
+        """, (request_id,))
+        care_plan_request = cursor.fetchone()
+
+        if not care_plan_request:
+            return jsonify({"error": "Care plan request not found"}), 404
+
+        care_plan_request_id = care_plan_request[0]
+
+        # Make the POST request to update the care-plan-request
+        response = requests.post(
+            'https://peru-seahorse-921810.hostingersite.com/api/care-plan-request/update',
+            json={
+                "care_plan_request_id": f"{care_plan_request_id}",  # Ensure the ID is inside quotation marks
+                "care_plan_status": "Denied"
+            }
+        )
+
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to update care plan request", "details": response.text}), response.status_code
+
+        conn.commit()
+        return jsonify({"message": "Request denied successfully", "medicine_request_id": request_id}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Error: {e}")
+        return jsonify({"error": "An error occurred while denying the request.", "details": str(e)}), 500
 
     finally:
         if 'conn' in locals():
             cursor.close()
             conn.close()
-
 
 
 if __name__ == "__main__":
