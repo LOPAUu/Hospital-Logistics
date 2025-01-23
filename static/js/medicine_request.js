@@ -243,7 +243,7 @@ function renderMedicineRequests(requests) {
                 class="${request.request_status === 'Approved' ? 'approved-status' : (request.request_status === 'Rejected' ? 'rejected-status' : '')}">
                 ${request.request_status}
             </td>
-            <td>${request.medicine_name}</td>
+            <td>${request.medicine_id}</td>  <!-- Changed to medicine_id -->
             <td>${request.quantity}</td>
             <td>${request.request_date}</td>
             <td>${request.approved_by || 'N/A'}</td>

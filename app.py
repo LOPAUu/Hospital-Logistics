@@ -1572,7 +1572,7 @@ def medicine_request():
         if request.method == 'GET':
             # Fetch all medicine requests
             cursor.execute("""
-                SELECT medicine_request_id, care_plan_request_id, request_status, medicine_name, quantity, 
+                SELECT medicine_request_id, care_plan_request_id, request_status, medicine_id, quantity, 
                        request_date, approved_by, approval_date 
                 FROM medicine_requests;
             """)
@@ -1582,9 +1582,9 @@ def medicine_request():
             formatted_requests = [
                 {
                     "medicine_request_id": row[0],
-                    "care_plan_request_id": row[1],  # Adding care_plan_request_id to the response
+                    "care_plan_request_id": row[1],
                     "request_status": row[2],
-                    "medicine_name": row[3],
+                    "medicine_id": row[3],  # Changed to medicine_id
                     "quantity": row[4],
                     "request_date": row[5],
                     "approved_by": row[6],
@@ -1599,22 +1599,22 @@ def medicine_request():
             # Add a new medicine request
             data = request.get_json()
 
-            if not data or not all(key in data for key in ['medicine_name', 'quantity', 'care_plan_request_id']):
+            if not data or not all(key in data for key in ['medicine_id', 'quantity', 'care_plan_request_id']):
                 return jsonify({"error": "Missing required fields"}), 400
 
             request_status = data.get('request_status', 'Pending')
             care_plan_request_id = data['care_plan_request_id']
-            medicine_name = data['medicine_name']
+            medicine_id = data['medicine_id']  # Changed to medicine_id
             quantity = data['quantity']
             request_date = data.get('request_date', None)
             approved_by = data.get('approved_by', None)
             approval_date = data.get('approval_date', None)
 
             cursor.execute("""
-                INSERT INTO medicine_requests (care_plan_request_id, request_status, medicine_name, quantity, request_date, approved_by, approval_date)
+                INSERT INTO medicine_requests (care_plan_request_id, request_status, medicine_id, quantity, request_date, approved_by, approval_date)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING medicine_request_id;
-            """, (care_plan_request_id, request_status, medicine_name, quantity, request_date, approved_by, approval_date))
+            """, (care_plan_request_id, request_status, medicine_id, quantity, request_date, approved_by, approval_date))
             new_request_id = cursor.fetchone()[0]
             conn.commit()
 
@@ -1628,7 +1628,7 @@ def medicine_request():
         if 'conn' in locals():
             cursor.close()
             conn.close()
-
+            
             
 @app.route('/medicines-info')
 def medicines_info():
