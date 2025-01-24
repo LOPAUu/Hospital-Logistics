@@ -40,7 +40,7 @@ function approveRequest(medicineRequestId) {
                 if (data.message) {
                     const statusCell = document.getElementById(`status-${medicineRequestId}`);
                     const actionsCell = document.getElementById(`actions-${medicineRequestId}`);
-                    
+
                     // Update status to 'Approved'
                     statusCell.textContent = 'Approved';
                     statusCell.className = 'status-approved'; // Add class for approved status
@@ -88,6 +88,7 @@ function approveRequest(medicineRequestId) {
         }
     });
 }
+
 
 
 
@@ -171,66 +172,6 @@ function denyRequest(medicineRequestId) {
 }
 
 
-const apiUrl = 'https://logistics-management-v1.onrender.com/medicine_request'; // Your API endpoint
-let lastRequestId = null; // Track the latest request ID
-
-// Function to fetch and render new requests
-async function fetchNewRequests() {
-    try {
-        const response = await fetch(apiUrl);
-        const requests = await response.json();
-
-        if (requests && requests.length > 0) {
-            const latestRequest = requests[requests.length - 1];
-
-            // Check if this request is new
-            if (latestRequest.medicine_request_id !== lastRequestId) {
-                lastRequestId = latestRequest.medicine_request_id; // Update the last request ID
-                notifyNewRequest(latestRequest); // Notify user with sound and alert
-            }
-        }
-    } catch (error) {
-        console.error('Error fetching new requests:', error);
-    }
-}
-
-// Notification function to show alert and play sound
-function notifyNewRequest(request) {
-    console.log('Playing alarm and showing notification.');
-
-    // Play the alarm sound
-    const alarmSound = document.getElementById('alarm-sound');
-    if (alarmSound) {
-        alarmSound.play().catch(error => {
-            console.error('Error playing alarm:', error);
-            alert("Sound failed to play. Please check your browser's settings.");
-        });
-    }
-
-    // Show the SweetAlert notification
-    Swal.fire({
-        title: 'New Medicine Request Received!',
-        text: `Medicine ID: ${request.medicine_id}\nQuantity: ${request.quantity}\nRequest Date: ${request.request_date}`,
-        icon: 'info',
-        confirmButtonText: 'OK',
-    });
-}
-
-// Poll every 5 seconds for new requests
-setInterval(fetchNewRequests, 5000);
-
-// Initial fetch when the page loads
-fetchNewRequests();
-
-notifyNewRequest({
-    medicine_request_id: 123,
-    medicine_id: 'paracetamol',
-    quantity: '30',
-    request_date: '2024-12-03'
-});
 
 
-// Simulate sending a new request
-setTimeout(() => {
-    sendNewRequest(); // Simulate sending the new request after 3 seconds
-}, 3000);
+
