@@ -21,14 +21,14 @@
             </div>
             <div class="user-dropdown">
                 <!-- Combined the image and triangle into one action -->
-                <img src="{{ url_for('static', filename='static/images/User_icon.png') }}" alt="User Icon" onclick="toggleDropdown()">
+                <img src="{{ url_for('static', filename='images/User_icon.png') }}" alt="User Icon" onclick="toggleDropdown()">
                 <div class="triangle" onclick="toggleDropdown()"></div> <!-- Add action to the triangle -->
                 <div class="dropdown-content">
-                    <a href="#">
+                    <a href="{{ url_for('profile') }}">
                         Profile
                         <img src="{{ url_for('static', filename='images/profile_icon.png') }}" alt="Profile Icon" class="dropdown-icon">
-                    </a>
-                    <a href="{{ url_for('logout') }}">
+                    </a>                    
+                    <a href="{{ url_for('index') }}">
                         Logout
                         <img src="{{ url_for('static', filename='images/logout_icon.png') }}" alt="Logout Icon" class="dropdown-icon">
                     </a>    

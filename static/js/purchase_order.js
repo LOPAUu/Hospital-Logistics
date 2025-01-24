@@ -26,12 +26,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Confirm order button click
     confirmOrderBtn.addEventListener('click', () => {
         const selectedOrder = document.getElementById('orderNumberDropdown').value;
+    
+        // Log to ensure the order selection is detected
+        console.log('Selected Order:', selectedOrder);
+    
         if (!selectedOrder) {
             alert('Please select an order to confirm.');
             return;
         }
-
-        // Add logic to send the order to the server
+    
+        // Add a loading spinner or feedback to show progress (optional)
+        console.log('Sending request to confirm order...');
+    
+        // Send order to the server
         fetch('/confirm_order', {
             method: 'POST',
             headers: {
@@ -41,18 +48,28 @@ document.addEventListener('DOMContentLoaded', () => {
         })
             .then((response) => response.json())
             .then((data) => {
+                console.log('Response from server:', data);
+    
                 if (data.success) {
                     alert('Order confirmed successfully!');
-                    purchaseOrderModal.style.display = 'none'; // Hide the modal
-                    // Refresh the table or UI here as needed
+                    
+                    // Close the modal
+                    purchaseOrderModal.style.display = 'none'; 
+                    console.log('Modal closed.');
+    
+                    // Optionally refresh the UI
+                    // refreshOrdersTable(); // Replace with your function if needed
                 } else {
                     alert('Error confirming order: ' + data.error);
+                    console.error('Error details:', data.error);
                 }
             })
             .catch((error) => {
-                console.error('Error:', error);
+                console.error('Request error:', error);
             });
     });
+    
+    
 
     // Tab click handling for filtering orders
     tabLinks.forEach((tabLink) => {
@@ -221,7 +238,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalAmount = parseFloat(totalAmountField.textContent.replace(/[^\d.-]/g, '')) || 0;
 
         if (!items.length) {
-            alert('Please add items to the order.');
+            Swal.fire({
+                title: "Oops!",
+                text: "Please add items to the order.",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
             return; // Prevent submission if no items are present
         }
 
@@ -245,7 +267,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (response.ok) {
-                alert(result.message);
+                Swal.fire({
+                    title: "Success!",
+                    text: result.message,
+                    icon: "success",
+                    confirmButtonText: "OK"
+                });
             } else {
                 alert(result.error);
             }
@@ -801,3 +828,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
 });
+
+
+function searchSuppliers() {
+    const searchBar = document.getElementById("search-bar").value.toLowerCase();
+    const table = document.querySelector("table tbody");
+    const rows = table.querySelectorAll("tr");
+
+    rows.forEach(row => {
+        const columns = row.querySelectorAll("td");
+        const rowText = Array.from(columns).map(col => col.textContent.toLowerCase()).join(" ");
+        
+        // Toggle row visibility based on match
+        if (rowText.includes(searchBar)) {
+            row.style.display = ""; // Show row
+        } else {
+            row.style.display = "none"; // Hide row
+        }
+    });
+}

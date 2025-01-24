@@ -89,7 +89,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
 
 /* Tab Navigation Styling */
 .tabs--secondary {
-    margin-top: 0px;
+    margin-top: 20px;
     border-bottom: 1px solid #ccc;
 }
 .tab__nav ul {
@@ -137,7 +137,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
     background-color: white;
     border-radius: 8px;
     max-width: 30%;
-    margin: 12% auto;
+    margin: 8% auto;
     padding: 30px;
     border: 1px solid #888;
 }
@@ -154,7 +154,7 @@ table tbody td { border-bottom: 1px solid #ddd; }
     background-color: white;
     border-radius: 8px;
     max-width: 50%;
-    margin: 5% auto;
+    margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -182,6 +182,13 @@ table tbody td { border-bottom: 1px solid #ddd; }
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
+}
+
+#search-bar {
+    width: 30%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 /* Hover and focus effect for close button */
@@ -363,4 +370,12 @@ button:hover {
     margin: 12% auto;
     padding: 30px;
     border: 1px solid #888;
+}
+
+
+.swal-popup {
+    z-index: 3000 !important; /* Higher than modal */
+}
+.swal2-container {
+    z-index: 3000 !important; /* For SweetAlert container */
 }

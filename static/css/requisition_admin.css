@@ -140,7 +140,7 @@ table td button i {
 
 .modal-content {
     background-color: #fefefe;
-    margin: 9% auto;
+    margin: 5% auto;
     padding: 25px;
     border: 1px solid #888;
     width: 35%;
@@ -211,8 +211,10 @@ table td button i {
 
 
 #search-bar {
-    width: 50%;
-    margin-bottom: 20px;
+    width: 30%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 .search-filters {
@@ -274,7 +276,7 @@ table td button i {
 /* Modal Content */
 .requisition-modal-content {
     background-color: #ffffff;
-    margin: 2% auto;
+    margin: 1% auto;
     padding: 20px 30px;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
@@ -582,4 +584,22 @@ table td button i {
 .requested-by {
     border-bottom: 1px solid #ddd;
     padding: 10px
+}
+
+.scrollable-table {
+    max-height: 300px; /* Adjust this height as needed */
+    overflow-y: auto;
+    border: 0px solid #ccc; /* Optional: Adds a border for visibility */
+}
+
+.scrollable-table table {
+    width: 100%; /* Ensure the table spans the container */
+    border-collapse: collapse; /* Consistent table styling */
+}
+
+.scrollable-table th,
+.scrollable-table td {
+    padding: 8px; /* Adjust as needed for spacing */
+    text-align: left; /* Align text to the left */
+    border: 1px solid #ddd; /* Optional: Adds borders to cells */
 }

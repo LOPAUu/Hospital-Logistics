@@ -1,0 +1,67 @@
+.container {
+    max-width: 50%;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    margin-top: 135px;
+}
+
+/* Profile Title */
+h2 {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-size: 16px;
+    font-weight: 600;
+    color: #555;
+}
+
+td {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Table Row Hover */
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Even Rows Styling */
+tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+/* Footer/Bottom Spacer */
+footer {
+    margin-top: 40px;
+    text-align: center;
+    color: #777;
+    font-size: 12px;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .top-nav {
+        flex-direction: column;
+        align-items: center;
+    }
+}

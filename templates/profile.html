@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}POS{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/profile.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap" rel="stylesheet">
+    
+    {% endblock %}
+
+    {% block body %}
+
+    <!-- New Top Bar -->
+    <div class="top-bar">
+        <div class="top-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('medicine_request') }}">Medicine Request</a>
+            <a href="{{ url_for('admin_supplier') }}">Supplier</a>
+            <a href="{{ url_for('admin_requisition') }}">Requisition</a>
+            <a href="{{ url_for('purchase_order') }}">Purchase Order</a>
+            <a href="{{ url_for('inventory') }}">Inventory</a>
+            <a href="{{ url_for('signatory_view') }}">Signatory</a>
+            <a href="{{ url_for('pos') }}">POS</a>
+            <a href="{{ url_for('user_role_management') }}">User Role Management</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>User Profile Information</h2>
+        <table>
+            <tr>
+                <th>Employee ID</th>
+                <td>{{ employee_id }}</td>
+            </tr>
+            <tr>
+                <th>Full Name</th>
+                <td>{{ full_name }}</td>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <td>{{ username }}</td>
+            </tr>
+            <tr>
+                <th>Role</th>
+                <td>{{ role }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ email }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>{{ phone }}</td>
+            </tr>
+            <tr>
+                <th>Date Added</th>
+                <td>{{ date_added }}</td>
+            </tr>
+        </table>
+</div>
+    {% block scripts %}
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% endblock %}
+{% endblock %}

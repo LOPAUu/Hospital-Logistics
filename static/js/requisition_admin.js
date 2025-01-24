@@ -172,8 +172,8 @@ function viewDetails(requisitionId) {
                         <p><strong>Requested By:</strong> ${requested_by || 'N/A'}</p>
                     </div>
                 </div>
-                <div class="details-group">
                     <h3>Items Requested:</h3>
+                <div class="scrollable-table">
                     <table class="table">
                         <thead>
                             <tr>
@@ -322,3 +322,29 @@ document.addEventListener('DOMContentLoaded', () => {
         input.oninput = () => calculateTotal(input);
     });
 });
+
+// Function to filter requisitions based on search input
+function searchSuppliers() {
+    const input = document.getElementById('search-bar').value.toLowerCase();
+    const table = document.getElementById('requisition-list');
+    const rows = table.getElementsByTagName('tr');
+
+    // Loop through all table rows (except the header) and hide those that don't match the search query
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let match = false;
+
+        // Check each cell in the row
+        for (let j = 0; j < cells.length; j++) {
+            const cellValue = cells[j].textContent || cells[j].innerText;
+            if (cellValue.toLowerCase().includes(input)) {
+                match = true;
+                break;
+            }
+        }
+
+        // Show the row if there's a match, otherwise hide it
+        row.style.display = match ? '' : 'none';
+    }
+}

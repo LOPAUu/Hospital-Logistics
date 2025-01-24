@@ -117,7 +117,7 @@ h1 {
 
 .modal-content {
     background-color: #fefefe;
-    margin: 7% auto;
+    margin: 5% auto;
     padding: 20px;
     border: 1px solid #888;
     width: 30%;
@@ -355,4 +355,22 @@ h5 {
     margin-left: 75%;
     font-size: 16px;
     font-weight: bold;
+}
+
+.scrollable-table {
+    max-height: 300px; /* Adjust this height as needed */
+    overflow-y: auto;
+    border: 0px solid #ccc; /* Optional: Adds a border for visibility */
+}
+
+.scrollable-table table {
+    width: 100%; /* Ensure the table spans the container */
+    border-collapse: collapse; /* Consistent table styling */
+}
+
+.scrollable-table th,
+.scrollable-table td {
+    padding: 8px; /* Adjust as needed for spacing */
+    text-align: left; /* Align text to the left */
+    border: 1px solid #ddd; /* Optional: Adds borders to cells */
 }
