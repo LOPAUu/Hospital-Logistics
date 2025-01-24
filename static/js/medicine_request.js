@@ -230,39 +230,6 @@ notifyNewRequest({
 });
 
 
-// Render medicine requests
-function renderMedicineRequests(requests) {
-    const requestList = document.querySelector('#medicine-request-list tbody');
-    requestList.innerHTML = ''; // Clear existing rows
-
-    requests.forEach(request => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${request.medicine_request_id}</td>
-            <td id="status-${request.medicine_request_id}" 
-                class="${request.request_status === 'Approved' ? 'approved-status' : (request.request_status === 'Rejected' ? 'rejected-status' : '')}">
-                ${request.request_status}
-            </td>
-            <td>${request.medicine_id}</td>  <!-- Changed to medicine_id -->
-            <td>${request.quantity}</td>
-            <td>${request.request_date}</td>
-            <td>${request.approved_by || 'N/A'}</td>
-            <td>${request.approval_date || 'N/A'}</td>
-            <td id="actions-${request.medicine_request_id}">
-                ${request.request_status === 'Pending' ? `
-                    <button class="accept-button" onclick="approveRequest(${request.medicine_request_id})">
-                        <i class="fas fa-check"></i> Approve Request
-                    </button>
-                    <button class="reject-button" onclick="rejectRequest(${request.medicine_request_id})">
-                        <i class="fas fa-times-circle"></i> Reject
-                    </button>
-                ` : `<span class="approved-label">No further actions available</span>`}
-            </td>
-        `;
-        requestList.appendChild(row);
-    });
-}
-
 // Simulate sending a new request
 setTimeout(() => {
     sendNewRequest(); // Simulate sending the new request after 3 seconds
