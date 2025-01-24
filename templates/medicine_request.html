@@ -52,7 +52,7 @@
                         class="{{ 'approved-status' if request.request_status == 'Approved' else 'rejected-status' if request.request_status == 'Rejected' else '' }}">
                         {{ request.request_status }}
                     </td>
-                    <td>{{ request.medicine_id }}</td>
+                    <td>{{ request.medicine_name }}</td>
                     <td class="quantity">{{ request.quantity }}</td>
                     <td>{{ request.request_date }}</td>
                     <td>{{ request.approved_by or 'N/A' }}</td>
@@ -62,15 +62,15 @@
                         <button class="accept-button" onclick="approveRequest({{ request.medicine_request_id }})">
                             <i class="fas fa-check"></i> Approve
                         </button>
-                        <button class="reject-button" onclick="rejectRequest({{ request.medicine_request_id }})">
-                            <i class="fas fa-times-circle"></i> Reject
+                        <button class="reject-button" onclick="denyRequest({{ request.medicine_request_id }})">
+                            <i class="fas fa-times-circle"></i> Deny
                         </button>
                         {% endif %}
                         {% if request.request_status != "Pending" %}
                         <span class="approved-label">No further actions available</span>
                         {% endif %}
                     </td>
-                    
+            
                 </tr>
                 {% endfor %}
             </tbody>  
