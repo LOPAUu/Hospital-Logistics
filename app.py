@@ -8,8 +8,10 @@ from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 from flask_socketio import SocketIO, emit
 
+
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
+socketio = SocketIO(app)
 
 AUTH_SERVICE_URL = "https://evaluation-deployed-authentication.onrender.com"
 
@@ -1564,9 +1566,6 @@ def get_medicine_details(medicine_id):
         return jsonify({"error": "Internal Server Error"}), 500
     
     
-
-
-socketio = SocketIO(app)
 
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
