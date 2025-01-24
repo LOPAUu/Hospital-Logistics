@@ -159,56 +159,61 @@ function viewDetails(requisitionId) {
 
             // Populate details content
             document.getElementById('details-content').innerHTML = `
-                <div class="details-group">
+            <div class="details-group">
+                <div class="detail-row">
                     <div class="detail-pair">
-                        <p><strong>No:</strong> ${id || 'N/A'}</p>
                         <p><strong>Date:</strong> ${date ? new Date(date).toLocaleDateString() : 'N/A'}</p>
                     </div>
                     <div class="detail-pair">
-                        <p><strong>Purpose:</strong> ${purpose || 'N/A'}</p>
                         <p><strong>Company Name:</strong> ${company_name || 'N/A'}</p>
                     </div>
-                    <div class="requested-by">
+                </div>
+                <div class="detail-row">
+                    <div class="detail-pair">
+                        <p><strong>Purpose:</strong> ${purpose || 'N/A'}</p>
+                    </div>
+                    <div class="detail-pair">
                         <p><strong>Requested By:</strong> ${requested_by || 'N/A'}</p>
                     </div>
                 </div>
-                    <h3>Items Requested:</h3>
-                <div class="scrollable-table">
-                    <table class="table">
-                        <thead>
+            </div>
+            <h3>Items Requested:</h3>
+            <div class="scrollable-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Price (₱)</th>
+                            <th>Total (₱)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.items.map(item => `
                             <tr>
-                                <th>Item Name</th>
-                                <th>Quantity</th>
-                                <th>Price (₱)</th>
-                                <th>Total (₱)</th>
+                                <td>${item.name || 'N/A'}</td>
+                                <td>${item.quantity || 0}</td>
+                                <td>₱${item.price ? item.price : '0.00'}</td>
+                                <td>₱${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00'}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${data.items.map(item => `
-                                <tr>
-                                    <td>${item.name || 'N/A'}</td>
-                                    <td>${item.quantity || 0}</td>
-                                    <td>₱${item.price ? item.price : '0.00'}</td>
-                                    <td>₱${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="total-amount">
-                    <p><strong>Total Amount:</strong> ₱${data.total ? data.total : '0.00'}</p>
-                    </div>
-                <div class="details-group">
-                    <h3>Attachments:</h3>
-                    ${data.attachments && data.attachments.length > 0 ? 
-                        `<ul>
-                            ${data.attachments.map(attachment => 
-                                `<li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>`
-                            ).join('')}
-                        </ul>` : '<p>No attachments found.</p>'}
-                </div>
-            `;
-            openDetailsModal();
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="total-amount">
+                <p><strong>Total Amount:</strong> ₱${data.total ? data.total : '0.00'}</p>
+            </div>
+            <div class="details-group">
+                <h3>Attachments:</h3>
+                ${data.attachments && data.attachments.length > 0 ? 
+                    `<ul>
+                        ${data.attachments.map(attachment => 
+                            `<li><a href="${attachment.file_path}" target="_blank">${attachment.file_name}</a></li>`
+                        ).join('')}
+                    </ul>` : '<p>No attachments found.</p>'}
+            </div>
+        `;
+        openDetailsModal();        
         })
         .catch(error => {
             console.error('Error fetching requisition details:', error);

@@ -546,17 +546,45 @@ table td button i {
 
 
 /* Modal for displaying requisition details */
-.detail-pair {
-    display: flex;
-    justify-content: space-between;
+.details-group {
+    margin-bottom: 20px;
+}
+
+.detail-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 10px; /* Space between columns */
     margin-bottom: 10px;
 }
 
-.detail-pair p {
+.detail-pair {
     flex: 1;
-    margin: 0;
-    padding: 0 10px;
+    margin-right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
+.detail-pair p {
+    margin: 0;
+    word-break: break-word;
+}
+
+.scrollable-table {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.total-amount {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.details-group ul {
+    padding-left: 20px;
+}
+
 
 .details-group p {
     font-size: 1rem;
