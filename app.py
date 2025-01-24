@@ -1747,6 +1747,63 @@ def approve_medicine_request(request_id):
             cursor.close()
             conn.close()
 
+@app.route('/medicine_request/<int:request_id>/deny', methods=['PUT'])
+def deny_medicine_request(request_id):
+    try:
+        # Establish database connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Set the request status to "Denied" and update the denial date
+        denied_by = 'system'  # You can replace this with an actual denier's name
+        denial_date = datetime.now()
+
+        cursor.execute("""
+            UPDATE medicine_requests
+            SET request_status = %s, approved_by = %s, approval_date = %s
+            WHERE medicine_request_id = %s;
+        """, ('Denied', denied_by, denial_date, request_id))
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Request not found"}), 404
+
+        # Fetch the care_plan_request_id associated with the medicine_request_id
+        cursor.execute("""
+            SELECT care_plan_request_id
+            FROM medicine_requests
+            WHERE medicine_request_id = %s;
+        """, (request_id,))
+        care_plan_request = cursor.fetchone()
+
+        if not care_plan_request:
+            return jsonify({"error": "Care plan request not found"}), 404
+
+        care_plan_request_id = care_plan_request[0]
+
+        # Make the POST request to update the care-plan-request
+        response = requests.post(
+            'https://peru-seahorse-921810.hostingersite.com/api/care-plan-request/update',
+            json={
+                "care_plan_request_id": f"{care_plan_request_id}",  # Ensure the ID is inside quotation marks
+                "care_plan_status": "Denied"
+            }
+        )
+
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to update care plan request", "details": response.text}), response.status_code
+
+        conn.commit()
+        return jsonify({"message": "Request denied successfully", "medicine_request_id": request_id}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error: {e}")
+        return jsonify({"error": "An error occurred while denying the request.", "details": str(e)}), 500
+
+    finally:
+        if 'conn' in locals():
+            cursor.close()
+            conn.close()
+
 @app.route('/api/care-plan-request/update', methods=['POST'])
 def update_medicine_request():
     try:
