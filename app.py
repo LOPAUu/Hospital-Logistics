@@ -1749,21 +1749,27 @@ def approve_medicine_request(request_id):
 @app.route('/medicine_request/<int:request_id>/deny', methods=['PUT'])
 def deny_medicine_request(request_id):
     try:
+        print(f"Received request to deny medicine_request_id: {request_id}")
+
         # Establish database connection
         conn = get_db_connection()
         cursor = conn.cursor()
+        print("Database connection established")
 
         # Set the request status to "Denied" and update the denial date
         denied_by = 'system'  # You can replace this with an actual denier's name
         denial_date = datetime.now()
+        print(f"Setting request status to 'Denied' by {denied_by} at {denial_date}")
 
         cursor.execute("""
             UPDATE medicine_requests
             SET request_status = %s, approved_by = %s, approval_date = %s
             WHERE medicine_request_id = %s;
         """, ('Denied', denied_by, denial_date, request_id))
+        print("Executed update query")
 
         if cursor.rowcount == 0:
+            print(f"No request found with ID {request_id}")
             return jsonify({"error": "Request not found"}), 404
 
         # Fetch the care_plan_request_id associated with the medicine_request_id
@@ -1773,8 +1779,10 @@ def deny_medicine_request(request_id):
             WHERE medicine_request_id = %s;
         """, (request_id,))
         care_plan_request = cursor.fetchone()
+        print(f"Fetched care_plan_request_id: {care_plan_request}")
 
         if not care_plan_request:
+            print("Care plan request not found")
             return jsonify({"error": "Care plan request not found"}), 404
 
         care_plan_request_id = care_plan_request[0]
@@ -1787,14 +1795,19 @@ def deny_medicine_request(request_id):
                 "care_plan_status": "Denied"
             }
         )
+        print(f"Made POST request to update care-plan-request, response status: {response.status_code}")
 
         if response.status_code != 200:
+            print(f"Failed to update care plan request: {response.text}")
             return jsonify({"error": "Failed to update care plan request", "details": response.text}), response.status_code
 
         conn.commit()
+        print(f"Request {request_id} denied successfully")
+
         return jsonify({"message": "Request denied successfully", "medicine_request_id": request_id}), 200
 
     except Exception as e:
+        print(f"Error during denial: {e}")
         app.logger.error(f"Error: {e}")
         return jsonify({"error": "An error occurred while denying the request.", "details": str(e)}), 500
 
@@ -1802,8 +1815,8 @@ def deny_medicine_request(request_id):
         if 'conn' in locals():
             cursor.close()
             conn.close()
+            print("Database connection closed")
 
-            
 @app.route('/api/care-plan-request/update', methods=['POST'])
 def update_medicine_request():
     try:
