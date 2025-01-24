@@ -1570,11 +1570,12 @@ def medicine_request():
         cursor = conn.cursor()
 
         if request.method == 'GET':
-            # Fetch all medicine requests
+            # Fetch all medicine requests with medicine names
             cursor.execute("""
-                SELECT medicine_request_id, care_plan_request_id, request_status, medicine_id, quantity, 
-                       request_date, approved_by, approval_date 
-                FROM medicine_requests;
+                SELECT mr.medicine_request_id, mr.care_plan_request_id, mr.request_status, i.medicine_name, mr.quantity, 
+                       mr.request_date, mr.approved_by, mr.approval_date 
+                FROM medicine_requests mr
+                JOIN medicines i ON mr.medicine_id = i.medicine_id;
             """)
             medicine_requests = cursor.fetchall()
 
@@ -1584,7 +1585,7 @@ def medicine_request():
                     "medicine_request_id": row[0],
                     "care_plan_request_id": row[1],
                     "request_status": row[2],
-                    "medicine_id": row[3],  # Changed to medicine_id
+                    "medicine_name": row[3],  # Changed to medicine_name
                     "quantity": row[4],
                     "request_date": row[5],
                     "approved_by": row[6],
@@ -1604,7 +1605,7 @@ def medicine_request():
 
             request_status = data.get('request_status', 'Pending')
             care_plan_request_id = data['care_plan_request_id']
-            medicine_id = data['medicine_id']  # Changed to medicine_id
+            medicine_id = data['medicine_id']
             quantity = data['quantity']
             request_date = data.get('request_date', None)
             approved_by = data.get('approved_by', None)
