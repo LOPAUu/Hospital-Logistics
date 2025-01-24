@@ -46,13 +46,13 @@
             <tbody>
                 {% for request in medicine_requests %}
                 <tr data-request-id="{{ request.medicine_request_id }}">
-                    <td>{{ loop.index }}</td>
+                    <td class="request-no">{{ request.medicine_request_id }}</td>
                     <td 
                         id="status-{{ request.medicine_request_id }}" 
                         class="{{ 'approved-status' if request.request_status == 'Approved' else 'rejected-status' if request.request_status == 'Rejected' else '' }}">
                         {{ request.request_status }}
                     </td>
-                    <td>{{ request.medicine_name }}</td>
+                    <td>{{ request.medicine_id }}</td>
                     <td class="quantity">{{ request.quantity }}</td>
                     <td>{{ request.request_date }}</td>
                     <td>{{ request.approved_by or 'N/A' }}</td>
@@ -63,20 +63,19 @@
                             <i class="fas fa-check"></i> Approve
                         </button>
                         <button class="reject-button" onclick="denyRequest({{ request.medicine_request_id }})">
-                            <i class="fas fa-times-circle"></i> Deny
+                            <i class="fas fa-times-circle"></i> Reject
                         </button>
                         {% endif %}
                         {% if request.request_status != "Pending" %}
                         <span class="approved-label">No further actions available</span>
                         {% endif %}
                     </td>
-            
+                    
                 </tr>
                 {% endfor %}
             </tbody>  
         </table>
     </div>
-
     
     
 
