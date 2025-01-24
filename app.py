@@ -1835,7 +1835,7 @@ def approve_medicine_request(request_id):
 
         # Make the POST request to update the care-plan-request
         response = requests.post(
-            'https://peru-seahorse-921810.hostingersite.com/api/care-plan-request/update',
+            'https://syncore-pms.online/api/care-plan-request/update',
             json={
                 "care_plan_request_id": f"{care_plan_request_id}",  # Ensure the ID is inside quotation marks
                 "care_plan_status": "Approved"
@@ -1856,7 +1856,6 @@ def approve_medicine_request(request_id):
         if 'conn' in locals():
             cursor.close()
             conn.close()
-
 
 @app.route('/medicine_request/<int:request_id>/deny', methods=['PUT'])
 def deny_medicine_request(request_id):
@@ -1893,7 +1892,7 @@ def deny_medicine_request(request_id):
 
         # Make the POST request to update the care-plan-request
         response = requests.post(
-            'https://peru-seahorse-921810.hostingersite.com/api/care-plan-request/update',
+            'https://syncore-pms.online/api/care-plan-request/update',
             json={
                 "care_plan_request_id": f"{care_plan_request_id}",  # Ensure the ID is inside quotation marks
                 "care_plan_status": "Denied"
@@ -1914,6 +1913,9 @@ def deny_medicine_request(request_id):
         if 'conn' in locals():
             cursor.close()
             conn.close()
+
+
+
 
 
 if __name__ == "__main__":
