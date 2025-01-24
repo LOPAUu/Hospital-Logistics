@@ -28,8 +28,8 @@ function approveRequest(medicineRequestId) {
                 action: 'accept'
             };
 
-            fetch('/api/care-plan-request/update', {
-                method: 'POST',
+            fetch(`/medicine_request/${medicineRequestId}/approve`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -170,6 +170,7 @@ function denyRequest(medicineRequestId) {
     });
 }
 
+
 const apiUrl = 'https://logistics-management-v1.onrender.com/medicine_request'; // Your API endpoint
 let lastRequestId = null; // Track the latest request ID
 
@@ -209,7 +210,7 @@ function notifyNewRequest(request) {
     // Show the SweetAlert notification
     Swal.fire({
         title: 'New Medicine Request Received!',
-        text: `Medicine ID: ${request.medicine_name}\nQuantity: ${request.quantity}\nRequest Date: ${request.request_date}`,
+        text: `Medicine ID: ${request.medicine_id}\nQuantity: ${request.quantity}\nRequest Date: ${request.request_date}`,
         icon: 'info',
         confirmButtonText: 'OK',
     });
@@ -223,7 +224,7 @@ fetchNewRequests();
 
 notifyNewRequest({
     medicine_request_id: 123,
-    medicine_name: 'paracetamol',
+    medicine_id: 'paracetamol',
     quantity: '30',
     request_date: '2024-12-03'
 });
