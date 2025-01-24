@@ -1561,6 +1561,8 @@ def get_medicine_details(medicine_id):
     except Exception as e:
         print(f"Error retrieving medicine details: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+    
 
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
