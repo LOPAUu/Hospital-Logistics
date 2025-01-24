@@ -1631,7 +1631,7 @@ def medicine_request():
         if 'conn' in locals():
             cursor.close()
             conn.close()
-            
+
             
 @app.route('/medicines-info')
 def medicines_info():
@@ -1703,7 +1703,7 @@ def approve_medicine_request(request_id):
                 "care_plan_request_id": f"{care_plan_request_id}",  # Ensure the ID is inside quotation marks
                 "care_plan_status": "Approved"
             }
-            )
+        )
 
         if response.status_code != 200:
             return jsonify({"error": "Failed to update care plan request", "details": response.text}), response.status_code

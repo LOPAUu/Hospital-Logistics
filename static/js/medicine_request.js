@@ -47,6 +47,7 @@ function approveRequest(medicineRequestId) {
 
                     // Store the status in localStorage
                     localStorage.setItem(`status-${medicineRequestId}`, 'approved');
+
                     actionsCell.innerHTML = '<span class="approved-label">No further actions available</span>';
                     
                     Swal.fire({
