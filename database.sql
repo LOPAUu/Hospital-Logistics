@@ -48,10 +48,18 @@ CREATE TABLE requisitions (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     purpose VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    requested_by VARCHAR(255) NOT NULL,
+    total NUMERIC(10, 2) DEFAULT 0.0, -- Default to 0.0 if needed
+    status VARCHAR(50) DEFAULT 'Pending', -- Default status
     signatory1_approved BOOLEAN DEFAULT FALSE,
     signatory2_approved BOOLEAN DEFAULT FALSE,
-    signatory3_approved BOOLEAN DEFAULT FALSE
+    signatory3_approved BOOLEAN DEFAULT FALSE,
+    supplier_id INT REFERENCES suppliers(id) -- Foreign key to suppliers
 );
+
+
+
 
 -- Table for requisition items with PostgreSQL equivalent to MySQL's ON DELETE CASCADE
 CREATE TABLE requisition_items (
@@ -66,6 +74,7 @@ CREATE TABLE requisition_items (
 ALTER TABLE requisitions
 ADD COLUMN supplier_id INT REFERENCES suppliers(id);
 
+
 CREATE TABLE attachments (
     id SERIAL PRIMARY KEY,
     requisition_id INTEGER NOT NULL REFERENCES requisitions(id) ON DELETE CASCADE,
@@ -74,11 +83,17 @@ CREATE TABLE attachments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
 -- Create 'attachments' tableALTER TABLE attachments
 ALTER TABLE attachments
 ADD CONSTRAINT fk_requisition_id
 FOREIGN KEY (requisition_id)
 REFERENCES requisitions(id);
+
+CREATE INDEX idx_supplier_id ON requisitions(supplier_id);
+CREATE INDEX idx_requisition_id ON requisition_items(requisition_id);
+CREATE INDEX idx_requisition_id_attachments ON attachments(requisition_id);
+
 
 -- Create purchase_orders table
 CREATE TABLE purchase_orders (
@@ -109,6 +124,7 @@ CREATE TABLE order_items (
 UPDATE order_items oi
 SET remaining_quantity = oi.quantity - (oi.received + oi.lost + oi.damaged);
 
+
 CREATE TABLE evaluations (
     id SERIAL PRIMARY KEY,
     purchase_order_id INT NOT NULL,
@@ -124,36 +140,12 @@ CREATE TABLE sku_details (
     item_name VARCHAR(255) NOT NULL,
     quantity_ordered INT NOT NULL,
     sku VARCHAR(255) NOT NULL UNIQUE,
-    quantity INT NOT NULL DEFAULT 0,
+    unit_quantity INT NOT NULL DEFAULT 0,
     expiration DATE NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+    
 
-
-
-
--- Create the medicine_requests table (if not already created)
-CREATE TABLE medicine_requests (
-    medicine_request_id SERIAL PRIMARY KEY,
-    request_status VARCHAR(50) NOT NULL,
-    medicine_name INT NOT NULL,
-    quantity INT NOT NULL,
-    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    approved_by VARCHAR(100),
-    approval_date TIMESTAMP
-);
-
--- Insert sample data
-INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
-VALUES 
-    ('Pending', 101, 5, '2024-12-01 10:00:00', NULL, NULL),
-    ('Approved', 102, 10, '2024-11-30 09:00:00', 'Dr. Smith', '2024-11-30 11:00:00'),
-    ('Rejected', 103, 2, '2024-11-29 08:30:00', 'Dr. Johnson', '2024-11-29 12:30:00'),
-    ('Pending', 104, 7, '2024-12-01 11:30:00', NULL, NULL);
-
-
---
-select * from medicines
 CREATE TABLE medicines (
     medicine_id SERIAL PRIMARY KEY,         -- Unique ID for each medicine
     sku VARCHAR(50) UNIQUE NOT NULL,        -- Stock Keeping Unit for tracking
@@ -171,6 +163,31 @@ CREATE TABLE medicines (
     expiration_date DATE,                   -- Expiry date
     lot_position VARCHAR(50)                -- Shelf or storage location (e.g., A1, B2)
 );
+
+
+UPDATE medicines
+SET quantity = medicines.quantity + oi.remaining_quantity
+FROM order_items oi
+WHERE oi.medicine_id = medicines.medicine_id;
+
+ALTER TABLE order_items
+ADD COLUMN medicine_id INT;
+
+-- Create foreign key reference to medicines table
+ALTER TABLE order_items
+ADD CONSTRAINT fk_medicine_id FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id);
+
+SELECT * 
+FROM order_items oi 
+LEFT JOIN medicines m ON oi.medicine_id = m.medicine_id 
+WHERE m.medicine_id IS NULL;
+
+ALTER TABLE medicines ADD CONSTRAINT medicines_sku_key UNIQUE (sku);
+
+UPDATE medicines
+SET quantity = quantity + <remaining_quantity>
+WHERE medicine_id = <medicine_id>;
+
 
 -- Trigger function to automatically update date 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -215,6 +232,20 @@ VALUES
     ('MED023', 'Levocetirizine', 80, 'Active', 12.00, 18.00, 'Antihistamine', 'pcs', 'PO12367', 'Used for allergy relief', '2025-06-30', 'E4'),
     ('MED024', 'Lidocaine', 70, 'Active', 30.00, 40.00, 'Local Anesthetic', 'pcs', 'PO12368', 'Relieves pain locally', '2025-08-31', 'F4');
 
+-- Create the medicine_requests table (if not already created)
+CREATE TABLE medicine_requests (
+    medicine_request_id SERIAL PRIMARY KEY,
+    care_plan_request_id INT NOT NULL,  -- New column for care plan request ID
+    request_status VARCHAR(50) NOT NULL,
+    medicine_id INT NOT NULL,  -- Changed to medicine_id
+    quantity INT NOT NULL,
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved_by VARCHAR(100),
+    approval_date TIMESTAMP
+);
+ 
+
+
 CREATE TABLE pharmacy_customers (
     customer_id SERIAL PRIMARY KEY,        -- Unique ID for each customer
     full_name VARCHAR(100) NOT NULL,       -- Full name of the customer (required for prescriptions)
@@ -236,4 +267,4 @@ CREATE TABLE medicine_bought (
 );
 
 select * from pharmacy_customers;
-select * from medicine_bought;
+select * from medicine_bought;          
