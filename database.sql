@@ -242,14 +242,8 @@ CREATE TABLE medicine_requests (
     approved_by VARCHAR(100),
     approval_date TIMESTAMP
 );
+ 
 
--- Insert sample data
-INSERT INTO medicine_requests (request_status, medicine_name, quantity, request_date, approved_by, approval_date)
-VALUES 
-    ('Pending', 101, 5, '2024-12-01 10:00:00', NULL, NULL),
-    ('Approved', 102, 10, '2024-11-30 09:00:00', 'Dr. Smith', '2024-11-30 11:00:00'),
-    ('Rejected', 103, 2, '2024-11-29 08:30:00', 'Dr. Johnson', '2024-11-29 12:30:00'),
-    ('Pending', 104, 7, '2024-12-01 11:30:00', NULL, NULL);
 
 CREATE TABLE pharmacy_customers (
     customer_id SERIAL PRIMARY KEY,        -- Unique ID for each customer

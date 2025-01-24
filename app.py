@@ -8,6 +8,7 @@ from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 import traceback
 import requests
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
@@ -1701,6 +1702,8 @@ def signatory_view():
 def purchase_order():
     return render_template('purchase_order.html')
 
+socketio = SocketIO(app)
+
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
     try:
@@ -1757,6 +1760,18 @@ def medicine_request():
             """, (care_plan_request_id, request_status, medicine_id, quantity, request_date, approved_by, approval_date))
             new_request_id = cursor.fetchone()[0]
             conn.commit()
+
+            # Emit a socket event to notify clients of the new request
+            socketio.emit('new_medicine_request', {
+                "medicine_request_id": new_request_id,
+                "care_plan_request_id": care_plan_request_id,
+                "request_status": request_status,
+                "medicine_id": medicine_id,
+                "quantity": quantity,
+                "request_date": request_date,
+                "approved_by": approved_by,
+                "approval_date": approval_date
+            })
 
             return jsonify({"message": "Request added successfully", "medicine_request_id": new_request_id})
 
