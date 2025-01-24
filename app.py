@@ -1701,8 +1701,6 @@ def signatory_view():
 def purchase_order():
     return render_template('purchase_order.html')
 
-
-
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
     try:
@@ -1771,7 +1769,6 @@ def medicine_request():
             cursor.close()
             conn.close()
 
-
             
 @app.route('/medicines-info')
 def medicines_info():
@@ -1811,7 +1808,7 @@ def approve_medicine_request(request_id):
         cursor = conn.cursor()
 
         # Set the request status to "Approved" and update the approval date
-        approved_by = 'Dr. Smith'  # You can replace this with an actual approver's name
+        approved_by = 'system'  # You can replace this with an actual approver's name
         approval_date = datetime.now()
 
         cursor.execute("""
@@ -1836,7 +1833,7 @@ def approve_medicine_request(request_id):
 
         care_plan_request_id = care_plan_request[0]
 
-                # Make the POST request to update the care-plan-request
+        # Make the POST request to update the care-plan-request
         response = requests.post(
             'https://peru-seahorse-921810.hostingersite.com/api/care-plan-request/update',
             json={
