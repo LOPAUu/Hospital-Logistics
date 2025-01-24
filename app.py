@@ -1572,11 +1572,12 @@ def medicine_request():
         cursor = conn.cursor()
 
         if request.method == 'GET':
-            # Fetch all medicine requests
+            # Fetch all medicine requests with medicine names
             cursor.execute("""
-                SELECT medicine_request_id, care_plan_request_id, request_status, medicine_id, quantity, 
-                       request_date, approved_by, approval_date 
-                FROM medicine_requests;
+                SELECT mr.medicine_request_id, mr.care_plan_request_id, mr.request_status, i.medicine_name, mr.quantity, 
+                       mr.request_date, mr.approved_by, mr.approval_date 
+                FROM medicine_requests mr
+                JOIN medicines i ON mr.medicine_id = i.medicine_id;
             """)
             medicine_requests = cursor.fetchall()
 
@@ -1586,7 +1587,7 @@ def medicine_request():
                     "medicine_request_id": row[0],
                     "care_plan_request_id": row[1],
                     "request_status": row[2],
-                    "medicine_id": row[3],  # Changed to medicine_id
+                    "medicine_name": row[3],  # Changed to medicine_name
                     "quantity": row[4],
                     "request_date": row[5],
                     "approved_by": row[6],
@@ -1606,7 +1607,7 @@ def medicine_request():
 
             request_status = data.get('request_status', 'Pending')
             care_plan_request_id = data['care_plan_request_id']
-            medicine_id = data['medicine_id']  # Changed to medicine_id
+            medicine_id = data['medicine_id']
             quantity = data['quantity']
             request_date = data.get('request_date', None)
             approved_by = data.get('approved_by', None)
@@ -1661,49 +1662,6 @@ def medicines_info():
     # Return the data as JSON
     return jsonify(medicines_list)
 
-@app.route('/api/care-plan-request/update', methods=['POST'])
-def update_care_plan_request():
-    try:
-        # Establish database connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Parse JSON data from the request
-        data = request.get_json()
-        if not data or 'medicine_request_id' not in data or 'action' not in data:
-            return jsonify({"error": "Missing required fields"}), 400
-
-        medicine_request_id = data['medicine_request_id']
-        action = data['action'].lower()  # Expecting 'accept' or 'reject'
-        approved_by = data.get('approved_by', 'System')  # Optional: default to 'System'
-
-        if action not in ['accept', 'reject']:
-            return jsonify({"error": "Invalid action. Use 'accept' or 'reject'."}), 400
-
-        # Update the request_status and approval_date
-        request_status = 'Approved' if action == 'accept' else 'Rejected'
-        approval_date = datetime.now()  # Automatically set the approval/rejection date
-
-        cursor.execute("""
-            UPDATE medicine_requests
-            SET request_status = %s, approved_by = %s, approval_date = %s
-            WHERE medicine_request_id = %s;
-        """, (request_status, approved_by, approval_date, medicine_request_id))
-        conn.commit()
-
-        return jsonify({
-            "message": f"Request {request_status.lower()} successfully.",
-            "medicine_request_id": medicine_request_id
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        # Close the connection
-        if 'conn' in locals():
-            cursor.close()
-            conn.close()
 
 @app.route('/medicine_request/<int:request_id>/approve', methods=['PUT'])
 def approve_medicine_request(request_id):
@@ -1821,36 +1779,6 @@ def deny_medicine_request(request_id):
             conn.close()
 
 
-@app.route('/api/care-plan-request/update', methods=['POST'])
-def update_medicine_request():
-    try:
-        # Parse JSON data from the request
-        data = request.get_json()
-        if not data or 'medicine_request_id' not in data or 'action' not in data:
-            return jsonify({'error': 'Missing required fields'}), 400
-        
-        medicine_request_id = data['medicine_request_id']
-        action = data['action'].lower()
-
-        # Validate the action
-        if action not in ['accept', 'reject']:
-            return jsonify({'error': 'Invalid action. Use "accept" or "reject".'}), 400
-
-        # Determine the new status
-        new_status = 'Approved' if action == 'accept' else 'Rejected'
-
-        # Assuming you have a model called MedicineRequest
-        medicine_request = MedicineRequest.query.get(medicine_request_id)
-        if medicine_request:
-            # Update the status in the database
-            medicine_request.status = new_status
-            db.session.commit()
-            return jsonify({'message': f'Request {new_status} successfully'}), 200
-        else:
-            return jsonify({'error': 'Request not found'}), 404
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 @app.route('/update_medicine_quantity', methods=['POST'])
 def update_medicine_quantity():
