@@ -40,7 +40,7 @@ function approveRequest(medicineRequestId) {
                 if (data.message) {
                     const statusCell = document.getElementById(`status-${medicineRequestId}`);
                     const actionsCell = document.getElementById(`actions-${medicineRequestId}`);
-                    
+
                     // Update status to 'Approved'
                     statusCell.textContent = 'Approved';
                     statusCell.className = 'status-approved'; // Add class for approved status
@@ -88,6 +88,7 @@ function approveRequest(medicineRequestId) {
         }
     });
 }
+
 
 
 
@@ -172,32 +173,6 @@ function denyRequest(medicineRequestId) {
 
 
 
-// Connect to the WebSocket
-const socket = io();
 
-// Listen for new medicine request events
-socket.on('new_medicine_request', (request) => {
-    notifyNewRequest(request);
-});
 
-// Notification function to show alert and play sound
-function notifyNewRequest(request) {
-    console.log('Playing alarm and showing notification.');
 
-    // Play the alarm sound
-    const alarmSound = document.getElementById('alarm-sound');
-    if (alarmSound) {
-        alarmSound.play().catch(error => {
-            console.error('Error playing alarm:', error);
-            alert("Sound failed to play. Please check your browser's settings.");
-        });
-    }
-
-    // Show the SweetAlert notification
-    Swal.fire({
-        title: 'New Medicine Request Received!',
-        text: `Medicine ID: ${request.medicine_id}\nQuantity: ${request.quantity}\nRequest Date: ${request.request_date}`,
-        icon: 'info',
-        confirmButtonText: 'OK',
-    });
-}

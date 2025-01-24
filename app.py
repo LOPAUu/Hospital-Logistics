@@ -8,7 +8,6 @@ from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 import traceback
 import requests
-from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.secret_key = 'bd43c35fa8c2dcdb974b323da1c40'
@@ -1702,7 +1701,7 @@ def signatory_view():
 def purchase_order():
     return render_template('purchase_order.html')
 
-socketio = SocketIO(app)
+
 
 @app.route('/medicine_request', methods=['GET', 'POST'])
 def medicine_request():
@@ -1761,18 +1760,6 @@ def medicine_request():
             new_request_id = cursor.fetchone()[0]
             conn.commit()
 
-            # Emit a socket event to notify clients of the new request
-            socketio.emit('new_medicine_request', {
-                "medicine_request_id": new_request_id,
-                "care_plan_request_id": care_plan_request_id,
-                "request_status": request_status,
-                "medicine_id": medicine_id,
-                "quantity": quantity,
-                "request_date": request_date,
-                "approved_by": approved_by,
-                "approval_date": approval_date
-            })
-
             return jsonify({"message": "Request added successfully", "medicine_request_id": new_request_id})
 
     except Exception as e:
@@ -1783,6 +1770,7 @@ def medicine_request():
         if 'conn' in locals():
             cursor.close()
             conn.close()
+
 
             
 @app.route('/medicines-info')
@@ -1823,7 +1811,7 @@ def approve_medicine_request(request_id):
         cursor = conn.cursor()
 
         # Set the request status to "Approved" and update the approval date
-        approved_by = 'system'  # You can replace this with an actual approver's name
+        approved_by = 'Dr. Smith'  # You can replace this with an actual approver's name
         approval_date = datetime.now()
 
         cursor.execute("""
@@ -1848,7 +1836,7 @@ def approve_medicine_request(request_id):
 
         care_plan_request_id = care_plan_request[0]
 
-        # Make the POST request to update the care-plan-request
+                # Make the POST request to update the care-plan-request
         response = requests.post(
             'https://peru-seahorse-921810.hostingersite.com/api/care-plan-request/update',
             json={
