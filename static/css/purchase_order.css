@@ -40,6 +40,25 @@ button:hover, .header button:hover, .filter-btn:hover {
     background-color: #00448d;
 }
 
+/* General button styles */
+button {
+    cursor: pointer;
+    /* Other button styles */
+}
+
+/* Disabled button styles */
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5; /* Optional: to visually indicate the button is disabled */
+}
+
+/* Disabled button hover effect */
+button:disabled:hover {
+    background-color: initial; /* Reset background color */
+    color: initial; /* Reset text color */
+    /* Other styles to reset hover effect */
+}
+
 #confirmOrderBtn {
     font-size: 14px;
     background-color: #0056b3;

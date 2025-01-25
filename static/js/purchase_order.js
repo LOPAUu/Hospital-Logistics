@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.querySelector('.close');
     const confirmOrderBtn = document.getElementById('confirmOrderBtn');
     const tabLinks = document.querySelectorAll('.tab__item a');
+    
 
     // Open modal when "Create Purchase Order" button is clicked
     createOrderBtn.addEventListener('click', () => {
@@ -436,6 +437,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // PO EVAL
 document.addEventListener("DOMContentLoaded", () => {
     const table = document.querySelector("table");
+    const submitEvaluationBtn = document.getElementById("submitEvaluationBtn");
+    const updateEvaluationBtn = document.getElementById("updateEvaluationBtn");
+    const evaluateModal = document.getElementById("evaluateModal");
 
     // Fetch purchase orders
     const fetchPurchaseOrders = async () => {
@@ -596,14 +600,30 @@ document.addEventListener("DOMContentLoaded", () => {
             
             
             
-            
+            // Function to open the evaluation modal
+            window.openEvaluationModal = async function() {
+                // Fetch evaluation status
+                const response = await fetch(`/get-evaluation-status`);
+                const result = await response.json();
 
-            // Add submission logic (unchanged from your original code)
-            document.getElementById("submitEvaluationBtn").addEventListener("click", async (event) => {
+                if (result.evaluated) {
+                    submitEvaluationBtn.disabled = true;
+                    updateEvaluationBtn.disabled = false;
+                } else {
+                    submitEvaluationBtn.disabled = false;
+                    updateEvaluationBtn.disabled = true;
+                }
+
+                // Open the modal
+                evaluateModal.style.display = "block";
+            };
+
+            // Add submission logic
+            submitEvaluationBtn.addEventListener("click", async (event) => {
                 event.preventDefault(); // Prevent default form submission
-            
+
                 const rows = document.querySelectorAll("#evaluateItemList tr");
-            
+
                 // Prepare the items data
                 const items = Array.from(rows).map(row => {
                     const index = row.getAttribute("data-index");
@@ -611,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const lost = parseInt(row.querySelector(".lost").value, 10) || 0;
                     const damaged = parseInt(row.querySelector(".damaged").value, 10) || 0;
                     const remainingQuantity = parseInt(row.querySelector(".remaining-quantity").value, 10); // Keep the original remaining quantity
-            
+
                     return {
                         order_detail_id: data.items[index].id,
                         received: received,
@@ -620,15 +640,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         remainingQuantity: remainingQuantity // Send the value as it is
                     };
                 });
-            
+
                 // Prepare the payload including the purchase_order_id
                 const payload = {
                     purchase_order_id: data.id,
                     items: items,
                 };
-            
+
                 console.log("Sending payload:", payload); // Log the payload for debugging
-            
+
                 try {
                     const response = await fetch('/submit-evaluation', {
                         method: 'POST',
@@ -637,9 +657,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         },
                         body: JSON.stringify(payload),
                     });
-            
+
                     const result = await response.json();
-            
+
                     if (response.ok) {
                         Swal.fire({
                             title: "Success!",
@@ -649,6 +669,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         }).then(() => {
                             evaluateModal.style.display = "none"; // Close the modal
                             fetchPurchaseOrders(); // Refresh the purchase orders after closing the modal
+
+                            // Disable the submit button and enable the update button
+                            submitEvaluationBtn.disabled = true;
+                            updateEvaluationBtn.disabled = false;
                         });
                     } else {
                         Swal.fire({
@@ -663,6 +687,77 @@ document.addEventListener("DOMContentLoaded", () => {
                     Swal.fire({
                         title: "Error",
                         text: "An error occurred while submitting the evaluation. Please try again.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+            }, { once: true }); // Ensures the listener is added only once
+
+            // Add update logic
+            updateEvaluationBtn.addEventListener("click", async (event) => {
+                event.preventDefault(); // Prevent default form submission
+
+                const rows = document.querySelectorAll("#evaluateItemList tr");
+
+                // Prepare the items data
+                const items = Array.from(rows).map(row => {
+                    const index = row.getAttribute("data-index");
+                    const received = parseInt(row.querySelector(".received").value, 10) || 0;
+                    const lost = parseInt(row.querySelector(".lost").value, 10) || 0;
+                    const damaged = parseInt(row.querySelector(".damaged").value, 10) || 0;
+                    const remainingQuantity = parseInt(row.querySelector(".remaining-quantity").value, 10); // Keep the original remaining quantity
+
+                    return {
+                        order_detail_id: data.items[index].id,
+                        received: received,
+                        lost: lost,
+                        damaged: damaged,
+                        remainingQuantity: remainingQuantity // Send the value as it is
+                    };
+                });
+
+                // Prepare the payload including the purchase_order_id
+                const payload = {
+                    purchase_order_id: data.id,
+                    items: items,
+                };
+
+                console.log("Sending payload:", payload); // Log the payload for debugging
+
+                try {
+                    const response = await fetch('/update-evaluation', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire({
+                            title: "Success!",
+                            text: result.message || "Evaluation updated successfully.",
+                            icon: "success",
+                            confirmButtonText: "OK",
+                        }).then(() => {
+                            evaluateModal.style.display = "none"; // Close the modal
+                            fetchPurchaseOrders(); // Refresh the purchase orders after closing the modal
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Error",
+                            text: result.error || "Failed to update evaluation. Please try again.",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error updating evaluation:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "An error occurred while updating the evaluation. Please try again.",
                         icon: "error",
                         confirmButtonText: "OK",
                     });

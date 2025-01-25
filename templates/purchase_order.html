@@ -179,7 +179,7 @@
             <!-- Evaluate Items Modal -->
             <div id="evaluateModal" class="modal">
                 <div class="modal-evaluate">
-                    <span class="close">&times;</span>
+                    <span class="close" onclick="closeModal()">&times;</span>
                     <h3>Evaluate Received Items</h3>
                     <div class="form-display">
                         <div>
@@ -214,8 +214,8 @@
                             </table>
                         </div>
                         <div class="button-group">
-                            <button id="submitEvaluationBtn">Submit Evaluation</button>
-                            <button id="updateEvaluationBtn">Update Evaluation</button>
+                            <button id="submitEvaluationBtn" disabled>Submit Evaluation</button>
+                            <button id="updateEvaluationBtn" disabled>Update Evaluation</button>
                         </div>
                     </div>
                 </div>

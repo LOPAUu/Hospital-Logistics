@@ -1360,6 +1360,27 @@ def save_sku_details():
 
 
 
+@app.route('/get-evaluation-status', methods=['GET'])
+def get_evaluation_status():
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Query to check if any medicine has a quantity greater than 0
+    query = """
+        SELECT COUNT(*) AS count
+        FROM medicines
+        WHERE quantity > 0
+    """
+    cursor.execute(query)
+    result = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if result['count'] > 0:
+        return jsonify({'evaluated': True}), 200
+    else:
+        return jsonify({'evaluated': False}), 200
 
 
 
