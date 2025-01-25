@@ -13,6 +13,103 @@ async function fetchRequisition() {
 
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("requisition-list");
+    const headers = table.querySelectorAll("th");
+
+    headers.forEach((header, index) => {
+        if (index === 1) { // Assuming "Date" is the second column
+            header.style.cursor = "pointer";
+            header.addEventListener("click", () => sortTable(index));
+        }
+    });
+
+    function sortTable(columnIndex) {
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.rows);
+
+        // Toggle sorting order
+        const ascending = !header.dataset.sortAscending;
+        header.dataset.sortAscending = ascending;
+
+        rows.sort((a, b) => {
+            const cellA = a.cells[columnIndex].innerText;
+            const cellB = b.cells[columnIndex].innerText;
+
+            // Parsing dates for sorting
+            const dateA = new Date(cellA);
+            const dateB = new Date(cellB);
+
+            return ascending ? dateA - dateB : dateB - dateA;
+        });
+
+        // Append sorted rows to the tbody
+        rows.forEach(row => tbody.appendChild(row));
+    }
+});
+
+
+function sortTableByDateDescending() {
+    const table = document.getElementById("requisition-list");
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Sort rows based on the date column (2nd column, index 1)
+    rows.sort((rowA, rowB) => {
+        const dateA = new Date(rowA.cells[1].innerText.trim()); // Column 2: Date
+        const dateB = new Date(rowB.cells[1].innerText.trim());
+        return dateB - dateA; // Descending order
+    });
+
+    // Append sorted rows back to the table
+    const tbody = table.querySelector("tbody");
+    tbody.innerHTML = ""; // Clear existing rows
+    rows.forEach((row, index) => {
+        row.cells[0].innerText = index + 1; // Update the "No." column to maintain numbering
+        tbody.appendChild(row); // Append sorted rows
+    });
+}
+
+// Attach the function to the "Date" column header
+document.querySelector("th:nth-child(2)").addEventListener("click", sortTableByDateDescending);
+
+
+function sortTableByStatus() {
+    const table = document.getElementById("requisition-list");
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Sort rows based on the status column (8th column, index 7)
+    rows.sort((rowA, rowB) => {
+        const statusA = rowA.cells[7].innerText.trim().toLowerCase(); // Column 8: Status
+        const statusB = rowB.cells[7].innerText.trim().toLowerCase();
+
+        // "Pending" first, others alphabetically
+        if (statusA === "pending" && statusB !== "pending") return -1;
+        if (statusA !== "pending" && statusB === "pending") return 1;
+
+        return statusA.localeCompare(statusB); // Default alphabetical order
+    });
+
+    // Append sorted rows back to the table
+    const tbody = table.querySelector("tbody");
+    tbody.innerHTML = ""; // Clear existing rows
+    rows.forEach((row, index) => {
+        row.cells[0].innerText = index + 1; // Update the "No." column to maintain numbering
+        tbody.appendChild(row); // Append sorted rows
+    });
+}
+
+// Attach the function to the "Status" column header
+document.querySelector("th:nth-child(8)").addEventListener("click", sortTableByStatus);
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Sort by Date
+    document.querySelector("th:nth-child(2)").addEventListener("click", sortTableByDateDescending);
+
+    // Sort by Status
+    document.querySelector("th:nth-child(8)").addEventListener("click", sortTableByStatus);
+});
+
 
 
 async function saveRequisition(event) {

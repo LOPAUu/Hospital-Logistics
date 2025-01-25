@@ -603,3 +603,13 @@ table td button i {
     text-align: left; /* Align text to the left */
     border: 1px solid #ddd; /* Optional: Adds borders to cells */
 }
+
+
+th i {
+    margin-left: 5px;
+    color: gray;
+    cursor: pointer;
+}
+th i:hover {
+    color: black;
+}
