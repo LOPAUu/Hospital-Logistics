@@ -323,7 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>
                     <button class="view-btn" data-id="${order.id}" data-index="${index + 1}">View</button>
                     <button class="evaluate-btn" data-id="${order.id}">Evaluate</button>
-                    <button class="delete-btn" data-id="${order.id}">Delete</button>
+
                     <button class="sku-btn" data-id="${order.id}">SKU</button>
                 </td>
             `;
@@ -468,7 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>
                     <button class="view-btn" data-id="${order.id}" data-row-number="${index + 1}">View</button>
                     <button class="evaluate-btn" data-id="${order.id}" data-row-number="${index + 1}">Evaluate</button>
-                    <button class="delete-btn" data-id="${order.id}">Delete</button>
+
                     <button class="sku-btn" data-id="${order.id}">SKU</button>
                 </td>
             `;
