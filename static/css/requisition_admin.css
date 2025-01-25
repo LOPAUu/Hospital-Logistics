@@ -605,11 +605,3 @@ table td button i {
 }
 
 
-th i {
-    margin-left: 5px;
-    color: gray;
-    cursor: pointer;
-}
-th i:hover {
-    color: black;
-}
