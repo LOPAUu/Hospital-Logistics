@@ -1347,6 +1347,15 @@ def save_sku_details():
         conn.close()
 
 
+@app.route('/signatory_view')
+def signatory_view():
+    return render_template('signatory_view.html')
+
+@app.route('/purchase_order')
+def purchase_order():
+    return render_template('purchase_order.html')
+
+
 @app.route('/inventory')
 def inventory():
     connection = get_db_connection()
