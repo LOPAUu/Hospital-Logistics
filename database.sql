@@ -124,11 +124,6 @@ CREATE TABLE order_items (
 UPDATE order_items oi
 SET remaining_quantity = oi.quantity - (oi.received + oi.lost + oi.damaged);
 
-UPDATE medicines
-SET quantity = medicines.quantity + oi.remaining_quantity
-FROM order_items oi
-WHERE oi.medicine_id = medicines.medicine_id;
-
 
 CREATE TABLE evaluations (
     id SERIAL PRIMARY KEY,
@@ -140,6 +135,7 @@ CREATE TABLE evaluations (
     FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
 );
 
+
 CREATE TABLE sku_details (
     id SERIAL PRIMARY KEY,
     item_name VARCHAR(255) NOT NULL,
@@ -147,6 +143,7 @@ CREATE TABLE sku_details (
     sku VARCHAR(255) NOT NULL UNIQUE,
     unit_quantity INT NOT NULL DEFAULT 0,
     expiration DATE NOT NULL,
+    lot_position VARCHAR(50), -- Add this line to include the lot_position column
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
     
@@ -168,6 +165,11 @@ CREATE TABLE medicines (
     expiration_date DATE,                   -- Expiry date
     lot_position VARCHAR(50)                -- Shelf or storage location (e.g., A1, B2)
 );
+
+UPDATE medicines
+SET quantity = medicines.quantity + oi.remaining_quantity
+FROM order_items oi
+WHERE oi.medicine_id = medicines.medicine_id;
 
 ALTER TABLE order_items
 ADD COLUMN medicine_id INT;
