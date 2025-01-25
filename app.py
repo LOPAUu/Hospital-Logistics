@@ -1282,6 +1282,10 @@ def submit_evaluation():
 
 
 
+
+
+
+
 @app.route('/get-sku-details/<int:purchase_order_id>', methods=['GET'])
 def fetch_sku_details(purchase_order_id):
     conn = get_db_connection()
@@ -1320,15 +1324,15 @@ def save_sku_details():
     try:
         for sku in data['skus']:
             cursor.execute("""
-                INSERT INTO sku_details (item_name, quantity_ordered, sku, quantity, expiration)
+                INSERT INTO sku_details (item_name, quantity_ordered, sku, unit_quantity, expiration)
                 VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (sku) DO UPDATE 
-                SET quantity = EXCLUDED.quantity,
+                SET unit_quantity = EXCLUDED.unit_quantity,
                     expiration = EXCLUDED.expiration,
                     updated_at = CURRENT_TIMESTAMP
             """, (
                 sku['item_name'], sku['ordered_quantity'], sku['sku'],
-                sku['quantity'], sku['expiration']
+                sku['unit_quantity'], sku['expiration']
             ))
 
         conn.commit()
@@ -1342,15 +1346,6 @@ def save_sku_details():
         cursor.close()
         conn.close()
 
-
-
-@app.route('/signatory_view')
-def signatory_view():
-    return render_template('signatory_view.html')
-
-@app.route('/purchase_order')
-def purchase_order():
-    return render_template('purchase_order.html')
 
 @app.route('/inventory')
 def inventory():
